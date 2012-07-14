@@ -1,11 +1,17 @@
-\documentstyle{article}
+\documentclass{article}
 \begin{document}
 
 
 
-We used {\tt tophat} to map reads to release WS220 (ceFIXME) of the {\em C. elegans} genome.
+We used {\tt tophat} to map reads to release WS220 (ce10) of the {\em C. elegans} genome.
 
 
+
+\section*{Ribosomal reads}
+
+Although we depleted ribosomal RNA from the sequenced samples, reads from such RNAs nonetheless
+leaked through. Ribosomal genes are present in many copies in the genome, but are placed on
+the end of chromosome I: we considered reads mapping after 15,058,993-15,065,751 to be ribosomal.
 
 
 
@@ -14,3 +20,4 @@ We used {\tt tophat} to map reads to release WS220 (ceFIXME) of the {\em C. eleg
 
 
 \end{document}
+
