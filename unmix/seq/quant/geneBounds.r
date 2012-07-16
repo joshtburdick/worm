@@ -29,3 +29,10 @@ b = rbind(b, c("chrI", 15058993, 15072423, "ribosomal_RNA", "0", "+"))
 write.table(b, file="git/unmix/seq/quant/geneBounds.tsv",
   sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
 
+# write out gene bounds on the opposite strand (which, confusingly, are the
+# bounds used for "sense" gene quantification)
+b.flip = b
+b.flip$strand = ifelse(b$strand == "-", "+", "-")
+write.table(b.flip, file="git/unmix/seq/quant/geneBounds_flip.tsv",
+  sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
+

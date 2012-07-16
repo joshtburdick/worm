@@ -3,8 +3,13 @@
 
 
 
-We used {\tt tophat} to map reads to release WS220 (ce10) of the {\em C. elegans} genome.
+We used Tophat, version 2.0.2, to map reads to the {\tt ce6} release of the {\em C. elegans} genome.
 
+\subsection*{Quantification}
+
+We used the {\tt coverageBed} utility from bedtools to count reads in a given region,
+only including uniquely-mapping reads, and measured a gene's expression in units of
+reads per million.
 
 
 \section*{Ribosomal reads}
@@ -14,6 +19,10 @@ leaked through. Ribosomal genes are present in many copies in the genome, but ar
 the end of chromosome I: we considered reads mapping after 15,058,993-15,065,751 to be ribosomal.
 
 
+
+\section*{Antisense transcription}
+
+We also quantified reads within each genes' bounds, but on the opposite strand.
 
 
 
