@@ -1,21 +1,84 @@
 \documentclass{article}
+\usepackage{amsfonts}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
 \begin{document}
 
+\subsection*{Cell sorting matrix}
+
+The unmixing methods require an estimate of which cell is in which sorted fraction,
+and how much RNA each cell contributes to the sample. Let $S_{ij}$ be
+the probability that a given cell was present in a given sorted fraction. Let $V_j$
+be the volume of the $j$th cell. Then we define
+
+\[
+M_{ij} = \frac{S_{ij} V_j}{ \sum\limits_{i}^{} S_{ij} V_j }
+\]
 
 
-\subsection*{Image thresholding}
+\subsubsection*{Image thresholding}
 
-We determined which cells were present in each fraction based on  movies.
-For each movie, we 
+We estimated $S_{ij}$ based on 29 movies.
+For each movie, we manually chose an intensity distribution for cells expressing
+or not expressing the reporter, and 
+used this logistic model to classify each cell as ``expressing'' or ``not expressing.''
 
+\subsubsection*{Estimating cell volume}
 
+We assumed that the amount of RNA in each cell was proportional to the cell's volume.
+We estimated cell volume by assuming that each division was exactly equal (although
+this is clearly approximate), and so
+
+\[
+V_j = 2^{-\mathrm{branchlength}}
+\]
+
+\subsubsection*{Estimating biological noise between measurements}
+
+We estimated biological noise between replicates using four samples which were
+grown and sorted independently. For each (on log scale), we plotted the variance
+in read depth between replicates, as a function of average read depth.
+
+\includegraphics[width=0.7\textwidth]{git/unmix/seq/quant/noiseBetweenReplicates.pdf}
+
+The average slope among these experiments (assuming a zero $y$-intercept) was 1.05.
+Therefore (for the sake of simplicity)
+we assumed that the variance equalled the number of reads.
+
+\subsubsection*{Sorting purity}
+
+The sorting purities (measured by re-sorting the sorted cells) ranged from 82\% to 97\%.
+This means that the measured depletion of a gene in a given sorted fraction is less than
+the actual depletion. (This is important, because we're using depletion of a gene in a
+sorted fraction to ``rule out'' expression in some cells.)
+
+Let $S$ be the measured expression of a gene in the singlet cells,
+$F$ be the
+measured expression of a gene in a sorted fraction, with known sort purity $p$, and
+$G$ be the true expression of that gene in the sorted fraction.
+We can model $F$ as a mixture of $S$ and $G$:
+
+\[
+F = pG + (1-p)S
+\]
+
+If we assume that $S$ and $F$ are normally distributed (with variance estimated as described
+above), then we can obtain $G$'s distribution, which is also normal.
 
 \subsection*{Unmixing based on pseudoinverse}
 
 
 
 
+
 \subsection*{Unmixing using EP}
+
+
 
 
 
