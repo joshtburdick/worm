@@ -33,13 +33,13 @@ plot.it = function() {
   pdf("git/unmix/seq/quant/noiseBetweenReplicates.pdf", width=7.5, height=7.5)
   par(mfrow=c(2,2))
   plot.mean.and.var(cbind(total.counts("cndm1p8_19"), total.counts("cndm1_12_14"),
-    total.counts("cndm1p1_4")), "cnd-1")
+    total.counts("cndm1p1_4")), "cnd-1 (n=3)")
   plot.mean.and.var(cbind(total.counts("pham4p9_1"), total.counts("pham4p12_9")),
-    "pha-4")
+    "pha-4 (n=2)")
   plot.mean.and.var(cbind(total.counts("cndm1_ungated"), total.counts("pham4_ungated")),
-    "unsorted")
+    "unsorted (n=2)")
   plot.mean.and.var(cbind(total.counts("cndm1_singlets"), total.counts("pham4_singlets")),
-    "singlets")
+    "singlets (n=2)")
   dev.off()
 }
 
