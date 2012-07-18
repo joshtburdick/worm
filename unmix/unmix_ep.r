@@ -31,12 +31,12 @@ positive.factor = function(x) {
 lin.constraint = function(m, v, A, b, b.var) {
 
   # first, compute (A V A^T + diag(v)) ^ -1, which I'll call B
-  # FIXME: the first Diagonal() call here can probably be simplified
-  M = as.matrix( A %*% Diagonal(x=V) %*% t(A) + Diagonal(x = b.var) )
-  B.chol = chol2inv(chol(B))
-
-  cbind(m = m - v * t(A) %*% solve(B.chol, A %*% m - b),
-    v = v - v * apply(t(A) * solve(B.chol, A), 1, sum) * v)
+  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
+  M.chol = chol(M)
+print(dim(M))
+print(dim(A))
+  cbind(m = m - v * t(A) %*% solve(M.chol, A %*% m - b),
+    v = v - v * apply(A * solve(M.chol, A), 2, sum) * v)
 }
 
 # Message constraining "Ax ~ N(b, b.var)".
