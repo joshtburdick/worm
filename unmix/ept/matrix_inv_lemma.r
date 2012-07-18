@@ -41,8 +41,12 @@ t1 = list(A.diag = sample(10, 5),
   X = matrix(runif(10), nrow=5, ncol=2),
   B = matrix(c(2, -0.3, -0.3, 2), nrow=2))
 
+t2 = list(A.diag = 0.1 + runif(1000),
+  X = matrix(runif(30000), nrow=1000, ncol=30),
+  B = { M = matrix(rnorm(900, sd=0.1), nrow=30); M + t(M) + diag( 1 + 5 * runif(30) ) } )
 
-
+cat(matrix.inv.diag.narrow.test(t1$A, t1$X, t1$B), "\n")
+cat(matrix.inv.diag.narrow.test(t2$A, t2$X, t2$B), "\n")
 
 }
 
