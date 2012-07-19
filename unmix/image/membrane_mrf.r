@@ -1,4 +1,4 @@
-# Finds cell volume using an embryo imaged with plasma membrane.
+# Finds cell volume using an embryo imaged with a plasma membrane 
 
 image.path = "data/image/tifs/"
 output.path = "git/unmix/image/mrf/"
@@ -13,49 +13,49 @@ g = readTiff(paste(image.path, "green/20080221_OD70-t055-p19.tif", sep="/"))@gre
 result.tif = newPixmapRGB(r, g, 0*r)
 
 # the belief states: this is the probability that a pixel is on the membrane
-m = array(dim=c(3, nrow(r), ncol(r)))
-dimnames(m)[[1]] = c("n", "a", "b")
-m["a",,] = 0
-m["b",,] = 1
-m["n",,] = 1
+x = array(0, dim=c(3, nrow(r), ncol(r)))
+dimnames(x)[[1]] = c("n", "a", "b")
 
-# Updates the probability that a pixel is on the membrane.
-mrf.update = function(m, r, g) {
+# messages from the actual data
+m.image = x
+m.image["a",,] = r
+m.image["b",,] = g
+m.image["n",,] = 1
+
+# The state of the model, consisting of beliefs and messages in all
+# four directions. We assume [1,1] is in the upper-left.
+m = list(x = m.image, m.up = x, m.down = x, m.left = x, m.right = x)
+
+# Normalizes a message.
+normalize.message = function(m) {
+  m["a",,] = m["a",,] / m["n",,]
+  m["b",,] = m["b",,] / m["b",,]
+  m["n",,] = 1
+  m[ is.na(m) ] = 0
+  m
+}
+
+# Updates the messages and x.
+mrf.update = function(m) {
   nr = nrow(r)
   nc = ncol(r)
+  
+  # update messages
+  m$m.up[,1:nr-1,] = normalize.message( m$x[,2:nr,] - m$m.up[,1:nr-1,] )
+  m$m.down[,2:nr,] = normalize.message( m$x[,1:nr-1,] - m$m.down[,2:nr,] )
+  m$m.left[,,1:nc-1] = normalize.message( m$x[,,2:nc] - m$m.left[,,1:nc-1] )
+  m$m.right[,,2:nc] = normalize.message( m$x[,,1:nc-1] - m$m.right[,,2:nc] )
 
-  # normalize
-  m["a",,] = m["a",,] / m["n",,]
-  m["b",,] = m["b",,] / m["n",,]
-  m["n",,] = 1
-
-  # create new, and send messages in all four directions
-  m1 = 0 * m
-  m1[,1:(nr-1),] = m1[,1:(nr-1),] + m[,2:nr,]
-  m1[,2:nr,] = m1[,2:nr,] + m[,1:(nr-1),]
-  m1[,,1:(nc-1)] = m1[,,1:(nc-1)] + m[,,2:nc]
-  m1[,,2:nc] = m1[,,2:nc] + m[,,1:(nc-1)]
-
-  # add in messages from the actual image
-  m1["a",,] = m1["a",,] + r
-  m1["n",,] = m1["n",,] + r
-  m1["b",,] = m1["b",,] + g
-  m1["n",,] = m1["b",,] + g
-
-  # normalize
-  m1["a",,] = m1["a",,] / m1["n",,]
-  m1["b",,] = m1["b",,] / m1["n",,]
-  m1["n",,] = 1
-  m1
+  # update belief
+  m$x = m.image + m$m.up + m$m.down + m$m.left + m$m.right
+  m
 }
 
 run.it = function(m) {
   for(iter in 1:200) {
     cat(iter, "")
-    m = mrf.update(m, r, g)
-cat(max(m), "")
-    result.tif@blue = m["a",,] / m["n",,]
-
+    m = mrf.update(m)
+    result.tif@blue = m$x["a",,] / m$x["n",,]
     writeTiff(result.tif, paste(output.path, "mrf.step.", iter, ".tiff", sep=""))
   }
 
