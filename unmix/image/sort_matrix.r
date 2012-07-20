@@ -8,6 +8,13 @@ source("git/unmix/image/cell_volume.r")
 gene.on.off = read.csv("R/unmix/sort_paper/unmix/image/sort.matrix.csv.gz",
   as.is=TRUE, row.names=1)
 
+# compute "negative" portions
+gene.on.off = {
+  negative.fractions = 1 - gene.on.off
+  rownames(negative.fractions) = paste(rownames(gene.on.off), "_minus", sep="")
+  rbind(gene.on.off, negative.fractions[-1,])
+}
+
 sort.matrix = t( t(gene.on.off) * cell.weights[colnames(gene.on.off),"w"] )
 sort.matrix[,"P0"] = 0
 
