@@ -20,11 +20,15 @@ dimnames(x)[[1]] = c("n", "a", "b")
 m.image = x
 m.image["a",,] = r
 m.image["b",,] = g
-m.image["n",,] = 1
+m.image["n",,] = r + g
 
 # The state of the model, consisting of beliefs and messages in all
 # four directions. We assume [1,1] is in the upper-left.
 m = list(x = m.image, m.up = x, m.down = x, m.left = x, m.right = x)
+# ??? initializing things to "off"
+m$x["a",,] = 0
+m$x["b",,] = 1
+m$x["n",,] = 1
 
 # Normalizes a message.
 normalize.message = function(m) {
@@ -52,7 +56,7 @@ mrf.update = function(m) {
 }
 
 run.it = function(m) {
-  for(iter in 1:200) {
+  for(iter in 1:100) {
     cat(iter, "")
     m = mrf.update(m)
     result.tif@blue = m$x["a",,] / m$x["n",,]
