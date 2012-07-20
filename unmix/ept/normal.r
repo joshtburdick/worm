@@ -30,5 +30,3 @@ canonical.to.mean.and.variance = function(a) {
 
 
 
-
-
