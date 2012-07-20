@@ -12,7 +12,9 @@
 \subsection*{Cell sorting matrix}
 
 The unmixing methods require an estimate of which cell is in which sorted fraction,
-and how much RNA each cell contributes to the sample. Let $S_{ij}$ be
+and how much RNA each cell contributes to the sample.
+
+Let $S_{ij}$ be
 the probability that a given cell was present in a given sorted fraction. Let $V_j$
 be the volume of the $j$th cell. Then we define
 
@@ -27,10 +29,13 @@ We estimated $S_{ij}$ based on 29 movies.
 For each movie, we manually chose an intensity distribution for cells expressing
 or not expressing the reporter, and 
 used this logistic model to classify each cell as ``expressing'' or ``not expressing.''
+We assumed that the probability of a cell being in a negative fraction was
+one minus the probability of a cell being in a positive fraction.
 
 \subsubsection*{Estimating cell volume}
 
-We assumed that the amount of RNA in each cell was proportional to the cell's volume.
+We assumed that the amount of RNA in each cell was proportional to the cell's volume,
+times the number of time steps that the cell existed.
 We estimated cell volume by assuming that each division was exactly equal (although
 this is clearly approximate), and so
 
@@ -79,7 +84,7 @@ Note that this can result in estimates of $G$ which are negative.
 
 
 
-\subsection*{Estimating variability using EP}
+\subsection*{Unmixing using EP}
 
 
 
