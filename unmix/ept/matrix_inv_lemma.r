@@ -3,13 +3,31 @@
 
 library(Matrix)
 
-# Computes the diagonal of the inverse of A + X B Xt
+# Computes the inverse of A + X B Xt.
 # Args:
 #   A.diag - diagonal of A
 #   X - a matrix with many more rows than columns
 #   B - a s.p.d. matrix
 # Returns: diagonal of inverse of A + X B Xt
 matrix.inv.diag.narrow = function(A.diag, X, B) {
+
+  # inverse of A
+  A.inv = Diagonal( x = 1 / A.diag )
+  A.inv.diag = 1 / A.diag
+
+  # intermediate result 
+  C = chol2inv(chol(B)) + t(X) %*% A.inv %*% X
+
+  A.inv - A.inv %*% X %*% solve(C, t(X)) %*% A.inv
+}
+
+# Computes the diagonal of the inverse of A + X B Xt.
+# Args:
+#   A.diag - diagonal of A
+#   X - a matrix with many more rows than columns
+#   B - a s.p.d. matrix
+# Returns: diagonal of inverse of A + X B Xt
+matrix.inv.diag.narrow.diag.only = function(A.diag, X, B) {
 
   # inverse of A
   A.inv = Diagonal( x = 1 / A.diag )
@@ -27,7 +45,7 @@ matrix.inv.diag.narrow = function(A.diag, X, B) {
 if (FALSE) {
 
   matrix.inv.diag.narrow.test = function(A.diag, X, B) {
-    r = matrix.inv.diag.narrow(A.diag, X, B)
+    r = matrix.inv.diag.narrow.diag.only(A.diag, X, B)
     r.naive = diag(chol2inv(chol( diag(A.diag) + X %*% B %*% t(X) )))
     sum( (r - r.naive)^2 )
   }
