@@ -1,8 +1,16 @@
 # Unmixes using EP.
 
+load("git/unmix/image/sort_matrix.Rdata")
+
+# the read depth, with and without correction for sorting purity
+source("git/unmix/seq/sortPurityCorrection.r")
 
 
+# scale rows of this to add up to 1
+m = sort.matrix / apply(sort.matrix, 1, sum)
 
+# limit to cases in which we have measurements
+m = m[ colnames(r.corrected$r.mean) , ]
 
 
 # Unmixes using EP.
@@ -14,12 +22,32 @@
 # Side effects: writes one .Rdata file per gene, each containing:
 #   m, v - mean and variance of the posterior
 #   x, x.var - the per-fraction mean and variance that were used
-#   terms - the final term approximations
+#   pos.terms - the final term approximations (which, with the prior, can
+#     be used to reconstruct the full covariance posterior)
 #   update.stats - how much the term approximations changed at each step
 unmix.ep = function(m, x, x.var, output.dir) {
 
+  # restrict to cases in which the column sums to > 0
+  nz = apply(m, 2, sum) > 0
+
+  m1 = m[ , nz ]
 
 
+  for(g in rownames(x)) {
+
+    r = approx.region(m1, x[g,], x.var[g,])
+    ep = list(m = r$m, v = r$v, x = x, x.var = x.var,
+      pos.terms = r$pos.terms, update.stats = r$update.stats)
+    save(ep, file = paste(output.dir, g, ".Rdata", sep=""))
+
+  }
+
+
+}
+
+# Summarizes all the results in one directory.
+# Side effects:
+summarize = function(result.dir) {
 
 
 
