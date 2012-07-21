@@ -1,6 +1,7 @@
 # Unmixes using EP.
 
 library(Matrix)
+library(corpcor)
 
 source("git/unmix/ept/normal.r")
 # source("git/unmix/ept/matrix_inv_lemma.r")   XXX um, don't think I need this
@@ -9,7 +10,7 @@ source("git/unmix/ept/normal.r")
 # with mean and variance m and v, respectively.
 # following Phoebus Dhrymes'
 # "Moments of Truncated (Normal) Distributions".
-norm.moment.match = function(m, v) {
+positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
 # v[v<0] = 1e8   # XXX hack
   s = sqrt(v)
@@ -23,10 +24,11 @@ norm.moment.match = function(m, v) {
   r
 }
 
-# Messages constraining a variable to be positive.
-positive.factor = function(x) {
+# Messages constraining a variable to be positive
+# (but using canonical parameterization.)
+positive.moment.match.canonical = function(x) {
   mv = canonical.to.mean.and.variance(x)
-  mm = norm.moment.match(mv[,"m"], mv[,"v"])
+  mm = positive.moment.match(mv[,"m"], mv[,"v"])
   mean.and.variance.to.canonical(mm)
 }
 
@@ -72,12 +74,19 @@ print(colnames(r))
   mean.and.variance.to.canonical(r)
 }
 
-# Does unmixing when the constraints are
-#   Ax ~ Normal(-,-), x >= 0.
+# Does unmixing with a soft linear constraint.
+# Args:
+#   A, b, b.var - these give the constraint that
+#     Ax ~ Normal(b, b.var), x >= 0
+#     (For exact constraints, b.var can be 0.)
+#   prior.var - variance for the prior (can be Inf)
+# Returns: list with components
+#   m, v - the mean and variance of the posterior
+#   update.stats - matrix with mean and variance of update sizes
 unmix.ep = function(A, b, b.var, prior.var=Inf) {
   n = ncol(A)
 
-  # prior
+  # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
 
   # the term approximations (initially flat)
@@ -91,16 +100,16 @@ unmix.ep = function(A, b, b.var, prior.var=Inf) {
 
   for(iter in 1:100) {
     terms.1 = q - terms
-    mm = positive.factor(terms.1)
+    mm = positive.moment.match.canonical(terms.1)
 
     # update terms
-    terms = terms + (mm - q)
+    terms = (mm - q) + terms
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )
   }
 
   mv = canonical.to.mean.and.variance(q)
-  list(m = mv[,"m"], v = mv[,"v"])
+  list(m = mv[,"m"], v = mv[,"v"], update.stats = NULL)
 }
 
