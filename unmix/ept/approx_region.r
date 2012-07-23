@@ -35,10 +35,12 @@ positive.moment.match.canonical = function(x) {
 # Original, slower, version of this.
 mvnorm.2.diag = function(m, v, A, b, b.var) {
   V = Diagonal( x = v )
-
+# print(v)
   # first, compute (A V A^T + v I) ^ -1, which I'll call B
   M = as.matrix( A %*% V %*% t(A) + Diagonal(x = b.var) )
+
   B = pseudoinverse(M)
+#  B = chol2inv(chol(M))
 
   # ??? can we avoid computing the whole covariance here?
   cbind(m = m - as.vector(V %*% t(A) %*% B %*% (A %*% m - b)),
@@ -47,19 +49,19 @@ mvnorm.2.diag = function(m, v, A, b, b.var) {
 
 # Distribution of x ~ N(m,v) | Ax ~ N(b,b.var).
 lin.constraint.1 = function(m, v, A, b, b.var) {
-print("m =")
-print(m)
-print("v =")
-print(v)
+# print("m =")
+# print(m)
+# print("v =")
+# print(v)
   # first, compute (A V A^T + diag(v)) ^ -1, which I'll call B
   M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
   M.chol = chol(M)
 
-print("M =")
-print(M)
+# print("M =")
+# print(M)
   r = cbind(m = m - v * as.vector(t(A) %*% solve(M.chol, A %*% m - b)),
     v = v - v * apply(A * solve(M.chol, A), 2, sum) * v)
-print(colnames(r))
+# print(colnames(r))
   r
 }
 
@@ -68,9 +70,9 @@ lin.constraint.factor = function(A, b, b.var) function(x) {
   mv = canonical.to.mean.and.variance(x)
   r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
 #  r = lin.constraint.1(mv[,"m"], mv[,"v"], A, b, b.var)
-print("r =")
-print(r)
-print(colnames(r))
+# print("r =")
+# print(r)
+# print(colnames(r))
   mean.and.variance.to.canonical(r)
 }
 
@@ -98,18 +100,29 @@ approx.region = function(A, b, b.var, prior.var=Inf) {
   # the posterior
   q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
 
-  for(iter in 1:100) {
+  # convergence statistics
+  update.stats = NULL
+
+  for(iter in 1:10) {
+    terms.old = terms
+
     terms.1 = q - terms
     mm = positive.moment.match.canonical(terms.1)
 
     # update terms
+#    terms = 0.5 * (mm - q) + 0.5 * terms
     terms = (mm - q) + terms
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )
+
+    # FIXME: show change in mean and variance separately?
+    diff = max(abs(terms.old - terms))
+cat(signif(diff,2), " ")
+    update.stats = rbind(update.stats, diff)
   }
 
   mv = canonical.to.mean.and.variance(q)
-  list(m = mv[,"m"], v = mv[,"v"], update.stats = NULL)
+  list(m = mv[,"m"], v = mv[,"v"], update.stats = update.stats)
 }
 
