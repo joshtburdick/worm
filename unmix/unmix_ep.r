@@ -6,6 +6,7 @@ load("git/unmix/image/sort_matrix.Rdata")
 source("git/unmix/seq/sortPurityCorrection.r")
 
 source("git/unmix/ept/approx_region.r")
+# source("R/unmix/ep/ep.diag.3.r")
 
 # scale rows of this to add up to 1
 m = sort.matrix / apply(sort.matrix, 1, sum)
@@ -36,9 +37,14 @@ unmix.ep = function(m, x, x.var, output.dir) {
 
   for(g in rownames(x)) {
     cat(g, "\n")
-    r = approx.region(m1, x[g,], x.var[g,], prior.var=1e3)
+    r = approx.region(m1, x[g,], x.var[g,], prior.var=1000 * max(x.var[g,]))
     ep = list(m = r$m, v = r$v, x = x, x.var = x.var,
       pos.terms = r$pos.terms, update.stats = r$update.stats)
+
+#    ep = ep.diag.3(rep(1e-1, 1340), 1e3 * diag(1340),
+#      m1, x[g,], b.var=x.var[g,],
+#      max.iters=30, converge.tolerance=1e-5)
+
     save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
   }
 }

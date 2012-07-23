@@ -3,7 +3,7 @@
 library(Matrix)
 library(corpcor)
 
-source("git/unmix/ept/normal.r")
+# source("git/unmix/ept/normal.r")
 # source("git/unmix/ept/matrix_inv_lemma.r")   XXX um, don't think I need this
 
 # Moment-matches a normal, truncated at x >= 0,
@@ -35,7 +35,7 @@ positive.moment.match.canonical = function(x) {
 # Original, slower, version of this.
 mvnorm.2.diag = function(m, v, A, b, b.var) {
   V = Diagonal( x = v )
-# print(v)
+
   # first, compute (A V A^T + v I) ^ -1, which I'll call B
   M = as.matrix( A %*% V %*% t(A) + Diagonal(x = b.var) )
 
@@ -88,6 +88,8 @@ lin.constraint.factor = function(A, b, b.var) function(x) {
 approx.region = function(A, b, b.var, prior.var=Inf) {
   n = ncol(A)
 
+debug.dir = "~/tmp/approx.region.debug"
+
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
 
@@ -103,15 +105,25 @@ approx.region = function(A, b, b.var, prior.var=Inf) {
   # convergence statistics
   update.stats = NULL
 
-  for(iter in 1:10) {
+  for(iter in 1:50) {
     terms.old = terms
 
     terms.1 = q - terms
-    mm = positive.moment.match.canonical(terms.1)
 
+    if (!is.null(debug.dir)) {
+      system(paste("mkdir -p", debug.dir))
+      ep.trace = list(terms=terms, terms.1=terms.1, q=q)
+      save(ep.trace, file=paste(debug.dir, "/", iter, ".Rdata", sep=""))
+    }
+
+    mm = positive.moment.match.canonical(terms.1)
+#    mm[ is.nan(mm[,"e1"]) | is.nan(mm[,"e2"]) |
+#      is.infinite(mm[,"e1"]) | is.infinite(mm[,"e2"]) , ] = 0
+
+# print(as.vector(mm))
     # update terms
-#    terms = 0.5 * (mm - q) + 0.5 * terms
-    terms = (mm - q) + terms
+    terms = 0.5 * (mm - q) + 0.5 * terms
+#    terms = (mm - q) + terms
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )
@@ -120,6 +132,7 @@ approx.region = function(A, b, b.var, prior.var=Inf) {
     diff = max(abs(terms.old - terms))
 cat(signif(diff,2), " ")
     update.stats = rbind(update.stats, diff)
+
   }
 
   mv = canonical.to.mean.and.variance(q)
