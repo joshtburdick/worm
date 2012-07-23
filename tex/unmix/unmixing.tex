@@ -22,7 +22,6 @@ be the volume of the $j$th cell. Then we define
 M_{ij} = \frac{S_{ij} V_j}{ \sum\limits_{i}^{} S_{ij} V_j }
 \]
 
-
 \subsubsection*{Image thresholding}
 
 We estimated $S_{ij}$ based on 29 movies.
@@ -78,17 +77,19 @@ above), then we can obtain $G$'s distribution, which is also normal.
 Note that this can result in estimates of $G$ which are negative; in such
 cases, we set the mean to zero.
 
-\subsection*{Unmixing using the pseudoinverse}
+In cases where the sort purity wasn't measured, we assumed it was 100\%.
 
+\subsection*{Unmixing using the pseudoinverse}
 
 
 
 
 \subsection*{Unmixing using EP}
 
-
-
-
+Convergence of EP can be problematic. We 
+used damping (with $\alpha = 0.5$) to improve convergence.
+We used a prior that was 1,000 times the maximum estimated variance; using a flat
+prior caused numerical problems.
 
 
 \end{document}
