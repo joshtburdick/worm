@@ -47,6 +47,23 @@ mvnorm.2.diag = function(m, v, A, b, b.var) {
     v = as.vector(diag(V - V %*% t(A) %*% B %*% A %*% V)))
 }
 
+# Adds in a constraint of the form Ax ~ b, and returns the
+# full covariance matrix.
+mvnorm.2 = function(m, v, A, b, b.var) {
+  V = Diagonal( x = v )
+
+  # first, compute (A V A^T + v I) ^ -1, which I'll call B
+  M = as.matrix( A %*% V %*% t(A) + Diagonal(x = b.var) )
+
+  B = pseudoinverse(M)
+#  B = chol2inv(chol(M))
+
+  # ??? can we avoid computing the whole covariance here?
+  list(m = m - as.vector(V %*% t(A) %*% B %*% (A %*% m - b)),
+    V = V - V %*% t(A) %*% B %*% A %*% V)
+}
+
+
 # Distribution of x ~ N(m,v) | Ax ~ N(b,b.var).
 lin.constraint.1 = function(m, v, A, b, b.var) {
 # print("m =")
