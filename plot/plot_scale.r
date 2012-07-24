@@ -12,16 +12,21 @@ library(grid)
 #   xlab, ylab - labels
 #   cex - text size for labels
 plot.red.green.scale = function(x, y, width, height,
-  xcol="green", ycol="red", xlim, ylim, xlab, ylab,
+  xcol="green", ycol="red", xmax, ymax, xlab, ylab,
   cex) {
+
+  pushViewport(viewport(x=x, y=y, width=width, height=height, name="scale"))
 
   a = matrix(rep(0:8, 9) / 8, nrow=9)
   col = matrix(rgb(as.vector(1-a), as.vector(t(a)), 0, maxColorValue=1), nrow=9)
-print(col)
 
-  grid.raster(x=x, y=y, width=width, height=height,
-    col)
+  grid.raster(x=0.5, y=0.5, width=1, height=1, col)
+  grid.xaxis(c(0,1), label=c(0,xmax))
+  grid.yaxis(c(0,1), label=c(0,ymax))
+  grid.text(xlab, x=0.5, y=0, vjust="top") 
+  grid.text(ylab, x=0, y=0.5, hjust="right") 
 
+  popViewport()
 }
 
 
