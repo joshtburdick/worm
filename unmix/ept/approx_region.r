@@ -12,7 +12,7 @@ library(corpcor)
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
-# v[v<0] = 1e8   # XXX hack
+# v[v<0] = 1e10   # XXX hack
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
@@ -71,13 +71,18 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
 # print("v =")
 # print(v)
   # first, compute (A V A^T + diag(v)) ^ -1, which I'll call B
-  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
-  M.chol = chol(M)
+#  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
+  M = A %*% (v * t(A))
+  diag(M) = diag(M) + b.var
+#  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
+
+  # using Cholesky would be slightly faster, but less stable
+  M.qr = qr(M)
 
 # print("M =")
 # print(M)
-  r = cbind(m = m - v * as.vector(t(A) %*% solve(M.chol, A %*% m - b)),
-    v = v - v * apply(A * solve(M.chol, A), 2, sum) * v)
+  r = cbind(m = m - v * as.vector(t(A) %*% solve(M.qr, A %*% m - b)),
+    v = v - v * apply(A * solve(M.qr, A), 2, sum) * v)
 # print(colnames(r))
   r
 }
@@ -85,8 +90,8 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
 # Message constraining "Ax ~ N(b, b.var)".
 lin.constraint.factor = function(A, b, b.var) function(x) {
   mv = canonical.to.mean.and.variance(x)
-  r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
-#  r = lin.constraint.1(mv[,"m"], mv[,"v"], A, b, b.var)
+#  r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
+  r = lin.constraint.1(mv[,"m"], mv[,"v"], A, b, b.var)
 # print("r =")
 # print(r)
 # print(colnames(r))
@@ -139,8 +144,8 @@ debug.dir = "~/tmp/approx.region.debug"
 
 # print(as.vector(mm))
     # update terms
-    terms = 0.5 * (mm - q) + 0.5 * terms
-#    terms = (mm - q) + terms
+#    terms = 0.5 * (mm - q) + 0.5 * terms
+    terms = (mm - q) + terms
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )

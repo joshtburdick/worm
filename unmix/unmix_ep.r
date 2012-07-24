@@ -37,7 +37,8 @@ unmix.ep = function(m, x, x.var, output.dir) {
 
   for(g in rownames(x)) {
     cat(g, "\n")
-    r = approx.region(m1, x[g,], x.var[g,], prior.var=1000 * max(x.var[g,]))
+try({
+    r = approx.region(m1, x[g,], x.var[g,], prior.var=100 * max(x.var[g,]))
     ep = list(m = r$m, v = r$v, x = x, x.var = x.var,
       pos.terms = r$pos.terms, update.stats = r$update.stats)
 
@@ -46,20 +47,61 @@ unmix.ep = function(m, x, x.var, output.dir) {
 #      max.iters=30, converge.tolerance=1e-5)
 
     save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
+})
   }
 }
 
+# Given an EP result:
+# - expands the full covariance matrix (by adding in the "Ax ~ b" constraint)
+# - scales by cell size, and
+# - and adds columns that were removed (because of zeros in cell-sorting matrix)
+ep.summarize = function(ep, m) {
+
+
+
+
+  list(m =  , V = )
+}
+
 # Summarizes all the results in one directory.
-# Side effects:
-summarize = function(result.dir) {
+# Args:
+#   result.dir - directory of results to summarize
+#   output.file - where to write output to
+#   m - the original sorting matrix which was used
+# Side effects: writes an .Rdata file containing an array "ep.summary",
+#   with dimensions "gene", "cell", and "stat", where "stat" includes
+#   mean and variance of the per-cell and lineage totals
+ep.summarize.dir = function(result.dir, output.file, m) {
+  files = sort(list.files(result.dir, pattern=".Rdata"))
+  genes = sub(".Rdata$", "", files)
+
+  ep.summary = array(dim=c(nrow(expr.cell), length(lin.node.names), 4),
+    dimnames=c("movie", "cell", "stat"))
+  dimnames(a)[[1]] = genes
+  dimnames(a)[[2]] = colnames(m)
+  dimnames(a)[[3]] =
+    c("per.cell.mean", "per.cell.var", "lineage.mean.total", "lineage.var.total")
+
+
+
+
 
 
 }
 
+
+# these are for getting the names of genes to unmix
+load("R/unmix/comp_paper/expr.cell.Rdata")
+enriched.fraction = read.table("R/unmix/sort_paper/unmix/fraction/enriched.fraction.tsv",
+  header=TRUE, sep="\t", row.names=1, as.is=TRUE)
+
 # a test
 if (TRUE) {
-  g = c("pha-4", "ceh-6", "irx-1")
+  g = union(rownames(expr.cell), rownames(enriched.fraction))
+  g = intersect(g, rownames(r.corrected$r.mean))
+  g = g[1:20]
+#  g = c("cnd-1", "cwn-1")
   unmix.ep(m, r.corrected$r.mean[g,], r.corrected$r.var[g,],
-    "git/unmix/ep.20120723")
+    "git/unmix/ep.20120724b")
 }
 
