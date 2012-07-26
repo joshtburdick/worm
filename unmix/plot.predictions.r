@@ -1,18 +1,33 @@
 # Plots some predictions, along with the input data which went into them.
 
-load("R/unmix/sort_paper/unmix/run/ep.20120621.Rdata")
-ep.prediction = m
+output.dir = "git/unmix/plot/ep.20120724/"
 
 source("R/lineage/tree_utils.r")
-source("R/plot/plot_expr.r")
+source("git/plot/plot_expr.r")
 
-source("R/unmix/sort_paper/unmix/run/pseudoinverse.20120615.r")
-x.p[ is.na(x.p) ] = 0
-x.p[ x.p < 0 ] = 0
-load("R/unmix/sort_paper/unmix/run/pseudoinverse.20120626.Rdata")
-trunc.pseudo.p[ trunc.pseudo.p < 0 ] = 0
+load("git/unmix/image/sort_matrix.Rdata")
 
-output.dir = "R/unmix/sort_paper/unmix/plot/ep.and.pseudoinverse/"
+# the read depth, with and without correction for sorting purity
+source("git/unmix/seq/sortPurityCorrection.r")
+
+# definition of which cell contains which gene
+gene.on.off = as.matrix(read.csv("R/unmix/sort_paper/unmix/image/sort.matrix.csv.gz",
+  as.is=TRUE, row.names=1))
+# compute "negative" portions
+gene.on.off = {
+  negative.fractions = 1 - gene.on.off
+  rownames(negative.fractions) = paste(rownames(gene.on.off), "_minus", sep="")
+  rbind(gene.on.off, negative.fractions[-1,])
+}
+
+# actual images
+load("R/unmix/comp_paper/expr.cell.Rdata")
+
+# the pseudoinverse
+source("git/unmix/unmix.r")
+
+# the EP predictions
+load("git/unmix/ep.20120724.summary.Rdata")
 
 abplp.reporters = read.table("R/unmix/sort_paper/ABplp.reporters.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
@@ -29,60 +44,49 @@ enriched.lfe = read.table(
 
 # Plots relative expression of markers in various cells.
 # Args:
-#   reporters - the reporters to plot, and their colors
-#   m - cell sorting matrix
+#   M - cell sorting matrix
 #   x.f - the expression of the relevant genes, as enrichment relative
 #     to control (adjusted for the number of cells sorted)
+#   reporters - the reporters to include (??? maybe not used)
 #   root - the root of the lineage tree
 #   read.counts - the number of reads for this gene
 # Side effects: plots a graph of the sorting fractions, colored appropriately
-plot.expr.in.fractions = function(m, x.f, reporters,
+plot.expr.in.fractions = function(M, x.f, reporters,
   root, read.counts) {
-# print(x.f)
+
   leaf.cells = c(lin.list[[root]], recursive=TRUE)
 
-# m1 = m[reporters$gene,leaf.cells]
-# print(dim(m1))
   # use weighted average for each leaf cell
   cell.to.leaf = make.cell.to.leaf.matrix(leaf.paths)
-  m1 = m[reporters$gene,] %*% cell.to.leaf[,leaf.cells]
+  m1 = M[reporters,] %*% cell.to.leaf[,leaf.cells]
 
   # shading by log-ratio of read counts
   m.shading = log2( (read.counts+1) / (read.counts["all"]+1) ) / 2
-  m.shading = m.shading[ reporters$gene ]
+  m.shading = m.shading[ reporters ]
 
   m.shading[ m.shading < -1 ] = -1
   m.shading[ m.shading > 1 ] = 1
-# print(m.shading)
+
   # set up axes
-  plot(1,1, xlim=c(1, length(leaf.cells)), ylim=c(0, length(reporters$gene)+1),
+  plot(1,1, xlim=c(1, length(leaf.cells)), ylim=c(0, length(reporters)+1),
     type="n", xaxt="n", yaxt="n", main="", xlab="", ylab="")
-  for(i in 1:nrow(reporters)) {
-    gene = reporters[i,"gene"]
+
+  # plot amount of each reporter
+  for(i in 1:length(reporters)) {
+    gene = reporters[i]
     x1 = 1:length(leaf.cells)
-#    y1 = m.shading[i] * m1[reporters[i,"gene"],] +
-#      (1 - m.shading[i]) * (1 - m1[reporters[i,"gene"]])
     y.p = m.shading[gene] * m1[gene,]
     y.n = (- m.shading[gene]) * m1[gene,]
-#    y.p[ y.p < 0.5 ] = 0
-#    y.n[ y.n < 0.5 ] = 0
-#cat(reporters[i,"gene"], ": ")
-#cat("m.shading[i] = ", m.shading[gene], "\n")
-#cat("max y.p = ", max(y.p), "\n")
-#cat("\n")
+
     col = if (m.shading[gene] >= 0) rgb(y.p, 0, 0) else rgb(0, 0, y.n)
 
-    segments(x1, i, x1, i+1, lwd=6, lend=2, col=col)   # rgb(y.p, 0, y.n))
-
-#      col=rgb(y1 %*% t(col2rgb(reporters[i,"color"])) / 255))
-#     col=rgb(m.shading[i] * m1[reporters[i,"gene"],] %*% t(col2rgb(reporters[i,"color"])) / 255))
-#      col=rgb(m1[reporters[i,"gene"],] %*% t(col2rgb(reporters[i,"color"])) / 255))
+    segments(x1, i, x1, i+1, lwd=6, lend=2, col=col)
   }
 
   # names of the reporters
-  axis(2, at=1:nrow(reporters),
-    labels=paste(sub("_minus", " -", reporters$gene),
-    "(", round(read.counts[reporters$gene]), ")"),
+  axis(2, at=1:length(reporters),
+    labels=paste(sub("_minus", " -", reporters),
+    "(", round(read.counts[reporters]), ")"),
     las=2, cex.axis=0.8)
 }
 
@@ -91,19 +95,12 @@ plot.prediction.and.fractions.all = function(reporters, m.cell, x.fraction,
   x.actual, x.prediction, root, read.counts) {
 #  root = "ABprp"
 
-  # various neurotransmitters and receptors, etc.
-  genes = c("ceh-10","ttx-3","ceh-23","sra-11","kal-1","hen-1","unc-17", "ser-2",
-    "ser-1", "ser-4", "ser-5", "ser-7", "dop-1", "dop-2", "dop-3", "dop-4", "dop-5",
-    "dop-6", "octr-1", "ser-3", "ser-6", "ser-2", "tyra-2", "tyra-3", "lgc-55",
-    "F59D12.1", "T21B4.4", "sprr-1", "sprr-2", "sprr-3",
-    "gar-1", "gar-2", "gar-3", "lev-1", "unc-29", "acr-2", "acr-3")
+#  genes = c("hlh-3", "unc-4", rownames(expr.cell), rownames(enriched.lfe))
+  genes = dimnames(ep.summary)[[1]]
+  genes = c("acbp-6", "acs-17", "acy-2", "aptf-1", "col-144", "C06G8.1", "C25B8.5",
+    "C41G11.1", "ceh-43", "col-105", "cpn-3", "mec-17", "mls-1")
 
-  genes = c("hlh-3", "unc-4", rownames(expr.cell), rownames(enriched.lfe))
-#  genes = rownames(ep.prediction)
-
-#  for(g in intersect(rownames(x.actual), rownames(x.prediction))) {
-#  for(g in intersect(colnames(x.fraction), intersect(rownames(x.actual), rownames(x.prediction)))) {
-  for(g in sort(unique(intersect(genes, rownames(x.prediction))))) {
+  for(g in sort(unique(intersect(genes, dimnames(ep.summary)[[1]])))) {
     cat(g, "")
 
     rownames(cell.time.on.off)[rownames(cell.time.on.off)=="NA"] = "P0"
@@ -113,11 +110,6 @@ plot.prediction.and.fractions.all = function(reporters, m.cell, x.fraction,
     # plot actual expression, if it's available
 if (g %in% rownames(x.actual)) {
     x1 = x.actual[g,lin.node.names]
-#    x.max = max(x1[ c(lin.list[[root]], recursive=TRUE) ], na.rm=TRUE)
-#    x.max = max(x1, na.rm=TRUE)
-#    x1[ x1 < 0 ] = 0
-#    x1[ x1 >= x.max ] = x.max
-# print(range(x1, na.rm=TRUE))
     col = rgb(scale.to.unit(x1), 0*x1, 0*x1)
     names(col) = colnames(x.actual)
     r1 = r
@@ -129,15 +121,14 @@ else {
 }
 
   # possibly plot EP prediction
-  if (g %in% rownames(ep.prediction)) {
+  if (g %in% dimnames(ep.summary)[[1]]) {
 
-    # plot prediction
-    x1 = ep.prediction[g,]
+    x1 = ep.summary[g,,"per.cell.mean"]
 
-#    x.max = max(x1[ c(lin.list[[root]], recursive=TRUE) ], na.rm=TRUE)
-    x.max = max(x1, na.rm=TRUE)         # using the overall maximum for now
+    x.max = max(x1, na.rm=TRUE)       # using the overall maximum for now
     x1[ x1 < 0 ] = 0
     x1[ x1 >= x.max ] = x.max
+
     col = rgb(scale.to.unit(x1), 0*x1, 0*x1)
     names(col) = colnames(x.prediction)
     r1 = r
@@ -162,31 +153,32 @@ else {
     plot.segments(r1, main=paste(g, "pseudoinverse prediction"), root=root, times=c(-25, 400), lwd=4)
 
     # plot the expression going into this
-    plot.expr.in.fractions(m.cell, x.fraction[g,], reporters, root, read.counts[g,])
+    plot.expr.in.fractions(m.cell, x.fraction[g,], reporters$gene, root, read.counts[g,])
   }
 }
 
 plot.it = function() {
+  system(paste("mkdir -p", output.dir))
 
   pdf(paste(output.dir, "/predictions_P0.pdf", sep=""), width=12, height=12.5)
   par(mfrow=c(4,1))
   par(mar=c(0.1,8,3,3)+0.1)
-  plot.prediction.and.fractions.all(abplp.reporters, m.cell.orig, r.m.scaled,
-    expr.cell, trunc.pseudo.p, "P0", r1)
+  plot.prediction.and.fractions.all(abplp.reporters, gene.on.off, r,
+    expr.cell, x.pseudoinverse, "P0", r)
   dev.off()
-return()
+
   pdf(paste(output.dir, "/predictions_ABplp.pdf", sep=""), width=5, height=12.5)
   par(mfrow=c(4,1))
   par(mar=c(0.1,8,3,3)+0.1)
-  plot.prediction.and.fractions.all(abplp.reporters, m.cell.orig, r.m.scaled,
-    expr.cell, trunc.pseudo.p, "ABplp", r1)
+  plot.prediction.and.fractions.all(abplp.reporters, gene.on.off, r,
+    expr.cell, x.pseudoinverse, "ABplp", r)
   dev.off()
 
   pdf(paste(output.dir, "/predictions_ABprp.pdf", sep=""), width=5, height=12.5)
   par(mfrow=c(4,1))
   par(mar=c(0.1,8,3,3)+0.1)
-  plot.prediction.and.fractions.all(abplp.reporters, m.cell.orig, r.m.scaled,
-    expr.cell, trunc.pseudo.p, "ABprp", r1)
+  plot.prediction.and.fractions.all(abplp.reporters, gene.on.off, r,
+    expr.cell, x.pseudoinverse, "ABprp", r)
   dev.off()
 }
 

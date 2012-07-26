@@ -1,5 +1,7 @@
 # Unmixing using the pseudoinverse.
 
+library(corpcor)
+
 load("git/unmix/image/sort_matrix.Rdata")
 
 # the read depth, with and without correction for sorting purity
@@ -33,17 +35,22 @@ unmix.lsei = function(M, b, b.var) {
 }
 
 # scale rows of this to add up to 1
-m = sort.matrix / apply(sort.matrix, 1, sum)
+M = sort.matrix / apply(sort.matrix, 1, sum)
 
 # limit to cases in which we have measurements
-m = m[ colnames(r.corrected$r.mean) , ]
+M = M[ colnames(r.corrected$r.mean) , ]
 
 x.pseudoinverse = { 
-  x = r.corrected$r.mean %*% pseudoinverse(t(m))
+  x = r.corrected$r.mean %*% pseudoinverse(t(M))
+
+  # scaling to get "average read depth / cell"
+#  x = 1341 * t( t(x) / as.vector(M["all",]) )
+
   x[,"P0"] = 0
+  x[ is.na(x) ] = 0
+  x[ x < 0 ] = 0
   x
 }
-
 
 test1 = function() {
   x11()
@@ -60,3 +67,4 @@ test1 = function() {
 }
 
 # foo = test1()
+

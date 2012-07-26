@@ -1,5 +1,7 @@
 # Unmixes using EP.
 
+source("R/lineage/tree_utils.r")
+
 load("git/unmix/image/sort_matrix.Rdata")
 
 # the read depth, with and without correction for sorting purity
@@ -31,13 +33,13 @@ unmix.ep = function(M, x, x.var, output.dir) {
   system(paste("mkdir -p", output.dir))
 
   # restrict to cases in which the column sums to > 0
-  nz = apply(m, 2, sum) > 0
-  m1 = m[ , nz ]
+  nz = apply(M, 2, sum) > 0
+  M1 = M[ , nz ]
 
   for(g in rownames(x)) {
     cat("\n", g, "")
 try({
-    r = approx.region(m1, x[g,], x.var[g,], prior.var=100 * max(x.var[g,]))
+    r = approx.region(M1, x[g,], x.var[g,], prior.var=Inf)    # 100 * max(x.var[g,]))
     ep = list(g = g, m = r$m, v = r$v, x = x[g,], x.var = x.var[g,],
       t = r$t, update.stats = r$update.stats)
 
@@ -74,8 +76,8 @@ ep.get.result = function(ep, M) {
   m[nz] = r$m
   V[nz,nz] = r$V
 
-# XXX this correction doesn't seem to be needed
-#  m = m / as.vector(M1["all",])
+# correct for cell volume?
+#  m = m / as.vector(M["all",])
 #  V = V / as.vector(M["all",])
 #  V = t( t(V) / as.vector(M["all",] ))
 
@@ -103,7 +105,7 @@ ep.summarize.dir = function(result.dir, output.file, M) {
   ep.summary = array(dim=c(length(genes), length(lin.node.names), 4),
     dimnames=c("gene", "cell", "stat"))
   dimnames(ep.summary)[[1]] = genes
-  dimnames(ep.summary)[[2]] = colnames(m)
+  dimnames(ep.summary)[[2]] = colnames(M)
   dimnames(ep.summary)[[3]] =
     c("per.cell.mean", "per.cell.var", "lineage.mean.total", "lineage.var.total")
 
@@ -131,9 +133,9 @@ enriched.fraction = read.table("R/unmix/sort_paper/unmix/fraction/enriched.fract
 run.ep = function() {
   g = union(rownames(expr.cell), rownames(enriched.fraction))
   g = intersect(g, rownames(r.corrected$r.mean))
-#  g = g[1:20]
+  g = g[1:20]
   unmix.ep(M, r.corrected$r.mean[g,], r.corrected$r.var[g,],
-    "git/unmix/ep.20120724")
+    "git/unmix/ep.20120726a")
 
 #  ep.summarize.dir("git/unmix/ep.20120724/", "git/unmix/ep.20120724.summary.Rdata", M)
 }
