@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+
+\section*{Comparing sorted expression with temporal data}
+
+In constructing the cell-sorting matrix, we need an estimate of which cells
+were actually included in the sorting. Earlier cells, being larger, presumably
+are less likely to be included.
+
+Therefore, we compare the FACS-sorted data with a timecourse of expression
+in embryogenesis.
+
+\subsection*{Normalization}
+
+It is not obvious how to normalize RNA-seq data in a biologically useful way.
+Presumably, if $r$ out of $N$ reads map to a gene, then the ratio $r/N$ is
+proportional to the amount of RNA from that transcript. The number of copies
+of an individual RNA per cell also depends on the mixture of splice forms
+being expressed, and on the total amount of RNA per cell (which in turn
+depends on cell size, among other things.)
+
+Robinson and Oshlack suggest using a robust mean of log-transformed read counts
+in order to normalize between RNA-seq experiments; this is called TMM-normalization.
+To see if this approach is
+relevant here, we plot log-transformed expression of pairs of timepoints.
+Some examples are shown below.
+
+\includegraphics[width=\textwidth]{logRatioPlots1.pdf}
+
+For most pairs of genes, there is a subset of genes that doesn't change between
+timepoints, and this subset appears larger for adjacent timepoints. However,
+many genes are switching on and off between more distant timepoints. This suggests
+that TMM-normalization may require modification in this case.
+
+\subsection*{Determining time-specific genes}
+
+Genes in the developing embryo have many patterns (CITE Baugh paper.)
+For the purpose of determining which time points are included in our time-specific
+data, a useful subset of genes are those which are on only at a specific time.
+To determine such a set, we fit each gene's (log transformed) expression
+profile to a normal curve.
+
+For now, we use the normalized coverage within a gene's bounds as a measure
+of expression, with the caveat that we are measuring proportion of expression per
+sample, which only corresponds approximately to transcript abundance.
+
+
+
+
+
+
+\end{document}
+
+
