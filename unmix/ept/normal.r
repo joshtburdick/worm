@@ -1,13 +1,12 @@
 # Normally-distributed variables, and related utilities.
 
-
-
 # Creates a multivariate normal vector variable.
 norm.var = function(n) {
-  b = matrix(0, nrow=3, ncol=n)
+  b = matrix(0, nrow=n, ncol=3)
   # XXX I didn't know what to call these, but named them this, since
   # Wikipedia calls the canonical parameters "eta"
-  rownames(b) = c("n", "e1", "e2")
+  # ??? is "n" needed?
+  colnames(b) = c("n", "e1", "e2")
   list(b = b, observed=FALSE)
 }
 
@@ -24,9 +23,4 @@ canonical.to.mean.and.variance = function(a) {
   r[ r[,"v"] == Inf, "m" ] = 0
   r
 }
-
-
-
-
-
 
