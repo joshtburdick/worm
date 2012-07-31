@@ -1,6 +1,7 @@
 # Unmixing using the pseudoinverse.
 
 library(corpcor)
+library(limSolve)
 
 load("git/unmix/image/sort_matrix.Rdata")
 
@@ -20,15 +21,16 @@ unmix.lsei = function(M, b, b.var) {
 
   for(g in rownames(b)) {
     cat(g, "")
-    A1 = M/sqrt(as.vector(b.var[g,]))
-    B1 = b[g,]/as.vector(b.var[g,])
+    try({
+      A1 = M/sqrt(as.vector(b.var[g,]))
+      B1 = b[g,]/as.vector(b.var[g,])
 
 #    r = lsei(A = rbind(A1, 1e-6 * diag(ncol(M))), B = c(B1, rep(0, ncol(M))),
 #      G = Diagonal(ncol(M)), H = rep(0, ncol(M)))
-    r = lsei(A = A1, B = B1,
-      G = Diagonal(ncol(M)), H = rep(0, ncol(M)))
-
-    x[g,] = r$X
+      r = lsei(A = A1, B = B1,
+        G = Diagonal(ncol(M)), H = rep(0, ncol(M)))
+      x[g,] = r$X
+    })
   }
 
   x
@@ -64,6 +66,33 @@ test1 = function() {
     plot(r[g,], type="h", main=g)
   }
   r
+}
+
+embryo.timeseries = read.table("git/unmix/seq/timing/embryo.timeseries.tsv.gz",
+  sep="\t", header=TRUE, row.names=1, as.is=TRUE)
+time.points = c(0,30,60,90,120,140,180,240,270,300,330,360,390,
+  420,450,480,540,570,600,630,660,690,720)
+# colnames(embryo.timeseries) = time.points
+embryo.timeseries = embryo.timeseries[ rownames(r) , ]
+
+# normalize to "ppm"
+embryo.timeseries =
+  t( t(embryo.timeseries) / (apply(embryo.timeseries,2,sum) / 1e6) )
+g1 = intersect(rownames(embryo.timeseries), rownames(r.corrected$r.mean))
+
+pseudoinverse.with.time = function() {
+  load("git/unmix/image/time_sort_matrix.Rdata")
+
+# scale rows of this to add up to 1
+  M.t = time.sort.matrix / apply(time.sort.matrix, 1, sum)
+  M.t = rbind(M, M.t)
+
+
+
+  x[,"P0"] = 0
+  x[ is.na(x) ] = 0
+  x[ x < 0 ] = 0
+  x
 }
 
 # foo = test1()
