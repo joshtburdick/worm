@@ -22,6 +22,21 @@ be the volume of the $j$th cell. Then we define
 M_{ij} = \frac{S_{ij} V_j}{ \sum\limits_{i}^{} S_{ij} V_j }
 \]
 
+\subsubsection*{Including temporal information}
+
+We attempted to increase the temporal resolution of our predictions
+by including RNA-seq data from precisely-staged embryos.
+This included 23 timepoints spaced between zero and six hours after hatching.
+We only included the timepoints up until seven hours, which is approximately
+when enclosure occurs.
+
+These embryos sequenced in that experiment were grown at $20^{\circ}$C.
+Since our image data were aligned to the lineage of an embryo which was
+grown at the same temperature, the data sets theoretically should be fairly
+well aligned.
+We did not attempt to align the timepoints more precisely with our
+image data. However, adjacent timepoints are fairly highly correlated.
+
 \subsubsection*{Image thresholding}
 
 We estimated $S_{ij}$ based on 29 movies.
@@ -35,12 +50,15 @@ one minus the probability of a cell being in a positive fraction.
 
 We assumed that the amount of RNA in each cell was proportional to the cell's volume,
 times the number of time steps that the cell existed.
-We estimated cell volume by assuming that each division was exactly equal (although
-this is clearly approximate), and so
+We estimated cell volume by assuming that each division was exactly equal, and so
 
 \[
 V_j = 2^{-\mathrm{branchlength}}
 \]
+
+This is an approximation which seems somewhat unrealistic: for instance, it predicts
+that Z3 (which has undergone five divisions) has sixteen times the volume of 
+ABalaaaala (which has undergone nine divisions.)
 
 \subsubsection*{Estimating biological noise between measurements}
 
@@ -74,21 +92,52 @@ F = pG + (1-p)S
 If we assume that $S$ and $F$ are normally distributed (with variance estimated as described
 above), then we can obtain $G$'s distribution, which is also normal.
 
-Note that this can result in estimates of $G$ which are negative; in such
+Our estimate of $G$ will be smaller than our estimate of $F$.
+Indeed, this can result in estimates of $G$ which are negative; in such
 cases, we set the mean to zero.
 
 In cases where the sort purity wasn't measured, we assumed it was 100\%.
+This means we will underestimate the depletion of a gene in a fraction,
+and so presumably our estimate will be less tissue-specific.
 
-\subsection*{Unmixing using the pseudoinverse}
+\newpage
 
+\subsection*{Methods of unmixing}
+
+We tried several methods of estimating the expression in each cell, based
+on the expression in fractions.
+
+Not all 1,341 cells present at hatch were included in our measurements,
+which are unlikely to include cells after ventral enclosure (around 400 minutes.)
+We assumed enclosure happened at 420 minutes, including all cells born
+before that time except P0; this includes 1,312 cells.
+
+If a gene's expression in a fraction was zero, we assumed that the expression
+of that gene in all cells in that fraction was zero.
+
+\subsection*{Using the pseudoinverse}
+
+\[
+x = M^\dagger G
+\]
+
+This may result in negative predictions; we replaced any negative elements
+of $x$ with 0.
+
+\subsubsection*{Using the pseudoinverse, constraining $x \ge 0$}
 
 
 
 \subsection*{Unmixing using EP}
 
+
+
+
+
 Convergence of EP can be problematic. We 
 used damping (with $\alpha = 0.5$) to improve convergence.
-We used a prior that was 1,000 times the maximum estimated variance; using a flat
+We used a prior that was 1,000 times the maximum estimated variance
+in any fraction; using a flat
 prior caused numerical problems.
 
 
