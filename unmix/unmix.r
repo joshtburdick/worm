@@ -18,16 +18,13 @@ cell.time.on.off =
 # XXX note that this is not in lineage order
 cells.to.include =
   rownames(cell.time.on.off)[ cell.time.on.off$on < t.cutoff ]
-M1 = M[ , cells.to.include ]
+M = sort.matrix[ , cells.to.include ]
 
+# scale rows of this to add up to 1
+M = M / apply(M, 1, sum)
 
-
-
-
-
-
-
-
+# limit to cases in which we have measurements
+M = M[ colnames(r.corrected$r.mean) , ]
 
 # Removes cells in any fractions having zero expression.
 # Args:
@@ -45,9 +42,6 @@ remove.zeros = function(M, b, b.var) {
     nz = !z)
 }
 
-
-
-
 # Unmixes using the constraints that x >= 0.
 # Args:
 #   M - the cell-sorting matrix
@@ -62,36 +56,20 @@ unmix.lsei = function(M, b, b.var) {
   for(g in rownames(b)) {
     cat(g, "")
     try({
-      A1 = M / sqrt(as.vector(b.var[g,]))
-      B1 = b[g,] / as.vector(b.var[g,])
-      A1[is.na(A1)] = 0
-      B1[is.na(B1)] = 0
-# print(dim(A1))
-# print(length(B1))
-      # find zero fractions, and cells in those fractions
-      z.fraction = B1 == 0
-      z = apply(M[z.fraction,], 2, sum) > 0
-print(z.fraction)
-# print(length(z))
-print(sum(!z))
+      # remove zeros implied whenever b == 0
+      a = remove.zeros(M, b[g,], b.var[g,])
 
       # estimate just the non-zero cells
-      r = lsei(A = A1[!z.fraction, !z], B = B1[!z.fraction],
-        G = Diagonal(sum(!z)), H = rep(0, sum(!z)), type=2)
+      r = lsei(A = a$M / sqrt(a$b.var), B = a$b / sqrt(a$b.var),
+        G = Diagonal(sum(a$nz)), H = rep(0, sum(a$nz)), type=2)
 
       # only write the cells in non-zero fractions
-      x[g,!z] = r$X
+      x[ g, a$nz ] = r$X
     })
   }
 
   x
 }
-
-# scale rows of this to add up to 1
-M = sort.matrix / apply(sort.matrix, 1, sum)
-
-# limit to cases in which we have measurements
-M = M[ colnames(r.corrected$r.mean) , ]
 
 x.pseudoinverse = { 
   x = r.corrected$r.mean %*% pseudoinverse(t(M))
@@ -99,7 +77,7 @@ x.pseudoinverse = {
   # scaling to get "average read depth / cell"
 #  x = 1341 * t( t(x) / as.vector(M["all",]) )
 
-  x[,"P0"] = 0
+#  x[,"P0"] = 0
   x[ is.na(x) ] = 0
   x[ x < 0 ] = 0
   x
@@ -108,17 +86,18 @@ x.pseudoinverse = {
 test1 = function() {
   x11()
   par(mfrow=c(5,1))
-  avg.expr = apply(r1, 1, mean)
-  set.seed(0)
+#  avg.expr = apply(r1, 1, mean)
+#  set.seed(0)
 #  genes = sample(names(avg.expr)[avg.expr > 100], 5)
   genes = c("pha-4", "ceh-26", "pal-1", "rgs-3")
-  r = unmix.lsei(m1, r1[genes,], r1[genes,])
+  r = unmix.lsei(M, r.corrected$r.mean[genes,], r.corrected$r.var[genes,])
   for(g in genes) {
     plot(r[g,], type="h", main=g)
   }
   r
 }
 
+# FIXME: move this elsewhere?
 embryo.timeseries = read.table("git/unmix/seq/timing/embryo.timeseries.tsv.gz",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE)
 time.points = c(0,30,60,90,120,140,180,240,270,300,330,360,390,
@@ -138,9 +117,7 @@ pseudoinverse.with.time = function() {
   M.t = time.sort.matrix / apply(time.sort.matrix, 1, sum)
   M.t = rbind(M, M.t)
 
-
-
-  x[,"P0"] = 0
+#  x[,"P0"] = 0
   x[ is.na(x) ] = 0
   x[ x < 0 ] = 0
   x
