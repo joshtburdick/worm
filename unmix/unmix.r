@@ -8,28 +8,79 @@ load("git/unmix/image/sort_matrix.Rdata")
 # the read depth, with and without correction for sorting purity
 source("git/unmix/seq/sortPurityCorrection.r")
 
-# Unmixes using the constraints.
+# limit sort matrix to only include things up to a certain time
+t.cutoff = 420
+cell.time.on.off =
+  read.csv(gzfile("data/image/cellTimeOnOff.csv.gz"),
+    row.names=1, as.is=TRUE)
+
+# which cells to include
+# XXX note that this is not in lineage order
+cells.to.include =
+  rownames(cell.time.on.off)[ cell.time.on.off$on < t.cutoff ]
+M1 = M[ , cells.to.include ]
+
+
+
+
+
+
+
+
+
+
+# Removes cells in any fractions having zero expression.
+# Args:
+#   M - the sort matrix
+#   b - expression in each fraction
+# Returns: a list with components
+#   M, b, b.var - the corresponding variables, with zeros
+#     removed from b (and M and b.var; M will also have
+#     columns corresponding to zero fractions removed)
+#   nz - which columns were zero
+remove.zeros = function(M, b, b.var) {
+  z.fraction = (b == 0)
+  z = apply(M[z.fraction,], 2, sum) > 0
+  list(M = M[ !z.fraction, !z ], b = b[!z.fraction], b.var = b.var[!z.fraction],
+    nz = !z)
+}
+
+
+
+
+# Unmixes using the constraints that x >= 0.
 # Args:
 #   M - the cell-sorting matrix
 #   b, b.var - the mean and variance of the expression in each fraction,
 #     as matrices with one row per gene, and one column per fraction
 # Returns: the estimated expression in each cell
 unmix.lsei = function(M, b, b.var) {
-  x = matrix(nrow = nrow(b), ncol=ncol(M))
+  x = matrix(0, nrow = nrow(b), ncol=ncol(M))
   rownames(x) = rownames(b)
   colnames(x) = colnames(M)
 
   for(g in rownames(b)) {
     cat(g, "")
     try({
-      A1 = M/sqrt(as.vector(b.var[g,]))
-      B1 = b[g,]/as.vector(b.var[g,])
+      A1 = M / sqrt(as.vector(b.var[g,]))
+      B1 = b[g,] / as.vector(b.var[g,])
+      A1[is.na(A1)] = 0
+      B1[is.na(B1)] = 0
+# print(dim(A1))
+# print(length(B1))
+      # find zero fractions, and cells in those fractions
+      z.fraction = B1 == 0
+      z = apply(M[z.fraction,], 2, sum) > 0
+print(z.fraction)
+# print(length(z))
+print(sum(!z))
 
-#    r = lsei(A = rbind(A1, 1e-6 * diag(ncol(M))), B = c(B1, rep(0, ncol(M))),
-#      G = Diagonal(ncol(M)), H = rep(0, ncol(M)))
-      r = lsei(A = A1, B = B1,
-        G = Diagonal(ncol(M)), H = rep(0, ncol(M)))
-      x[g,] = r$X
+      # estimate just the non-zero cells
+      r = lsei(A = A1[!z.fraction, !z], B = B1[!z.fraction],
+        G = Diagonal(sum(!z)), H = rep(0, sum(!z)), type=2)
+
+      # only write the cells in non-zero fractions
+      x[g,!z] = r$X
     })
   }
 
