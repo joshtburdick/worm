@@ -81,12 +81,14 @@ ep.summarize.dir = function(result.dir, output.file, M) {
   files = sort(list.files(result.dir, pattern=".Rdata"))
   genes = sub(".Rdata$", "", files)
 
-  num.cells = apply(cell.lineage.matrix, 1, sum)
+  # these are restricted to just the cells which were unmixed
+  num.cells = apply(cell.lineage.matrix, 1, sum)[colnames(M)]
+  clm = cell.lineage.matrix[ colnames(M), colnames(M) ]
 
-  ep.summary = array(dim=c(length(genes), length(lin.node.names), 4),
+  ep.summary = array(0, dim=c(length(genes), length(lin.node.names), 4),
     dimnames=c("gene", "cell", "stat"))
   dimnames(ep.summary)[[1]] = genes
-  dimnames(ep.summary)[[2]] = colnames(M)
+  dimnames(ep.summary)[[2]] = lin.node.names
   dimnames(ep.summary)[[3]] =
     c("per.cell.mean", "per.cell.var", "lineage.mean.total", "lineage.var.total")
 
@@ -95,11 +97,11 @@ ep.summarize.dir = function(result.dir, output.file, M) {
     ep = NULL
     load(paste(result.dir, "/", files[i], sep=""))
     r = ep.get.result(ep, M)
-    ep.summary[genes[i],,"per.cell.mean"] = r$m
-    ep.summary[genes[i],,"per.cell.var"] = diag(r$V)
-    ep.summary[genes[i],,"lineage.mean.total"] = cell.lineage.matrix %*% r$m / num.cells
-    ep.summary[genes[i],,"lineage.var.total"] =
-      diag(cell.lineage.matrix %*% r$V %*% t(cell.lineage.matrix)) / num.cells
+    ep.summary[genes[i],colnames(M),"per.cell.mean"] = r$m
+    ep.summary[genes[i],colnames(M),"per.cell.var"] = diag(r$V)
+    ep.summary[genes[i],colnames(M),"lineage.mean.total"] = clm %*% r$m / num.cells
+    ep.summary[genes[i],colnames(M),"lineage.var.total"] =
+      diag(clm %*% r$V %*% t(clm)) / num.cells
   }
 
   save(ep.summary, file=output.file)
@@ -114,7 +116,7 @@ run.ep = function() {
     cbind(r.corrected$v[g,], r.ts$v[g,]),
     "git/unmix/ep.with.time")
 
-#  ep.summarize.dir("git/unmix/ep.20120724/", "git/unmix/ep.20120724.summary.Rdata", M)
+  ep.summarize.dir("git/unmix/ep.facs.only/", "git/unmix/ep.facs.only.Rdata", M)
+  ep.summarize.dir("git/unmix/ep.with.time/", "git/unmix/ep.with.time.Rdata", M.facs.and.ts)
 }
-
 
