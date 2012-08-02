@@ -13,6 +13,10 @@ embryo.timeseries =
 # log-transformed expression
 log.ets = log2(1+embryo.timeseries)
 
+# expression data from FACS sorting
+r = as.matrix(read.table(gzfile("git/unmix/seq/quant/readsPerMillion.tsv.gz"),
+  sep="\t", check.names=FALSE, header=TRUE, row.names=1, as.is=TRUE))
+
 # scatterplots one pair of genes.
 plot.pair = function(i, j) {
   smoothScatter(log2(1+embryo.timeseries[,as.character(i)]),
@@ -50,7 +54,7 @@ plot.pair(690,720)
 dev.off()
 
 # estimate mean and sd of when each gene is on
-x1 = embryo.timeseries[ apply(embryo.timeseries, 1, mean) >= 10 , ]
+x1 = embryo.timeseries[ apply(embryo.timeseries, 1, mean) >= 1 , ]
 w = x1 / apply(x1, 1, sum)
 w[ is.na(w) ] = 0
 time.dist = {
@@ -78,22 +82,24 @@ write.sorted.by.time = function() {
 }
 
 # Plots expression of those genes.
-r = as.matrix(read.table(gzfile("git/unmix/seq/quant/readsPerMillion.tsv.gz"),
-  sep="\t", check.names=FALSE, header=TRUE, row.names=1, as.is=TRUE))
 
 td1 = time.dist[ time.dist[,"sd"] <= quantile(time.dist[,"sd"], 0.2) , ]
 td1 = td1[ order(td1[,"mean"], decreasing=FALSE) , ]
 
-plot.time.profile = function(g, main) {
-  plot(td1[,"mean"], log2(1 + r[ rownames(td1), g ]),
-    main = main, xlab = "time", ylab="log2(1 + coverage)",
+# Plots profile of log2(g) - log2(g.control).
+plot.time.profile = function(g, g.control, main) {
+  plot(td1[,"mean"],
+    log2(1 + r[ rownames(td1), g ]) - log2(1+r[ rownames(td1), g.control ]),
+    main = main, xlab = "time", ylab="log2(relative coverage)",
     pch=20, cex=0.5)
+  abline(h = 0, col="#606060")
 }
+
 pdf("git/unmix/seq/timing/perStageMarkersInSorted.pdf", width=9, height=8)
 par(mfrow=c(3,1))
-plot.time.profile("all", "singlets")
-plot.time.profile("pha-4", "pha-4")
-plot.time.profile("ceh-26", "ceh-26")
+plot.time.profile("pha-4", "all", "pha-4 vs singlets")
+plot.time.profile("ceh-26", "all", "ceh-26 vs singlets")
+plot.time.profile("ttx-3", "all", "ttx-3 vs singlets")
 dev.off()
 
 
