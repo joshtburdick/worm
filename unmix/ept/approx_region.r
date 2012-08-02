@@ -124,8 +124,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   lin.constraint = lin.constraint.factor(A, b, b.var)
 
   # the posterior
-  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
-#  q = lin.constraint( prior + terms )
+#  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
+  q = lin.constraint( prior + terms )
 
   # convergence statistics
   update.stats = NULL
@@ -147,8 +147,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 
 # print(as.vector(mm))
     # update terms
-#    terms = 0.5 * (mm - q) + 0.5 * terms
-    terms = (mm - q) + terms
+    terms = 0.5 * (mm - q) + 0.5 * terms
+#    terms = (mm - q) + terms
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )

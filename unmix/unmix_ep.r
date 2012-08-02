@@ -25,7 +25,7 @@ unmix.ep = function(M, x, x.var, output.dir) {
   for(g in rownames(x)) {
     cat("\n", g, "")
     try({
-      r = approx.region(M, x[g,], x.var[g,], prior.var=100 * max(x.var[g,]))
+      r = approx.region(M, x[g,], x.var[g,], prior.var=1e3 * max(x.var[g,]))
       ep = list(g = g, m = r$m, v = r$v, x = x[g,], x.var = x.var[g,],
         t = r$t, update.stats = r$update.stats)
       save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
@@ -106,13 +106,13 @@ ep.summarize.dir = function(result.dir, output.file, M) {
 }
 
 run.ep = function() {
-  g = gene.list[1:20]
+  g = gene.list
   unmix.ep(M, r.corrected$m[g,], r.corrected$v[g,],
-    "git/unmix/ep.20120802")
+    "git/unmix/ep.facs.only")
   unmix.ep(M.facs.and.ts,
     cbind(r.corrected$m[g,], r.ts$m[g,]),
     cbind(r.corrected$v[g,], r.ts$v[g,]),
-    "git/unmix/ep.20120802")
+    "git/unmix/ep.with.time")
 
 #  ep.summarize.dir("git/unmix/ep.20120724/", "git/unmix/ep.20120724.summary.Rdata", M)
 }
