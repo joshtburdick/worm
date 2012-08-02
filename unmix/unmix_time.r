@@ -1,4 +1,5 @@
 # Unmixing including temporal data.
+# This file may be deprecated.
 
 source("git/unmix/unmix.r")
 source("git/plot/plot_expr.r")
@@ -56,7 +57,7 @@ enriched.fraction = read.table("R/unmix/sort_paper/unmix/fraction/enriched.fract
 gene.list = c(rownames(expr.cell), rownames(enriched.fraction))
 gene.list = unique(intersect(gene.list, rownames(x.ft)))
 
-x.pc.time = unmix.lsei(M.t, x.ft[gene.list,], x.ft[gene.list,])
+# x.pc.time = unmix.lsei(M.t, x.ft[gene.list,], x.ft[gene.list,])
 
 
 # plot.it(sample(rownames(enriched.fraction), 5))

@@ -29,7 +29,8 @@ M = M[ colnames(r.corrected$m) , ]
 
 # sorting matrix including temporal measurements
 load("git/unmix/image/time_sort_matrix.Rdata")
-M.t = time.sort.matrix[ , cells.to.include ]
+# only include times <= 420, and that set of cells
+M.t = time.sort.matrix[ c(1:13) , cells.to.include ]
 M.t = M.t / apply(M.t, 1, sum)
 
 # the sort matrix including the FACS data and the timeseries
@@ -46,12 +47,14 @@ colnames(embryo.timeseries) = time.points
 # normalize to "ppm"
 embryo.timeseries =
   t( t(embryo.timeseries) / (apply(embryo.timeseries,2,sum) / 1e6) )
+
 g1 = intersect(rownames(embryo.timeseries), rownames(r.corrected$m))
 
 # again, we assume that the variance in this is about the same as
 # expression on the ppm scale
-r.ts = list(m = embryo.timeseries[ g1, rownames(time.sort.matrix) ],
-  v = embryo.timeseries[g1 , rownames(time.sort.matrix) ])
+r.ts = list(m = embryo.timeseries[ g1, rownames(M.t) ],
+  v = embryo.timeseries[g1 , rownames(M.t) ])
+r.corrected = list(m = r.corrected$m[g1,], v = r.corrected$v[g1,])
 
 # get list of genes to unmix
 load("R/unmix/comp_paper/expr.cell.Rdata")
@@ -69,15 +72,13 @@ gene.list = unique(intersect(gene.list, rownames(r.corrected$m)))
 #   M, b, b.var - the corresponding variables, with zeros
 #     removed from b (and M and b.var; M will also have
 #     columns corresponding to zero fractions removed)
-#   nz - which columns were zero
+#   nz - which columns were nonzero
 remove.zeros = function(M, b, b.var) {
   z.fraction = (b == 0)
   z = apply(M[z.fraction,], 2, sum) > 0
   list(M = M[ !z.fraction, !z ], b = b[!z.fraction], b.var = b.var[!z.fraction],
     nz = !z)
 }
-
-
 
 
 # Unmixes using the constraints that x >= 0.
@@ -88,7 +89,9 @@ remove.zeros = function(M, b, b.var) {
 #   prior.var - variance of prior, as a constant times the maximum variance
 #     in any fraction (without this, result is spiky)
 # Returns: the estimated expression in each cell
-unmix.lsei = function(M, b, b.var, prior.var = 1e3) {
+unmix.lsei = function(M, b, b.var, prior.var = 1e2) {
+  source("git/unmix/ept/approx_region.r")
+
   x = matrix(0, nrow = nrow(b), ncol=ncol(M))
   rownames(x) = rownames(b)
   colnames(x) = colnames(M)
@@ -97,67 +100,55 @@ unmix.lsei = function(M, b, b.var, prior.var = 1e3) {
     cat(g, "")
     try({
       # remove zeros implied whenever b == 0
-      a = remove.zeros(M, b[g,], b.var[g,])
+#      a = remove.zeros(M, b[g,], b.var[g,])
 
-      p = prior.var * max(a$b.var, na.rm=TRUE)
-
-      # the original problem
-      A = a$M / sqrt(a$b.var)
-      B = a$b / sqrt(a$b.var)  # == 1
-      # tack on the prior
-      A = rbind(A, diag(ncol(A)) / sqrt(p))
-      B = c(B, rep(0, ncol(A)))
-
+      # compute prior, with the fuzzy constraint observed
+      p = prior.var * max(b.var[g,], na.rm=TRUE)
+      mv = mvnorm.2(rep(0, ncol(M)), rep(p, ncol(M)),
+        M, b[g,], b.var[g,])
+print(mv$V[1:5,1:5])
+print(mv$m[1:10])
+      C = chol( chol2inv(chol(mv$V)) )
+      
       # estimate just the non-zero cells
-      r = lsei(A = A, B = B,
-        G = diag(ncol(A)), H = rep(0, ncol(A)), type=2)
+      r = lsei(A = C, B = C %*% mv$m,
+        G = diag(ncol(M)), H = rep(0, ncol(M)), type=2)
 
       # only write the cells in non-zero fractions
-      x[ g, a$nz ] = r$X
+      x[ g, ] = r$X
     })
   }
 
   x
 }
 
-x.pseudoinverse = { 
-  x = r.corrected$m %*% pseudoinverse(t(M))
-
-  # scaling to get "average read depth / cell"
-#  x = 1341 * t( t(x) / as.vector(M["all",]) )
-
-#  x[,"P0"] = 0
-  x[ is.na(x) ] = 0
-  x[ x < 0 ] = 0
-  x
+# Unmix using the pseudoinverse.
+# Args:
+#   M - the cell-sorting matrix
+#   b - the expression in each fraction
+# Returns: matrix of predictions (truncated to be positive.)
+unmix.pseudoinverse = function(M, b) {
+  r = b %*% pseudoinverse(t(M))
+  r[ r < 0 ] = 0
+  r
 }
 
-test1 = function() {
+x.pseudo = unmix.pseudoinverse(M, r.corrected$m)
+x.pseudo.time = unmix.pseudoinverse(M.facs.and.ts,
+  cbind(r.corrected$m, r.ts$m))
+
+unmix.lsei.1 = function() {
   x11()
   par(mfrow=c(5,1))
 #  avg.expr = apply(r1, 1, mean)
 #  set.seed(0)
 #  genes = sample(names(avg.expr)[avg.expr > 100], 5)
   genes = c("pha-4", "ceh-26", "pal-1", "rgs-3")
-  r = unmix.lsei(M, r.corrected$r.mean[genes,], r.corrected$r.var[genes,])
-  for(g in genes) {
-    plot(r[g,], type="h", main=g)
-  }
+  r = unmix.lsei(M, r.corrected$m[genes,], r.corrected$v[genes,], prior.var=1e2)
+#  for(g in genes) {
+#    plot(r[g,], type="h", main=g)
+#  }
   r
 }
 
-pseudoinverse.with.time = function() {
-  load("git/unmix/image/time_sort_matrix.Rdata")
-
-# scale rows of this to add up to 1
-  M.t = time.sort.matrix / apply(time.sort.matrix, 1, sum)
-  M.t = rbind(M, M.t)
-
-#  x[,"P0"] = 0
-  x[ is.na(x) ] = 0
-  x[ x < 0 ] = 0
-  x
-}
-
-# foo = test1()
 

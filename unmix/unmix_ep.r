@@ -1,23 +1,9 @@
 # Unmixes using EP.
 
-source("R/lineage/tree_utils.r")
-
-load("git/unmix/image/sort_matrix.Rdata")
-
-# the read depth, with and without correction for sorting purity
-source("git/unmix/seq/sortPurityCorrection.r")
-
+source("git/unmix/unmix.r")
 source("git/unmix/ept/approx_region.r")
-# source("R/unmix/ep/ep.diag.3.r")
 
-# scale rows of this to add up to 1
-M = sort.matrix / apply(sort.matrix, 1, sum)
-
-# limit to cases in which we have measurements
-M = M[ colnames(r.corrected$r.mean) , ]
-
-
-# Unmixes using EP.
+# Unmixes some genes using EP.
 # Args:
 #   M - the cell-sorting matrix
 #   x, x.var - mean and variance of the expression in each fraction,
@@ -38,17 +24,12 @@ unmix.ep = function(M, x, x.var, output.dir) {
 
   for(g in rownames(x)) {
     cat("\n", g, "")
-try({
-    r = approx.region(M1, x[g,], x.var[g,], prior.var=Inf)    # 100 * max(x.var[g,]))
-    ep = list(g = g, m = r$m, v = r$v, x = x[g,], x.var = x.var[g,],
-      t = r$t, update.stats = r$update.stats)
-
-#    ep = ep.diag.3(rep(1e-1, 1340), 1e3 * diag(1340),
-#      m1, x[g,], b.var=x.var[g,],
-#      max.iters=30, converge.tolerance=1e-5)
-
-    save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
-})
+    try({
+      r = approx.region(M, x[g,], x.var[g,], prior.var=100 * max(x.var[g,]))
+      ep = list(g = g, m = r$m, v = r$v, x = x[g,], x.var = x.var[g,],
+        t = r$t, update.stats = r$update.stats)
+      save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
+    })
   }
 }
 
@@ -124,18 +105,14 @@ ep.summarize.dir = function(result.dir, output.file, M) {
   save(ep.summary, file=output.file)
 }
 
-# these are for getting the names of genes to unmix
-load("R/unmix/comp_paper/expr.cell.Rdata")
-enriched.fraction = read.table("R/unmix/sort_paper/unmix/fraction/enriched.fraction.tsv",
-  header=TRUE, sep="\t", row.names=1, as.is=TRUE)
-
-# Runs EP on some genes
 run.ep = function() {
-  g = union(rownames(expr.cell), rownames(enriched.fraction))
-  g = intersect(g, rownames(r.corrected$r.mean))
-  g = g[1:20]
-  unmix.ep(M, r.corrected$r.mean[g,], r.corrected$r.var[g,],
-    "git/unmix/ep.20120726a")
+  g = gene.list[1:20]
+  unmix.ep(M, r.corrected$m[g,], r.corrected$v[g,],
+    "git/unmix/ep.20120802")
+  unmix.ep(M.facs.and.ts,
+    cbind(r.corrected$m[g,], r.ts$m[g,]),
+    cbind(r.corrected$v[g,], r.ts$v[g,]),
+    "git/unmix/ep.20120802")
 
 #  ep.summarize.dir("git/unmix/ep.20120724/", "git/unmix/ep.20120724.summary.Rdata", M)
 }
