@@ -111,8 +111,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   converge.tolerance = 1e-9, max.iters=100) {
   n = ncol(A)
 
-# debug.dir = "~/tmp/approx.region.debug"
-  debug.dir = NULL
+  debug.dir = "~/tmp/approx.region.debug"
+#  debug.dir = NULL
 
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
@@ -126,6 +126,7 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   # the posterior
   q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
 #  q = lin.constraint( prior + terms )
+#  q = prior
 
   # convergence statistics
   update.stats = NULL
@@ -146,20 +147,22 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 #      is.infinite(mm[,"e1"]) | is.infinite(mm[,"e2"]) , ] = 0
 
 # print(as.vector(mm))
-    # update terms
-    terms = 0.5 * (mm - q) + 0.5 * terms
-#    terms = (mm - q) + terms
+    # update terms.
+#    terms = 0.5 * (mm - q) + 0.5 * terms   #  XXX not sure this is right
+    terms = (mm - q) + terms
+
+#    terms[ is.na(terms) ] = 0
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )
 
     # ??? show change in mean and variance separately?
-    diff = max(abs(terms.old - terms))
+    diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
 cat(signif(diff,2), " ")
     update.stats = rbind(update.stats, diff)
 
     # possibly stop early
-    if (diff <= converge.tolerance)
+    if (max(diff) <= converge.tolerance)
       break
   }
 
