@@ -23,9 +23,9 @@ positive.factor = list(
 
   # moment-matches the positive portion
   update = function(a) {
-    b = canonical.to.mean.and.variance(a)
+    b = canonical.to.mean.and.variance(a$x)
     r = positive.moment.match(b[,"m"], b[,"v"])
-    mean.and.variance.to.canonical(r)
+    list(x = mean.and.variance.to.canonical(r))
   },
 
   # log of the proportion of the distribution that's positive
@@ -33,5 +33,5 @@ positive.factor = list(
     b = canonical.to.mean.and.variance(x)
     sum(pnorm(0, -b[,"mu"], sd, log.p=TRUE))
   }
-}
+)
 

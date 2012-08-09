@@ -46,16 +46,25 @@ update.ep = function(m, num.iters = 30) {
 
     # get messages from each variable
     sapply(m$factors, function(f)
-      for(i in 1:length(f$x))
-        f$to.f[[i]] = f$x[[i]] - f$from.f[[i]])
+      for(i in 1:length(f$x)) {
+# cat("factor ", i, "\n")
+# cat("dim(to.f) =", dim(f$to.f[[i]]), "\n")
+# cat("dim(f$x...) =", dim(f$x[[i]]$b), "\n")
+# cat("dim(from.f) =", dim(f$from.f[[i]]), "\n")
+        f$to.f[[i]] = f$x[[i]]$b - f$from.f[[i]]
+      })
 
     # clear the variables
     sapply(m$vars, function(x) if (!x$observed) x$b = x$b - x$b)
 
     # update messages from each factor
-    sapply(m$factors, function(f)
-      f$from.f = f$update(f$to.f))
-
+    sapply(m$factors, function(f) {
+      print(f$from.f)
+      print(f$to.f)
+      print(f$update)
+      f$from.f = f$update(f$to.f)
+    })
+cat("updated\n")
     # send messages to each variable
     sapply(m$factors, function(f)
       for(i in 1:length(f$x))
@@ -63,6 +72,7 @@ update.ep = function(m, num.iters = 30) {
           f$x[[i]]$b = f$x[[i]]$b + f$to[[i]])
 
     # compute log-evidence
+    # FIXME: need this for variables as well
     le = sum(sapply(m$factors,
       function(f) f$log.evidence(f$to.f)), na.rm=TRUE)
     log.evidence = c(log.evidence, le)

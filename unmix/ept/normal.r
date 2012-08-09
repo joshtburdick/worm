@@ -2,11 +2,11 @@
 
 # Creates a multivariate normal vector variable.
 norm.var = function(n) {
-  b = matrix(0, nrow=n, ncol=3)
+  b = matrix(0, nrow=n, ncol=2)
   # XXX I didn't know what to call these, but named them this, since
   # Wikipedia calls the canonical parameters "eta"
   # ??? is "n" needed?
-  colnames(b) = c("n", "e1", "e2")
+  colnames(b) = c("e1", "e2")
   list(b = b, observed=FALSE)
 }
 
@@ -23,4 +23,15 @@ canonical.to.mean.and.variance = function(a) {
   r[ r[,"v"] == Inf, "m" ] = 0
   r
 }
+
+# A normal prior factor.
+normal.prior.factor = function(b) list(
+  # this should force the outgoing message to be b
+  # ??? is this right?
+  update = function(a) list(x = a$x + b),
+  log.evidence = function(a) {
+    0   # FIXME
+  }
+)
+
 
