@@ -33,5 +33,5 @@ positive.factor = list(
     b = canonical.to.mean.and.variance(x)
     sum(pnorm(0, -b[,"mu"], sd, log.p=TRUE))
   }
-)
+}
 

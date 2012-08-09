@@ -25,13 +25,11 @@ mvnorm.constrain = function(A, b, b.var) list(
 
 
 
-
   },
 
   # this is basically the likelihood for this observation
   log.evidence = function(a) {
     0    # FIXME
-
   }
 )
 

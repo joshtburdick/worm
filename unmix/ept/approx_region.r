@@ -6,6 +6,8 @@ library(corpcor)
 source("git/unmix/ept/normal.r")
 # source("git/unmix/ept/matrix_inv_lemma.r")   XXX um, don't think I need this
 
+backspace = cat(paste(rep("\b", 70), collapse=""))
+
 # Moment-matches a normal, truncated at x >= 0,
 # with mean and variance m and v, respectively.
 # following Phoebus Dhrymes'
@@ -18,9 +20,9 @@ positive.moment.match = function(m, v) {
   a = dnorm(z) / pnorm(z)
 
   # hack to deal with when z is very negative
-  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
-    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
-  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
+  r = cbind(m = ifelse(z < -30, 1e-3, - (m1 - s * a)),
+    v = ifelse(z < -30, 1e-6, v * (1 - z*a - a^2)))
+#  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
 
@@ -111,8 +113,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   converge.tolerance = 1e-9, max.iters=100) {
   n = ncol(A)
 
-  debug.dir = "~/tmp/approx.region.debug"
-#  debug.dir = NULL
+#  debug.dir = "~/tmp/approx.region.debug"
+  debug.dir = NULL
 
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
@@ -158,11 +160,11 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 
     # ??? show change in mean and variance separately?
     diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
-cat(signif(diff,2), " ")
+cat(backspace, signif(diff, 2), " ")
     update.stats = rbind(update.stats, diff)
 
     # possibly stop early
-    if (max(diff) <= converge.tolerance)
+    if (max(diff, na.rm=TRUE) <= converge.tolerance)
       break
   }
 
