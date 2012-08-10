@@ -25,7 +25,7 @@ unmix.ep = function(M, x, x.var, output.dir) {
   for(g in rownames(x)) {
     cat("\n", g, "")
     try({
-      r = approx.region(M, x[g,], x.var[g,], prior.var=1e3 * max(x.var[g,]))
+      r = approx.region(M, x[g,], x.var[g,], prior.var=100 * max(x.var[g,]))
       ep = list(g = g, m = r$m, v = r$v, x = x[g,], x.var = x.var[g,],
         t = r$t, update.stats = r$update.stats)
       save(ep, file = paste(output.dir, "/", g, ".Rdata", sep=""))
@@ -85,12 +85,17 @@ ep.summarize.dir = function(result.dir, output.file, M) {
   num.cells = apply(cell.lineage.matrix, 1, sum)[colnames(M)]
   clm = cell.lineage.matrix[ colnames(M), colnames(M) ]
 
-  ep.summary = array(0, dim=c(length(genes), length(lin.node.names), 4),
+  # XXX note these don't quite add up, due to missing cells
+  emb.proportion = clm %*% M["all",]
+  clm1 = t( t(clm) * as.vector(emb.proportion) )
+
+  ep.summary = array(0, dim=c(length(genes), length(lin.node.names), 6),
     dimnames=c("gene", "cell", "stat"))
   dimnames(ep.summary)[[1]] = genes
   dimnames(ep.summary)[[2]] = lin.node.names
   dimnames(ep.summary)[[3]] =
-    c("per.cell.mean", "per.cell.var", "lineage.mean.total", "lineage.var.total")
+    c("per.cell.mean", "per.cell.var", "lineage.mean.total", "lineage.var.total",
+    "scaled.lineage.mean", "scaled.lineage.var")
 
   for(i in 1:length(files)) {
     cat(genes[i], "")
@@ -102,6 +107,11 @@ ep.summarize.dir = function(result.dir, output.file, M) {
     ep.summary[genes[i],colnames(M),"lineage.mean.total"] = clm %*% r$m / num.cells
     ep.summary[genes[i],colnames(M),"lineage.var.total"] =
       diag(clm %*% r$V %*% t(clm)) / num.cells
+
+    # version of totals, scaled by proportion of cells
+    ep.summary[genes[i],colnames(M),"scaled.lineage.mean"] = clm1 %*% r$m
+    ep.summary[genes[i],colnames(M),"scaled.lineage.var"] =
+      diag(clm1 %*% r$V %*% t(clm1))
   }
 
   save(ep.summary, file=output.file)
@@ -116,7 +126,12 @@ run.ep = function() {
     cbind(r.corrected$v[g,], r.ts$v[g,]),
     "git/unmix/ep.with.time")
 
-  ep.summarize.dir("git/unmix/ep.facs.only/", "git/unmix/ep.facs.only.Rdata", M)
-  ep.summarize.dir("git/unmix/ep.with.time/", "git/unmix/ep.with.time.Rdata", M.facs.and.ts)
+  ep.summarize.dir("git/unmix/ep.facs.only/", "git/unmix/ep.facs.only.2.Rdata", M)
+  ep.summarize.dir("git/unmix/ep.with.time/", "git/unmix/ep.with.time.2.Rdata", M.facs.and.ts)
+}
+
+if (FALSE) {
+  g = gene.list[1:20]
+  unmix.ep(M, r.corrected$m[g,], r.corrected$v[g,], "git/unmix/ep.facs.only.20120802")
 }
 
