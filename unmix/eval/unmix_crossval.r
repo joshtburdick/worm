@@ -5,7 +5,7 @@ source("git/unmix/unmix_lsei.r")
 
 source("git/plot/plot_expr.r")
 
-# XXX for storing full covariance matrices
+# XXX for storing full covariance matrices. This is a hack.
 ep.V = NULL
 
 # tack on newer mls-2 expression data
@@ -73,6 +73,53 @@ reporters = intersect(reporters, rownames(r.corrected$m))
 r.pseudo = unmix.xval(M, expr.cell[reporters,colnames(M)], unmix.pseudoinverse,
   r.corrected$m[reporters,], r.corrected$v[reporters,])
 
+# Gets a particular version of the cell-sorting matrix, and corresponding
+# measurements in fractions, with and without various corrections.
+# Args:
+#   time - whether or not to include time
+#   negatives - whether or not to include the negative fractions
+#   volume - whether or not to include cell-volume correction
+#   purity - whether or not to include the sort purity correction
+# Returns: list containing:
+#   m - a cell-sorting matrix
+#   b, b.var - the corresponding total expression (mean and variation)
+get.input.data = function(time, negatives, volume, purity) {
+  m = NULL
+  b = NULL
+  b.var = NULL
+
+  # include time?
+  if (time)
+    m = rbind(sort.matrix, time.sort.matrix)
+  else
+    m = sort.matrix
+
+  # include negatives?
+  if (!negatives) {
+    m = m[ grep("minus", rownames(m), invert=TRUE) , ]
+  }
+
+  # include weighting by cell volume?
+  if (volume) {
+    m = t( t(m) * cell.weights[ colnames(m) , "w" ] )
+  }
+
+  # include sort purity correction?
+  if (purity) {
+    b = cbind(r.corrected$m[reporters,], r.ts$m[reporters,])
+    b.var = cbind(r.corrected$v[reporters,], r.ts$v[reporters,])
+  }
+  else {
+    b = cbind(r[reporters,], r.ts$m[reporters,])
+    b.var = b   # assuming the variance is the same as the mean
+  }
+
+  stopifnot(all(colnames(b) == colnames(b.var)))
+  r1 = intersect(rownames(m), colnames(b))
+
+  list(m = m[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
+}
+
 if (FALSE) {
   r.lsei = unmix.xval(M, expr.cell[reporters,colnames(M)], unmix.lsei,
   r.corrected$m[reporters,], r.corrected$v[reporters,])
@@ -84,11 +131,19 @@ if (FALSE) {
     r.corrected$m[reporters,], r.corrected$v[reporters,])
   names(ep.V) = reporters
 }
-# Finds correlation with the reporters.
-compute.correlation = function(x1, x2) {
+
+# Computes accuracy by several methods.
+# Args:
+#   expr, m - the actual expression, and sort matrix
+#   x.prediction - the expression prediction
+# Returns: vector with Pearson and Spearman correlations, and AUC
+compute.accuracy = function(expr, m, x.prediction) {
   g = intersect(rownames(x1), rownames(x2))
   cells = intersect(colnames(x1), colnames(x2))
-  mean(diag(cor(t(x1[g,cells]), t(x2[g,cells]), use="pairwise.complete.obs")))
+  c( pearson = mean(diag(cor(t(x1[g,cells]), t(x2[g,cells]),
+      method = pearson, use="pairwise.complete.obs"))),
+    spearman = mean(diag(cor(t(x1[g,cells]), t(x2[g,cells]),
+      method = separman, use="pairwise.complete.obs"))),
+    auc = 0 )     # FIXME
 }
-
 
