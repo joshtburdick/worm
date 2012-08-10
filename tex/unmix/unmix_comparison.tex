@@ -1,0 +1,63 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+
+\subsection*{Comparison of unmixing methods}
+
+Some of the assumptions we are making may be incorrect. In order to gauge
+which are correct, we
+
+
+
+
+\subsubsection*{Correcting for sort purity}
+
+We either 
+
+
+
+\subsubsection*{Including negative fractions}
+
+We either included, or didn't include, 
+
+
+
+\subsubsection*{Cell volume}
+
+Cells which are larger contribute more RNA to a given sample.
+We would expect predictions which incorporate this to be more accurate
+(unless our cell volume estimates are incorrect.)
+
+Predictions {\bf without} including cell volume weighted each cell equally.
+Predictions {\bf with} cell volume weighted cells based on branch length.
+
+
+
+\subsubsection*{Measurement uncertainty}
+
+
+
+
+
+
+
+\subsection*{Results}
+
+To measure accuracy, we compared the fourteen reporter patterns
+with predictions made using the remaining thirteen reporters.
+We measured Pearson correlation, Spearman rank correlation,
+and area-under-the-curve.
+
+
+
+
+
+\end{document}
+
