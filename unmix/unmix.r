@@ -79,12 +79,14 @@ remove.zeros = function(M, b, b.var) {
   list(M = M[ !z.fraction, !z ], b = b[!z.fraction], b.var = b.var[!z.fraction],
     nz = !z)
 }
+
 # Unmix using the pseudoinverse.
 # Args:
 #   M - the cell-sorting matrix
 #   b - the expression in each fraction
+#   b.var - the variance in that expression
 # Returns: matrix of predictions (truncated to be positive.)
-unmix.pseudoinverse = function(M, b) {
+unmix.pseudoinverse = function(M, b, b.var = NULL) {
   r = b %*% pseudoinverse(t(M))
   r[ r < 0 ] = 0
   r
