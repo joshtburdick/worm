@@ -1,5 +1,7 @@
 # Does unmixing, leaving out reporter genes.
 
+library(clinfun)
+
 source("git/unmix/unmix.r")
 source("git/unmix/unmix_lsei.r")
 
@@ -20,20 +22,19 @@ expr.cell = {
 #   M - a cell-sorting matrix (assumes that if a fraction corresponds
 #     to a gene, then chopping off everything after "_" will give that
 #     gene name. see code if that's confusing.)
-#   expr - actual expression of a set of genes
 #   unmix.function - a function which unmixes
 #   b, b.var - mean and variance of expression in those fractions
 # Returns: list containing
 #   x - the unmixed expression predictions
 #   num.reporters - number of reporters used for each
-unmix.xval = function(M, expr, unmix.function, b, b.var) {
+unmix.xval = function(M, unmix.function, b, b.var) {
   x = NULL
   num.reporters = c()
 
   # the names of genes (if any) to which fractions correspond
   fraction.gene.names = sub("_.*$", "", rownames(M))
 
-  for(g in rownames(expr)) {
+  for(g in rownames(b)) {
 cat(g, "\n")
     # remove fractions presumed to correspond to this gene
     fractions = fraction.gene.names != g
@@ -42,21 +43,18 @@ cat(g, "\n")
       b.var[ g, fractions , drop=FALSE ])
     x = rbind(x, x.p)
     num.reporters = c(num.reporters, sum(fractions))
-
-#    r = rbind(r, c(cor = cor(expr[g,], x[1,], use="complete.obs"),
-#      num.reporters = sum(fractions) ))
   }
 
-  rownames(x) = rownames(expr)
+  rownames(x) = rownames(b)
   colnames(x) = colnames(M)
-  names(num.reporters) = rownames(expr)
+  names(num.reporters) = rownames(b)
 
   list(x = x, num.reporters = num.reporters)
 }
 
 # Runs EP for one gene.
 unmix.ep.1 = function(M, b, b.var) {
-  r = approx.region(M, as.vector(b), as.vector(b.var), prior.var=1e6 * max(b.var))
+  r = approx.region(M, as.vector(b), as.vector(b.var), prior.var=1e3 * max(b.var))
   a = mvnorm.2(r$m, r$v, M, as.vector(b), as.vector(b.var))
 
   ep.V[[ length(ep.V)+1 ]] <<- a$V  # XXX
@@ -70,7 +68,7 @@ reporters = setdiff(reporters, "all")
 reporters = intersect(reporters, rownames(expr.cell))
 reporters = intersect(reporters, rownames(r.corrected$m))
 
-r.pseudo = unmix.xval(M, expr.cell[reporters,colnames(M)], unmix.pseudoinverse,
+r.pseudo = unmix.xval(M, unmix.pseudoinverse,
   r.corrected$m[reporters,], r.corrected$v[reporters,])
 
 # Gets a particular version of the cell-sorting matrix, and corresponding
@@ -83,25 +81,25 @@ r.pseudo = unmix.xval(M, expr.cell[reporters,colnames(M)], unmix.pseudoinverse,
 # Returns: list containing:
 #   m - a cell-sorting matrix
 #   b, b.var - the corresponding total expression (mean and variation)
-get.input.data = function(time, negatives, volume, purity) {
-  m = NULL
+get.processed.data = function(time, negatives, volume, purity) {
+  M = NULL
   b = NULL
   b.var = NULL
 
   # include time?
   if (time)
-    m = rbind(sort.matrix, time.sort.matrix)
+    M = rbind(sort.matrix, time.sort.matrix)
   else
-    m = sort.matrix
+    M = sort.matrix
 
   # include negatives?
   if (!negatives) {
-    m = m[ grep("minus", rownames(m), invert=TRUE) , ]
+    M = M[ grep("minus", rownames(M), invert=TRUE) , ]
   }
 
   # include weighting by cell volume?
   if (volume) {
-    m = t( t(m) * cell.weights[ colnames(m) , "w" ] )
+    M = t( t(M) * cell.weights[ colnames(M) , "w" ] )
   }
 
   # include sort purity correction?
@@ -115,9 +113,9 @@ get.input.data = function(time, negatives, volume, purity) {
   }
 
   stopifnot(all(colnames(b) == colnames(b.var)))
-  r1 = intersect(rownames(m), colnames(b))
+  r1 = intersect(rownames(M), colnames(b))
 
-  list(m = m[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
+  list(M = M[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
 }
 
 if (FALSE) {
@@ -132,18 +130,59 @@ if (FALSE) {
   names(ep.V) = reporters
 }
 
+# Computes AUC accuracy.
+auc.accuracy = function(on.off, x.prediction) {
+  r = rep(NA, nrow(on.off))
+
+  for(i in 1:nrow(on.off)) {
+cat(rownames(on.off)[i], sum(on.off[i,]), length(on.off[i,]), "\n")
+    r[i] = roc.area.test(x.prediction[i,], on.off[i,])$area
+  }
+  mean(r, na.rm=TRUE)
+}
+
 # Computes accuracy by several methods.
 # Args:
 #   expr, m - the actual expression, and sort matrix
 #   x.prediction - the expression prediction
 # Returns: vector with Pearson and Spearman correlations, and AUC
 compute.accuracy = function(expr, m, x.prediction) {
-  g = intersect(rownames(x1), rownames(x2))
-  cells = intersect(colnames(x1), colnames(x2))
-  c( pearson = mean(diag(cor(t(x1[g,cells]), t(x2[g,cells]),
-      method = pearson, use="pairwise.complete.obs"))),
-    spearman = mean(diag(cor(t(x1[g,cells]), t(x2[g,cells]),
-      method = separman, use="pairwise.complete.obs"))),
-    auc = 0 )     # FIXME
+  g = intersect(rownames(expr), rownames(x.prediction))
+  cells = intersect(colnames(expr), colnames(x.prediction))
+  list( pearson = mean(diag(cor(t(expr[g,cells]), t(x.prediction[g,cells]),
+      method = "pearson", use="pairwise.complete.obs"))),
+    spearman = mean(diag(cor(t(expr[g,cells]), t(x.prediction[g,cells]),
+      method = "spearman", use="pairwise.complete.obs"))) )
+#    auc = auc.accuracy(t( t(m) / m["all",] ) >= 0.5, x.prediction) )
 }
+
+
+# Runs several unmixing methods on the reporter genes (cross-validated),
+# and computes statistics.
+unmix.crossval.stats = function(method.name, unmix.function) {
+  r = NULL
+
+  for(time in c(FALSE, TRUE))
+    for(negatives in c(FALSE, TRUE))
+      for(volume in c(FALSE, TRUE))
+        for(purity in c(FALSE, TRUE)) {
+          p = get.processed.data(time, negatives, volume, purity)
+          x.p = unmix.xval(p$M, unmix.function, p$b, p$b.var)
+          accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
+            p$M[reporters,cells.to.include], x.p$x[reporters, cells.to.include])
+          r = rbind(r, c(time=time, negatives=negatives, volume=volume, purity=purity,
+            pearson.corr = accuracy$pearson,
+            spearman.corr = accuracy$spearman,
+            area.under.curve = accuracy$auc) )
+        }
+
+  cbind(method=method.name, data.frame(r))
+}
+
+crossval.accuracy.summary = unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse)
+write.table(crossval.accuracy.summary, file="git/unmix/eval/crossval_accuracy_summary.tsv",
+  sep="\t", col.names=NA)
+# rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
+#  unmix.crossval.stats("EP", unmix.ep.1))
+
 
