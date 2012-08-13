@@ -31,7 +31,6 @@ plot.it = function() {
 
     dev.off()
   }
-
 }
 
 

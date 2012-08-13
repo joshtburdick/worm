@@ -5,7 +5,7 @@ library(clinfun)
 source("git/unmix/unmix.r")
 source("git/unmix/unmix_lsei.r")
 
-source("git/plot/plot_expr.r")
+load("git/unmix/image/cell_weights.Rdata")
 
 # XXX for storing full covariance matrices. This is a hack.
 ep.V = NULL
@@ -88,9 +88,9 @@ get.processed.data = function(time, negatives, volume, purity) {
 
   # include time?
   if (time)
-    M = rbind(sort.matrix, time.sort.matrix)
+    M = rbind(sort.matrix.unweighted, time.sort.matrix.unweighted)
   else
-    M = sort.matrix
+    M = sort.matrix.unweighted
 
   # include negatives?
   if (!negatives) {
@@ -114,6 +114,8 @@ get.processed.data = function(time, negatives, volume, purity) {
 
   stopifnot(all(colnames(b) == colnames(b.var)))
   r1 = intersect(rownames(M), colnames(b))
+  M = M[r1, cells.to.include]
+  M = t( t(M) / apply(M, 1, sum) )   # normalize rows to sum to 1
 
   list(M = M[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
 }
@@ -134,26 +136,24 @@ if (FALSE) {
 auc.accuracy = function(on.off, x.prediction) {
   r = rep(NA, nrow(on.off))
 
-  for(i in 1:nrow(on.off)) {
-cat(rownames(on.off)[i], sum(on.off[i,]), length(on.off[i,]), "\n")
+  for(i in 1:nrow(on.off))
     r[i] = roc.area.test(x.prediction[i,], on.off[i,])$area
-  }
   mean(r, na.rm=TRUE)
 }
 
 # Computes accuracy by several methods.
 # Args:
-#   expr, m - the actual expression, and sort matrix
+#   expr, M - the actual expression, and sort matrix
 #   x.prediction - the expression prediction
 # Returns: vector with Pearson and Spearman correlations, and AUC
-compute.accuracy = function(expr, m, x.prediction) {
+compute.accuracy = function(expr, M, x.prediction) {
   g = intersect(rownames(expr), rownames(x.prediction))
   cells = intersect(colnames(expr), colnames(x.prediction))
   list( pearson = mean(diag(cor(t(expr[g,cells]), t(x.prediction[g,cells]),
       method = "pearson", use="pairwise.complete.obs"))),
     spearman = mean(diag(cor(t(expr[g,cells]), t(x.prediction[g,cells]),
-      method = "spearman", use="pairwise.complete.obs"))) )
-#    auc = auc.accuracy(t( t(m) / m["all",] ) >= 0.5, x.prediction) )
+      method = "spearman", use="pairwise.complete.obs"))),
+    auc = auc.accuracy(M, x.prediction) )
 }
 
 
@@ -169,8 +169,10 @@ unmix.crossval.stats = function(method.name, unmix.function) {
           p = get.processed.data(time, negatives, volume, purity)
           x.p = unmix.xval(p$M, unmix.function, p$b, p$b.var)
           accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
-            p$M[reporters,cells.to.include], x.p$x[reporters, cells.to.include])
-          r = rbind(r, c(time=time, negatives=negatives, volume=volume, purity=purity,
+            sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
+            x.p$x[reporters, cells.to.include])
+          r = rbind(r, c(time=time, negatives=negatives,
+            volume=volume, purity=purity,
             pearson.corr = accuracy$pearson,
             spearman.corr = accuracy$spearman,
             area.under.curve = accuracy$auc) )
@@ -179,10 +181,15 @@ unmix.crossval.stats = function(method.name, unmix.function) {
   cbind(method=method.name, data.frame(r))
 }
 
-crossval.accuracy.summary = unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse)
-write.table(crossval.accuracy.summary, file="git/unmix/eval/crossval_accuracy_summary.tsv",
+crossval.accuracy.summary =
+  rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
+    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
+    unmix.crossval.stats("EP", unmix.ep.1))
+
+# unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse)
+
+write.table(crossval.accuracy.summary,
+  file="git/unmix/eval/crossval_accuracy_summary.tsv",
   sep="\t", col.names=NA)
-# rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
-#  unmix.crossval.stats("EP", unmix.ep.1))
 
 
