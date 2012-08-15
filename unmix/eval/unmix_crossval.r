@@ -4,6 +4,7 @@ library(clinfun)
 
 source("git/unmix/unmix.r")
 source("git/unmix/unmix_lsei.r")
+source("git/unmix/seq/proportion.of.total.r")
 
 load("git/unmix/image/cell_weights.Rdata")
 
@@ -35,7 +36,7 @@ unmix.xval = function(M, unmix.function, b, b.var) {
   fraction.gene.names = sub("_.*$", "", rownames(M))
 
   for(g in rownames(b)) {
-cat(g, "\n")
+# cat(g, "\n")
     # remove fractions presumed to correspond to this gene
     fractions = fraction.gene.names != g
 
@@ -78,19 +79,23 @@ r.pseudo = unmix.xval(M, unmix.pseudoinverse,
 #   negatives - whether or not to include the negative fractions
 #   volume - whether or not to include cell-volume correction
 #   purity - whether or not to include the sort purity correction
+#   norm.to.unit - normalize to numbers adding up to 1 ?
 # Returns: list containing:
 #   m - a cell-sorting matrix
 #   b, b.var - the corresponding total expression (mean and variation)
-get.processed.data = function(time, negatives, volume, purity) {
+get.processed.data = function(time, negatives, volume, purity, norm.to.unit) {
   M = NULL
   b = NULL
   b.var = NULL
+
+#  cat(time,negatives,volume,purity,norm.to.unit,"\n")
 
   # include time?
   if (time)
     M = rbind(sort.matrix.unweighted, time.sort.matrix.unweighted)
   else
     M = sort.matrix.unweighted
+  M = M[,cells.to.include]
 
   # include negatives?
   if (!negatives) {
@@ -114,10 +119,28 @@ get.processed.data = function(time, negatives, volume, purity) {
 
   stopifnot(all(colnames(b) == colnames(b.var)))
   r1 = intersect(rownames(M), colnames(b))
-  M = M[r1, cells.to.include]
-  M = t( t(M) / apply(M, 1, sum) )   # normalize rows to sum to 1
+cat(r1,"\n")
+  M = M[r1,cells.to.include]
+  b = b[,r1]
+  b.var = b.var[,r1]
+
+  # normalize so that we're using numbers which add up to 1 ?
+  if (norm.to.unit) {
+    M = M / sum(M["all",])
+    fraction.of.cells.sorted = apply(M, 1, sum)
+    p = read.depth.to.fraction(b, fraction.of.cells.sorted)
+    b = p$m
+    b.var = p$v
+
+    # if we're normalizing in this way, omit the negatives (if any)
+    r1 = grep("minus", r1, invert=TRUE, value=TRUE)
+  }
+  else {
+    M = t( t(M) / apply(M, 1, sum) )   # normalize rows to sum to 1
+  }
 
   list(M = M[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
+#  list(M = M, b = b, b.var = b.var)
 }
 
 if (FALSE) {
@@ -165,18 +188,20 @@ unmix.crossval.stats = function(method.name, unmix.function) {
   for(time in c(FALSE, TRUE))
     for(negatives in c(FALSE, TRUE))
       for(volume in c(FALSE, TRUE))
-        for(purity in c(FALSE, TRUE)) {
-          p = get.processed.data(time, negatives, volume, purity)
-          x.p = unmix.xval(p$M, unmix.function, p$b, p$b.var)
-          accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
-            sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
-            x.p$x[reporters, cells.to.include])
-          r = rbind(r, c(time=time, negatives=negatives,
-            volume=volume, purity=purity,
-            pearson.corr = accuracy$pearson,
-            spearman.corr = accuracy$spearman,
-            area.under.curve = accuracy$auc) )
-        }
+        for(purity in c(FALSE, TRUE))
+          for(norm.to.unit in c(FALSE, TRUE)) {
+            p = get.processed.data(time, negatives, volume, purity,
+              norm.to.unit)
+            x.p = unmix.xval(p$M, unmix.function, p$b, p$b.var)
+            accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
+              sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
+              x.p$x[reporters, cells.to.include])
+            r = rbind(r, c(time=time, negatives=negatives,
+              volume=volume, purity=purity, norm.to.unit=norm.to.unit,
+              pearson.corr = accuracy$pearson,
+              spearman.corr = accuracy$spearman,
+              area.under.curve = accuracy$auc) )
+          }
 
   cbind(method=method.name, data.frame(r))
 }
@@ -184,6 +209,7 @@ unmix.crossval.stats = function(method.name, unmix.function) {
 crossval.accuracy.summary =
   rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
     unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
+#    unmix.crossval.stats("bounded pseudoinverse EQ", unmix.lsei.eq),
     unmix.crossval.stats("EP", unmix.ep.1))
 
 # unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse)
