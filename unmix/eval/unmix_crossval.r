@@ -8,9 +8,6 @@ source("git/unmix/seq/proportion.of.total.r")
 
 load("git/unmix/image/cell_weights.Rdata")
 
-# XXX for storing full covariance matrices. This is a hack.
-ep.V = NULL
-
 # tack on newer mls-2 expression data
 expr.cell = {
   a = expr.cell
@@ -58,7 +55,7 @@ unmix.ep.1 = function(M, b, b.var) {
   r = approx.region(M, as.vector(b), as.vector(b.var), prior.var=1e3 * max(b.var))
   a = mvnorm.2(r$m, r$v, M, as.vector(b), as.vector(b.var))
 
-  ep.V[[ length(ep.V)+1 ]] <<- a$V  # XXX
+#  ep.V[[ length(ep.V)+1 ]] <<- a$V  # XXX
 
   r$m
 }
@@ -136,7 +133,8 @@ cat(r1,"\n")
     r1 = grep("minus", r1, invert=TRUE, value=TRUE)
   }
   else {
-    M = t( t(M) / apply(M, 1, sum) )   # normalize rows to sum to 1
+#    M = t( t(M) / apply(M, 1, sum) )   # normalize rows to sum to 1
+    M = M / apply(M, 1, sum)
   }
 
   list(M = M[r1, cells.to.include], b = b[,r1], b.var = b.var[,r1])
@@ -206,9 +204,10 @@ unmix.crossval.stats = function(method.name, unmix.function) {
   cbind(method=method.name, data.frame(r))
 }
 
+if (FALSE) {
 crossval.accuracy.summary =
   rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
-    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
+#    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
 #    unmix.crossval.stats("bounded pseudoinverse EQ", unmix.lsei.eq),
     unmix.crossval.stats("EP", unmix.ep.1))
 
@@ -217,5 +216,5 @@ crossval.accuracy.summary =
 write.table(crossval.accuracy.summary,
   file="git/unmix/eval/crossval_accuracy_summary.tsv",
   sep="\t", col.names=NA)
-
+}
 
