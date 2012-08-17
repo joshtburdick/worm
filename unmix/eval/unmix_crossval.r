@@ -92,6 +92,13 @@ get.processed.data = function(time, negatives, volume, purity, norm.to.unit) {
     M = rbind(sort.matrix.unweighted, time.sort.matrix.unweighted)
   else
     M = sort.matrix.unweighted
+
+  # XXX this seems to work slightly better, although I have no idea why.
+  if (time)
+    M = rbind(sort.matrix, time.sort.matrix)
+  else
+    M = sort.matrix
+
   M = M[,cells.to.include]
 
   # include negatives?
@@ -204,10 +211,10 @@ unmix.crossval.stats = function(method.name, unmix.function) {
   cbind(method=method.name, data.frame(r))
 }
 
-if (FALSE) {
+if (TRUE) {
 crossval.accuracy.summary =
   rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
-#    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
+    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
 #    unmix.crossval.stats("bounded pseudoinverse EQ", unmix.lsei.eq),
     unmix.crossval.stats("EP", unmix.ep.1))
 
