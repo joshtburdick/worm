@@ -1,0 +1,87 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+
+\subsection*{Cells lost by FACS sorting}
+
+If we are trying to estimate expression in FACS-sorted
+cells, then it is important to deterimine if the sorting
+process is losing any cells. If it is, then ideally
+we would like to know which cells are lost, and/or
+correct for which cells are lost.
+
+\subsection*{Comparison of ungated and singlet samples}
+
+To try to determine this,
+we sequenced {\em ungated} cells, which were dissociated
+from embryos, but weren't FACS sorted. We also sequenced
+{\em singlets} -- cells that went through the cell sorter,
+but weren't gated by fluorescence. We ran these controls
+with both the {\em cnd-1} and {\em pha-4} samples.
+
+\begin{center}
+\includegraphics[width=0.7\textwidth]{ungated_and_singlets.pdf}
+\end{center}
+
+More genes enriched in ungated samples compared to singlets,
+than the other way around. The enrichment was generally similar
+between the {\em cnd-1} and {\em pha-4} samples.
+
+\subsection*{Genes enriched in ungated, relative to singlets}
+
+There were 150 genes enriched more than fourfold in the ungated samples,
+relative to singlets.
+The ten annotated genes with the highlest enrichment were:
+
+\begin{tabular}{lcl}
+gene & $\log_2$ fold enrichment in ungated & annotation from WormBase \\
+\hline
+cpz-1 & 3.3 & present in hypodermal cells (and adult gonad and pharynx) \\
+cpr-6 & 3.1 &  \\
+sepa-1 (M01E5.6) & 3.1 &   \\
+ttr-50 & 3.1 &  \\
+tag-10 & 3.0 & amphid neurons during 3-fold stage of embryogenesis \\
+btb-11 & 2.9 &  \\
+beta-mannosidase & 2.9 & localizes to lysozome \\
+tbx-9 & 2.8 & expressed in E lineage and hypodermis \\
+fbxc-18 & 2.8 &  \\
+fbxb-3 & 2.8 & \\
+\end{tabular}
+
+The enrichment of {\em tbx-9}
+and {\em cpz-1} suggests that the sorting process depletes hypodermal cells and
+intestine. The lower {\em tag-10} expression may indicate that the sorting
+doesn't include cells at the 3-fold stage of development.
+
+\subsection*{Genes enriched in singlets, relative to ungated}
+
+There were 25 genes enriched more than threefold in the singlet samples,
+relative to the ungated samples. Here are those with known annotation:
+
+\begin{tabular}{lcl}
+gene & $\log_2$ fold enrichment in ungated & annotation from WormBase \\
+\hline
+hlh-15 & -1.8 & expressed in head and tail neurons \\
+ceh-5 & -1.7 & expressed in head neurons \\
+hot-6 & -1.7 &  \\
+acc-4 & -1.6 & enriched in A-class motor neurons  \\
+grl-18 & -1.6 & expressed in socket cells \\
+nspc-7 & -1.6 &   \\
+\end{tabular}
+
+Several of these are expressed in neurons, which suggests that the
+sorting process is including
+neurons. This is somewhat contradicted by the enrichment of {\em tag-10}
+(which is specific to amphid neurons)
+in the ungated cells.
+
+\end{document}
+
