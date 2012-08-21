@@ -53,11 +53,12 @@ unmix.xval = function(M, unmix.function, b, b.var) {
 # Runs EP for one gene.
 unmix.ep.1 = function(M, b, b.var) {
   r = approx.region(M, as.vector(b), as.vector(b.var), prior.var=1e3 * max(b.var))
-  a = mvnorm.2(r$m, r$v, M, as.vector(b), as.vector(b.var))
+  a = mvnorm.2(r$t[,"m"], r$t[,"v"], M, as.vector(b), as.vector(b.var))
 
-#  ep.V[[ length(ep.V)+1 ]] <<- a$V  # XXX
+#  ep.V[[ length(ep.V)+1 ]] <<- a$V        # XXX
 
   r$m
+
 }
 
 reporters = unique(sub("_.*$", "", rownames(M)))
@@ -112,9 +113,14 @@ get.processed.data = function(time, negatives, volume, purity, norm.to.unit) {
   }
 
   # include sort purity correction?
-  if (purity) {
+  if (purity == "pos.neg") {
     b = cbind(r.corrected$m[reporters,], r.ts$m[reporters,])
     b.var = cbind(r.corrected$v[reporters,], r.ts$v[reporters,])
+  }
+  else if (purity == "unsorted.singlets") {
+    load("git/unmix/seq/FACS/r.ungated.corr.Rdata")
+    b = cbind(r.ungated.corr[reporters,], r.ts$m[reporters,])
+    b.var = b
   }
   else {
     b = cbind(r[reporters,], r.ts$m[reporters,])
@@ -184,44 +190,56 @@ compute.accuracy = function(expr, M, x.prediction) {
     auc = auc.accuracy(M, x.prediction) )
 }
 
-
-# Runs several unmixing methods on the reporter genes (cross-validated),
-# and computes statistics.
-unmix.crossval.stats = function(method.name, unmix.function) {
-  r = NULL
+# Runs an unmixing method on the reporter genes (with cross-validation),
+# including several different options for pre-processing the data,
+# and saves the result in a file.
+unmix.crossval = function(unmix.function, output.file) {
+  expr.prediction = list()
 
   for(time in c(FALSE, TRUE))
     for(negatives in c(FALSE, TRUE))
       for(volume in c(FALSE, TRUE))
-        for(purity in c(FALSE, TRUE))
+        for(purity in c("pos.neg", "unsorted.singlets", " "))
           for(norm.to.unit in c(FALSE, TRUE)) {
             p = get.processed.data(time, negatives, volume, purity,
               norm.to.unit)
-            x.p = unmix.xval(p$M, unmix.function, p$b, p$b.var)
-            accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
-              sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
-              x.p$x[reporters, cells.to.include])
-            r = rbind(r, c(time=time, negatives=negatives,
-              volume=volume, purity=purity, norm.to.unit=norm.to.unit,
-              pearson.corr = accuracy$pearson,
-              spearman.corr = accuracy$spearman,
-              area.under.curve = accuracy$auc) )
+            x = unmix.xval(p$M, unmix.function, p$b, p$b.var)
+            r = list(time=time, negatives=negatives, volume=volume,
+              purity=purity, norm.to.unit=norm.to.unit,
+              x.p.mean = x$x)
+            expr.prediction <- c(expr.prediction, list(r))
+
+            # FIXME: save variance, if it's present
           }
-
-  cbind(method=method.name, data.frame(r))
+  save(expr.prediction, file=output.file)
+  expr.prediction
 }
 
-if (TRUE) {
-crossval.accuracy.summary =
-  rbind(unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse),
-    unmix.crossval.stats("bounded pseudoinverse", unmix.lsei),
-#    unmix.crossval.stats("bounded pseudoinverse EQ", unmix.lsei.eq),
-    unmix.crossval.stats("EP", unmix.ep.1))
-
-# unmix.crossval.stats("pseudoinverse", unmix.pseudoinverse)
-
-write.table(crossval.accuracy.summary,
-  file="git/unmix/eval/crossval_accuracy_summary.tsv",
-  sep="\t", col.names=NA)
+# Computes accuracy for a prediction.
+# Args:
+#   predictions - a list of predictions (as from unmix.crossval.stats)
+#   expr - the actual expression (e.g., from imaging)
+#   M - cell-sorting matrix: 0-1 matrix indicating if a gene
+#     is "on" or "off" in a given cell (for AUC)
+# Returns: vector with Pearson, Spearman, and AUC
+compute.accuracy = function(expr.prediction, expr, M) {
+  accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
+    sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
+    x.p$x[reporters, cells.to.include])
 }
+
+if (FALSE) {
+
+  foo = unmix.crossval(unmix.pseudoinverse,
+    "git/unmix/eval/pseudoinverse_xval.Rdata")
+  unmix.crossval(unmix.ep.1,
+    "git/unmix/eval/ep_xval.Rdata")
+#  unmix.crossval(unmix.lsei,
+#    "git/unmix/eval/bound_pseudoinverse_xval.Rdata")
+
+# write.table(crossval.accuracy.summary,
+#   file="git/unmix/eval/crossval_accuracy_summary.tsv",
+#   sep="\t", col.names=NA)
+}
+
 
