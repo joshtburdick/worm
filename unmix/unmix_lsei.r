@@ -5,6 +5,32 @@ source("git/unmix/ept/approx_region.r")
 
 output.dir = "git/unmix/"
 
+# Unmixes using the constraints that x >= 0, and _exact_ constraint
+# that Mx = b (b.var is ignored.)
+# Args:
+#   M - the cell-sorting matrix
+#   b, b.var - the mean and variance of the expression in each fraction,
+#     as matrices with one row per gene, and one column per fraction
+# Returns: the estimated expression in each cell
+unmix.lsei.eq = function(M, b, b.var, prior.var = 1e2) {
+  source("git/unmix/ept/approx_region.r")
+
+  x = matrix(0, nrow = nrow(b), ncol=ncol(M))
+  rownames(x) = rownames(b)
+  colnames(x) = colnames(M)
+
+  for(g in rownames(b)) {
+    cat(g, "")
+    try({
+      r = lsei(E = M, F = b[g,],
+        G = diag(ncol(M)), H = rep(0, ncol(M)), type=1)
+      x[ g, ] = r$X
+    })
+  }
+
+  x
+}
+
 # Unmixes using the constraints that x >= 0.
 # Args:
 #   M - the cell-sorting matrix
