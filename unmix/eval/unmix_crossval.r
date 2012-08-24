@@ -204,38 +204,42 @@ unmix.crossval = function(unmix.function, output.file) {
             p = get.processed.data(time, negatives, volume, purity,
               norm.to.unit)
             x = unmix.xval(p$M, unmix.function, p$b, p$b.var)
-            r = list(time=time, negatives=negatives, volume=volume,
-              purity=purity, norm.to.unit=norm.to.unit,
+            r = list(options = c(time=time, negatives=negatives, volume=volume,
+              purity=purity, norm.to.unit=norm.to.unit),
               x.p.mean = x$x)
             expr.prediction <- c(expr.prediction, list(r))
 
-            # FIXME: save variance, if it's present
+            # FIXME: save EP term, if it's present
           }
   save(expr.prediction, file=output.file)
   expr.prediction
 }
 
-# Computes accuracy for a prediction.
+# Computes accuracy of a prediction.
 # Args:
 #   predictions - a list of predictions (as from unmix.crossval.stats)
 #   expr - the actual expression (e.g., from imaging)
 #   M - cell-sorting matrix: 0-1 matrix indicating if a gene
 #     is "on" or "off" in a given cell (for AUC)
 # Returns: vector with Pearson, Spearman, and AUC
-compute.accuracy = function(expr.prediction, expr, M) {
-  accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
+compute.accuracy = function(predictions, expr, M) {
+  
+  get.accuracy = function(p) {
+accuracy = compute.accuracy(expr.cell[reporters, cells.to.include],
     sort.matrix.unweighted[reporters,cells.to.include] >= 0.5,
     x.p$x[reporters, cells.to.include])
+  }
+  lapply(predictions, get.accuracy)
 }
 
 if (FALSE) {
 
   foo = unmix.crossval(unmix.pseudoinverse,
     "git/unmix/eval/pseudoinverse_xval.Rdata")
-  unmix.crossval(unmix.ep.1,
+  foo = unmix.crossval(unmix.ep.1,
     "git/unmix/eval/ep_xval.Rdata")
-#  unmix.crossval(unmix.lsei,
-#    "git/unmix/eval/bound_pseudoinverse_xval.Rdata")
+  foo = unmix.crossval(unmix.lsei,
+    "git/unmix/eval/bound_pseudoinverse_xval.Rdata")
 
 # write.table(crossval.accuracy.summary,
 #   file="git/unmix/eval/crossval_accuracy_summary.tsv",
