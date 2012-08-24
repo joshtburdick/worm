@@ -50,7 +50,7 @@ profile to a normal curve.
 For now, we use the normalized coverage within a gene's bounds as a measure
 of expression, with the caveat that we are measuring proportion of expression per
 sample (which only corresponds approximately to transcript abundance.)
-We focus on the 8,379 genes which had an average coverage $\ge 10 ppm$ here.
+We focus on the 8,379 genes which had an average coverage $\ge 10$ ppm here.
 If $x_t$ is the expression of a gene at time $t$,
 we define a weight
 
@@ -64,7 +64,6 @@ and find the ``mean time expressed'', $\mu$:
 \]
 
 We define the ``standard deviation of time expressed'' $\sigma_t$ analogously.
-
 
 \begin{center}
 \includegraphics[width=0.6\textwidth]{timeMeanAndSD.pdf}
@@ -85,12 +84,22 @@ that sorted fraction.)
 If we don't see any markers from some time, however,
 that suggests that cells from that time weren't included in the sorting.
 
-\includegraphics[width=\textwidth]{perStageMarkersInSorted.pdf}
+\includegraphics[width=\textwidth]{perStageMarkersUngated.pdf}
 
 A few of the very early time-specific genes were expressed in the sorted samples.
-However, it seems that more genes from later (say, after $\mu_t = 100$)
+However, it seems that more genes from later (say, after $\mu_t = 200$)
 were expressed. This suggests that we are mostly including cells after this time.
 
-\end{document}
+There are also some cells enriched in FACS-sorted samples which are
+specific to late time points (near 650 minutes.) This suggests that those
+sorted samples include some cells from embryos near that time.
 
+\subsection*{Genes expressed at particular times specific to cells}
+
+
+
+
+
+
+\end{document}
 
