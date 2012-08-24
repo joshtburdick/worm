@@ -5,6 +5,7 @@
 # source("/murrlab/jburdick/gcb/work/svnroot/trunk/deconvolve/R/tree/lineage_tree.r")
 
 source("R/lineage/tree_utils.r")
+# load("R/lineage/tree_utils.Rdata")
 
 cell.time.on.off =
   read.csv(gzfile("data/image/cellTimeOnOff.csv.gz"),
@@ -149,7 +150,7 @@ plot.segments = function(r, main, root="P0",
   par(bg="#ffffff")
   plot(0, 0, xlim=xlim, ylim=ylim,
     main=main, xlab="", ylab="time", xaxt="n", type="n")
-print(xlim)
+# print(xlim)
 
   # plot the tree: first one line per cell, then the connecting line
   segments(cell.to.x[cells], time.1[cells], cell.to.x[cells], time.2[cells],
@@ -205,12 +206,32 @@ plot.segments.old = function(cell.time, main, x.red, x.green, x.blue) {
   axis(1, at=cell.to.column[axis.nodes], labels=axis.nodes, cex=0.5, las=3)
 }
 
+# Plots data, with one color per cell.
+#   r - data frame with columns
+#     cell - cell name (as a string, not a factor)
+#     time.1, time.2 - start and end time for this segment (in minutes)
+#     col - a color (as a string; see rgb() or hsv())
+#   main - title
+#   root (= P0) - root of the tree
+#   times (= c(0, 350) - time interval to include
+#   lwd - width of lines
+# XXX assumes Sulston-style node naming.
+# Side effects: draws a tree, colored according to the given colors.
+plot.segments.per.cell = function(col, main, root="P0", times=c(0,350), lwd=3) {
+  r = data.frame(cell = as.character(rownames(cell.time.on.off)),
+    time.1=cell.time.on.off$on, time.2=cell.time.on.off$off,
+    stringsAsFactors=FALSE)
+  r = r[ r$cell %in% names(col) , ]
+  r$col = col[r$cell]
+  plot.segments(r, main, root, times, lwd)
+}
+
 # Plots per-cell expression data.
 # Args:
 #   col - the colors, as a vector with names the same as the
 #     "standard" 1341 cells.
 #   cell.time.on.off - matrix indicating which cell is on when
-plot.segments.per.cell = function(col, cell.time.on.off,
+plot.segments.per.cell.old = function(col, cell.time.on.off,
     times=c(-30, 350), lwd=5) {
 
   ylim = c(times[2], times[1])
@@ -283,133 +304,4 @@ cat("length(col.rgb[red,]) =", length(col.rgb["red",]), "\n")
 
   dev.off()
 }
-
-
-
-
-
-###### the following are various examples of calling plot.segments.per.cell,
-# and are deprecated
-
-# Plot actual expression patterns; this is largely to test the
-# tree-drawing code.
-# Args:
-#   expr - the expression matrix
-#   output.subdir - subdirectory (in "out") in which to write images
-plot.expr.all = function(expr, output.subdir) {
-  system(paste("mkdir -p out/", output.subdir, sep=""))
-  for(i in 1:dim(expr)[1]) {
-#   for(i in 1:5) {
-    name = rownames(expr)[i]
-cat(name, "")
-    expr1 = expr[i,]
-#    expr.is.na = is.na(expr1)
-#    expr1[ is.na(expr1) ] = 0
-    expr1[ expr1 <= 0 ] = 0
-
-    png(file=paste("out/", output.subdir, "/", name, ".png", sep=""),
-      width=3000, height=600)
-
-#    plot.segments(cell.time.all, name, expr1, 0*expr1, expr.is.na)
-
-    col = rgb(scale.to.unit(expr1), 0, 0)
-    names(col) = names(expr1)
-    plot.segments.per.cell(col)
-    title(name)
-    dev.off()
-  }
-
-cat("\n")
-}
-
-# Plot actual expression patterns; this is largely to test the
-# tree-drawing code.
-# Args:
-#   x.red, x.green, x.blue - the expression matrix
-#   output.subdir - subdirectory (in "out") in which to write images
-plot.expr.all.multicolor = function(x.red, x.green, x.blue, output.subdir) {
-  system(paste("mkdir -p out/", output.subdir, sep=""))
-  for(i in 1:dim(x.red)[1]) {
-#   for(i in 1:5) {
-    name = rownames(x.red)[i]
-cat(name, "")
-
-    png(file=paste("out/", output.subdir, "/", name, ".png", sep=""),
-      width=3000, height=600)
-
-    col = rgb(scale.to.unit(x.red[i,]),
-      scale.to.unit(x.green[i,]),
-      scale.to.unit(x.blue[i,]))
-    names(col) = names(x.red[i,])
-    plot.segments.per.cell(col)
-    title(name)
-    dev.off()
-  }
-
-cat("\n")
-}
-
-# Plot actual expression patterns, in a PDF file.
-# Args:
-#   x.red, x.green, x.blue - the expression matrix
-#   output.file - PDF file in which to write images
-plot.expr.all.multicolor.pdf = function(x.red, x.green, x.blue, output.file) {
-
-  pdf(file=output.file, width=7.5, height=10)
-  par(mfrow=c(3,1))
-
-  for(i in 1:dim(x.red)[1]) {
-    name = rownames(x.red)[i]
-cat(name, "")
-
-    col = rgb(scale.to.unit(x.red[i,]),
-      scale.to.unit(x.green[i,]),
-      scale.to.unit(x.blue[i,]))
-    names(col) = names(x.red[i,])
-    plot.segments.per.cell(col)
-    title(name)
-  }
-
-  dev.off()
-  cat("\n")
-}
-
-# Plots "actual" expression in red, and two different predictions in green;
-# used for comparing methods.
-# Args:
-#   expr.ref, expr.1, expr.2 - expression datasets, with one column per cell.
-#   output.subdir - subdirectory (in "out") in which to write images
-plot.expr.comparison.red.green = function(expr.ref, expr.1, expr.2, output.subdir) {
-  system(paste("mkdir -p out/", output.subdir, sep=""))
-  for(i in 1:dim(expr.ref)[1]) {
-#   for(i in 1:5) {
-    name = rownames(expr.ref)[i]
-cat(name, "")
-
-    png(file=paste("out/", output.subdir, "/", name, ".png", sep=""),
-      width=3000, height=1200)
-    par(mfrow=c(2,1))
-
-    # first dataset
-    col = rgb(scale.to.unit(expr.ref[i,]),
-      scale.to.unit(expr.1[i,]),
-      scale.to.unit(0*expr.ref[i,]))
-    names(col) = names(expr.ref[i,])
-    plot.segments.per.cell(col)
-    title(name)
-
-    # second dataset
-    col = rgb(scale.to.unit(expr.ref[i,]),
-      scale.to.unit(expr.2[i,]),
-      scale.to.unit(0*expr.ref[i,]))
-    names(col) = names(expr.ref[i,])
-    plot.segments.per.cell(col)
-    title(name)
-
-    dev.off()
-  }
-
-cat("\n")
-}
-
 
