@@ -40,18 +40,39 @@ round(r, 3)
 
 
 
+A2 = matrix(runif(20), nrow=2)
+r = lin.constraint.1(rep(0,10), c(rep(0,9),1e5), A2, c(1,2), c(2,1))
+round(r, 3)
+r = lin.constraint.1(rep(0,10), c(rep(2,4),1e5,1e5,1e5,rep(3,3)), A2, c(1,2), c(2,1))
+round(r, 3)
+
+
 A3 = matrix(runif(30), nrow=3)
 r = lin.constraint.1(rep(0,10), c(rep(0,9),1e5), A3, c(1,2,3), c(3,2,1))
 round(r, 3)
 
-r = lin.constraint.1(c(1:10), c(rep(1,4),1e9, 1e9, rep(10,4)), A3,
+r = lin.constraint.1(c(1:10), c(rep(1,4),1e8, 1e8, rep(10,4)), A3,
   c(1,2,3), c(2,3,1))
 round(r, 3)
 
-# empirically, it looks like this would converge so that the things
-# finite variance are unaffected by the constraint, and the entries
-# with infinite variance get determined by the constraint. or something.
+# Empirically, it looks like this would converge so that the things
+# with finite variance are unaffected by the constraint, and the entries
+# with infinite variance get determined by the constraint (plus the
+# things with finite variance.) or something.
+lin.constraint.1(c(0,0,0), c(1,2,1e5), t(c(1,1,1)), 2, 10)
+lin.constraint.1(c(0,0,0), c(1,2,1e5), t(c(1,1,1)), 2, 1)
+lin.constraint.1(c(0,0,0), c(1,2,1e9), t(c(1,1,1)), 2, 1)
+lin.constraint.1(c(0,0,0), c(1,2,1e9), t(c(1,1,1)), 2, 100)
 
+# Again, empiricallly, it seems that if there are at least as many
+# Inf variance entries as constraints, then the constraints
+# don't affect the entries with finite variance. 
+r = lin.constraint.1(c(10:1), c(1:8,rep(1e7,2)), A3, c(1,2,3), c(0,0,0))
+r = lin.constraint.1(c(10:1), c(1:7,rep(1e7,3)), A3, c(1,2,3), c(0,0,0))
+r = lin.constraint.1(c(10:1), c(1:6,rep(1e7,4)), A3, c(1,2,3), c(0,0,0))
+
+
+r = lin.constraint.1(c(10:3), c(1:8), A3[,c(1:8)], c(1,2,3), c(0,0,0))
 
 
 

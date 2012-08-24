@@ -22,7 +22,7 @@ new.factor = function(x) {
   z = sapply(x, function(a) a$b)
   z = z - z   # set these all to 0
 
-  list(x = x, to.f = z, from.f = z)
+  list(x = x, to.f = z)
 }
 
 # Constructs a factor with some set of methods.

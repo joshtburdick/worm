@@ -18,20 +18,13 @@ positive.moment.match = function(m, v) {
   r
 }
 
-# A factor which forces a variable to be positive.
-positive.factor = list(
 
-  # moment-matches the positive portion
-  update = function(a) {
-    b = canonical.to.mean.and.variance(a$x)
-    r = positive.moment.match(b[,"m"], b[,"v"])
-    list(x = mean.and.variance.to.canonical(r))
-  },
-
-  # log of the proportion of the distribution that's positive
-  log.evidence = function(a) {
-    b = canonical.to.mean.and.variance(x)
-    sum(pnorm(0, -b[,"mu"], sd, log.p=TRUE))
-  }
-)
+# Computes the message and log-evidence.
+positive.factor = function(a) {
+  b = canonical.to.mean.and.variance(a$x)
+  r = positive.moment.match(b[,"m"], b[,"v"])
+  list(
+    m = list(x = mean.and.variance.to.canonical(r)),
+    log.evidence = sum(pnorm(0, -b[,"mu"], sd, log.p=TRUE)))
+}
 
