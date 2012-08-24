@@ -26,3 +26,5 @@ cell.weights$volume = 2 ^ (-lineage.depth[rownames(cell.weights)])
 cell.weights$w = (1 + cell.weights$off - cell.weights$on) * cell.weights$volume
 cell.weights$w = cell.weights$w / sum(cell.weights$w)
 
+save(cell.weights, file="git/unmix/image/cell_weights.Rdata")
+
