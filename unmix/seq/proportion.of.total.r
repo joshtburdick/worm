@@ -30,7 +30,7 @@ read.depth.to.fraction = function(r, fraction.of.cells.sorted) {
     a[ a >= 1 ] = 1
 
     # total reads relevant to each gene
-    tr = (r[,-1] + r[,1])
+    tr = (r[,-1] + r[,1]) / 10
 
     list(m = beta.mean(a*tr + 1, (1-a)*tr + 1),
       v = beta.variance(a*tr + 1, (1-a)*tr + 1))
@@ -50,7 +50,7 @@ read.depth.to.fraction = function(r, fraction.of.cells.sorted) {
     a[ is.na(a) ] = 0
 
     # total reads for this gene
-    tr = (r[,pos] + r[,neg])
+    tr = (r[,pos] + r[,neg]) / 10
 
     list(m = beta.mean(a*tr + 1, (1-a)*tr + 1),
       v = beta.variance(a*tr + 1, (1-a)*tr + 1))
@@ -66,6 +66,10 @@ read.depth.to.fraction = function(r, fraction.of.cells.sorted) {
 
   # first, get positive fractions
   a = get.proportion.pos.only(r[,c("all", pos.fractions)])
+
+  # prepend "all" fraction
+  a$m = cbind(all=1, a$m)
+  a$v = cbind(all=0, a$v)
 
   # tack on cases with negative fractions
   for(gene in neg.fractions) {
