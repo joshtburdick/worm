@@ -79,8 +79,11 @@ get.reads.per.million = function(coverage.file) {
 }
 
 reads.per.million = get.reads.per.million("git/unmix/seq/quant/rawCoverage.tsv.gz")
+reads.per.million = reads.per.million[ , order(colnames(reads.per.million)) ]
+# write.table(round(average.by.sample.name(reads.per.million), 3),
+#   file=gzfile("git/unmix/seq/quant/readsPerMillion.tsv.gz"), sep="\t", col.names=NA)
 
-write.table(round(average.by.sample.name(reads.per.million), 3),
-  file=gzfile("git/unmix/seq/quant/readsPerMillion.tsv.gz"), sep="\t", col.names=NA)
+write.table(round(reads.per.million, 3),
+  file="git/unmix/seq/quant/readsPerMillion.tsv", sep="\t", col.names=NA)
 
 
