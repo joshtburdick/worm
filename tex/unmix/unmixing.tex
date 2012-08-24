@@ -27,8 +27,8 @@ M_{ij} = \frac{S_{ij} V_j}{ \sum\limits_{i}^{} S_{ij} V_j }
 We attempted to increase the temporal resolution of our predictions
 by including RNA-seq data from precisely-staged embryos.
 This included 23 timepoints spaced between zero and six hours after hatching.
-We only included the timepoints up until seven hours, which is approximately
-when enclosure occurs.
+We only included the thirteen timepoints up until seven hours, which is
+approximately when ventral enclosure occurs.
 
 These embryos sequenced in that experiment were grown at $20^{\circ}$C.
 Since our image data were aligned to the lineage of an embryo which was
@@ -70,7 +70,7 @@ in read depth between replicates, as a function of average read depth.
 
 The average slope among these experiments (assuming a zero $y$-intercept) was 1.05.
 Therefore (for the sake of simplicity)
-we assumed that the variance equalled the number of reads.
+we assumed that the variance equalled the proportion of expression in parts-per-million.
 
 \subsubsection*{Sorting purity}
 
@@ -94,31 +94,44 @@ above), then we can obtain $G$'s distribution, which is also normal.
 
 Our estimate of $G$ will be smaller than our estimate of $F$.
 Indeed, this can result in estimates of $G$ which are negative; in such
-cases, we set the mean to zero.
+cases, we set the mean to zero. (However, even when that happens, the
+variance for $G$ may be nonzero.)
 
 In cases where the sort purity wasn't measured, we assumed it was 100\%.
-This means we will underestimate the depletion of a gene in a fraction,
-and so presumably our estimate will be less tissue-specific.
+This underestimates the depletion of a gene in a fraction,
+presumably resulting in a prediction which is less tissue-specific than the
+reality.
 
 \newpage
 
 \subsection*{Methods of unmixing}
 
 We tried several methods of estimating the expression in each cell, based
-on the expression in fractions.
+on the expression in fractions. We tried this using only the FACS data
+(18 measurements), and with temporal information included (13 additional
+measurements).
 
 Not all 1,341 cells present at hatch were included in our measurements,
 which are unlikely to include cells after ventral enclosure (around 400 minutes.)
-We assumed enclosure happened at 420 minutes, including all cells born
+We assumed enclosure happened at 420 minutes, and included all cells born
 before that time except P0; this includes 1,312 cells.
 
 If a gene's expression in a fraction was zero, we assumed that the expression
 of that gene in all cells in that fraction was zero.
 
-\subsection*{Using the pseudoinverse}
+\subsubsection*{Using the pseudoinverse}
+
+Let $M$ be the sorting matrix, $\mu_f$ be the expression in each fraction, and
+$x$ be the unknown expression in each cell. To estimate $x$ in
 
 \[
-x = M^\dagger G
+Mx = \mu_f
+\]
+
+we multiply by the pseudoinverse of $M$
+
+\[
+x = M^\dagger \mu_f
 \]
 
 This may result in negative predictions; we replaced any negative elements
@@ -126,20 +139,34 @@ of $x$ with 0.
 
 \subsubsection*{Using the pseudoinverse, constraining $x \ge 0$}
 
+We assumed that there was a prior on the expression
 
+\[
+x \sim \mathcal{N}(\mu_0, \sigma_0)
+\]
 
-\subsection*{Unmixing using EP}
+and added the observation
 
+\[
+Mx \sim \mathcal{N}(\mu_f, \sigma_f)
+\]
 
+with constraints that $x \ge 0$.
 
+We used the {\tt lsei} function from the {\tt limSolve} R package.
+The prior was set to 100 times the maximum variance in any fraction.
+Using only the constraint on $Mx$, without the prior, gave predictions which were
+always concentrated in a few cells.)
 
+\subsubsection*{Unmixing using EP}
 
-Convergence of EP can be problematic. We 
-used damping (with $\alpha = 0.5$) to improve convergence.
-We used a prior that was 1,000 times the maximum estimated variance
-in any fraction; using a flat
-prior caused numerical problems.
+We attempted to estimate the distribution of $x$ as above, except using
+expectation propagation. This should give an estimate of $x$,
+and also the range of possible values for $x$.
 
+Convergence of EP can be problematic. 
+We used a prior that was 100 times the maximum estimated variance
+in any fraction; using a flat prior caused lack of convergence.
 
 \end{document}
 
