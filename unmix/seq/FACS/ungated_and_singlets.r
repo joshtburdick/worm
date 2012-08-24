@@ -46,8 +46,6 @@ write.table(names(ungated.singlet.diff)[ungated.singlet.diff < -1.5],
   file="git/unmix/seq/FACS/ungated_low.txt",
   row.names=FALSE, col.names=FALSE, quote=FALSE)
 
-
-
 # Does many t-tests between x and y. Not radically fast.
 # Returns: data.frame containing
 #   t - the t-value
@@ -72,9 +70,6 @@ t.test.many = function(x, y) {
   r
 }
 
-
-
-
 ungated.singlets.t = data.frame(t.test.many(lr[,c(18,24)], lr[,-c(18,24)]))
 ungated.singlets.t[ is.na(ungated.singlets.t$p), "p" ] = 1
 ungated.singlets.t$adjusted.p = p.adjust(ungated.singlets.t$p, method="hochberg")
@@ -97,4 +92,27 @@ write.table(rownames(ungated.singlets.t[!is.na(ungated.singlets.t$adjusted.p) &
   file="git/unmix/seq/FACS/ungated_low.txt",
   row.names=FALSE, col.names=FALSE, quote=FALSE)
 }
+
+# correlation of samples with various ungated samples
+as.matrix(sort(cor(lr, ungated.singlet.diff)[,1]))
+
+# subtract off that component
+u = ungated.singlet.diff / sqrt(sum(ungated.singlet.diff^2))
+lr.1 = lr - (u %o% as.vector(t(lr) %*% u))
+
+# pool things by sample name
+if (FALSE) {
+  source("R/unmix/sort_paper/seq/quant/pool.samples.r")
+  r.ungated.corr = combine.by.sample.name.1(lr.1)
+  r.ungated.corr[,"all"] = r.ungated.corr[,"all"] / 2
+  r.ungated.corr[,"cnd-1"] = r.ungated.corr[,"cnd-1"] / 3
+  r.ungated.corr[,"pha-4"] = r.ungated.corr[,"pha-4"] / 2
+
+  save(r.ungated.corr, file="git/unmix/seq/FACS/r.ungated.corr.Rdata")
+}
+
+
+
+
+
 
