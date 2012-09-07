@@ -29,7 +29,7 @@ plot.mean.and.var = function(r, main) {
   abline(0, slope, col="darkblue", lwd=2)
 }
 
-plot.it = function() {
+plot.mean.and.var.all = function() {
   pdf("git/unmix/seq/quant/noiseBetweenReplicates.pdf", width=7.5, height=7.5)
   par(mfrow=c(2,2))
   plot.mean.and.var(cbind(total.counts("cndm1p8_19"), total.counts("cndm1_12_14"),
@@ -43,6 +43,6 @@ plot.it = function() {
   dev.off()
 }
 
-plot.it()
+plot.mean.and.var.all()
 
 
