@@ -22,37 +22,13 @@
 \titlepage
 \end{frame}
 
-\begin{frame}{Some genes only function, and are expressed in, certain cells}
+\begin{frame}{Where and when is each gene expressed in development?}
 
-\includegraphics[height=0.8\textheight]{imported/novoshtern2011fig3.jpg}
+\begin{itemize}
 
-Human hematopoeisis (Novoshtern et al., 2011)
+\item 
 
-{\small measured by flow sorting cells into groups, then profiling expression of each group}
-
-\end{frame}
-
-\begin{frame}{Fourteen reporters distinguish many cells}
-
-\begin{figure}
-\begin{centering}
-\includegraphics[width=0.9\textwidth]{R/unmix/sort_paper/plot/distinguishableCells.pdf}
-
-{\small
-\begin{tabular}{lll}
-gene & ortholog & mapped reads (millions) \\
-\hline
-{\em pha-4} & FoxA & 42.8 \\
-{\em pal-1} & Caudal & 28.8 \\
-{\em ceh-6} & homeodomain & 19.3 \\
-{\em ceh-26} & " & 25.0 \\
-{\em ceh-27} & " & 13.4\\
-{\em ceh-36} & " & 18.3 \\
-{\em cnd-1} & NeuroD & 49.0 \\
-\end{tabular}
-}
-\end{centering}
-\end{figure}
+\end{itemize}
 
 \end{frame}
 
@@ -60,12 +36,11 @@ gene & ortholog & mapped reads (millions) \\
 
 \begin{itemize}
 
-\item Expression profiles of embryonic cells sorted by
-fourteen transcription factors
+\item What genes are enriched in cells expressing some TF?
 
-\item What clusters of genes are enriched in the same pattern of samples?
+\item What genes are enriched in cells expressing several of the same TFs?
 
-\item How are these clusters of genes regulated?
+\item What does this imply about how genes are regulated?
 
 \end{itemize}
 
@@ -73,36 +48,183 @@ fourteen transcription factors
 
 \begin{frame}{Samples sorted}
 
+GFP-protein fusions
+
+
+RFP-promotor fusions
+
+
+Controls
+
 
 
 \end{frame}
 
 \begin{frame}{How reproducible are the data?}
 
+\includegraphics[width=0.8\textwidth]{git/unmix/seq/quant/replicateScatterPlot.png}
+
+\end{frame}
+
+\begin{frame}{Which samples are similar to each other?}
+
+\includegraphics[width=1\textwidth]{git/unmix/seq/cluster/pvclust.pdf}
+
+\end{frame}
+
+\begin{frame}{Are some cells depleted from the sorting process?}
+
+\includegraphics[width=0.8\textwidth]{git/unmix/seq/FACS/ungated_and_singlets.pdf}
+
+\end{frame}
+
+\begin{frame}{Some genes are specific to particular embryonic times}
+
+\includegraphics[height=0.8\textheight]{git/unmix/seq/timing/timeMeanAndSD.pdf}
+
+\hfill Boeck and Waterston {\em et al}, 2012
+
+\end{frame}
+
+
+\begin{frame}{Which embryonic times are included in the sorting?}
+
+\includegraphics[width=0.8\textwidth]{git/unmix/seq/timing/perStageMarkersUngated.pdf}
+
+\end{frame}
+
+
+\begin{frame}{{\em cnd-1}}
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/cnd-1.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+germ line & 295 & $10^{-17}$ \\
+QR.a/p & 8 & 0.005 \\
+cc(A/P)(L/R) & 8 & 0.005 \\
+D & 25 & 0.0001 \\
+C(a/p)p & 25 & 0.0002 
+\end{tabular}
+\end{table}
+\end{minipage}
+
+\end{frame}
+
+
+\begin{frame}{{\em unc-130}}
+
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/unc-130.pdf}
+
+\end{frame}
+
+\begin{frame}{{\em ceh-26}}
+
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-26.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+excretory secretory system & 5 & 0.006 
+\end{tabular}
+\end{minipage}
+
+\end{frame}
+
+\begin{frame}{{\em ceh-6}}
+
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-6.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+\begin{table}[!tbp]\footnotesize
+\begin{tabular}{lr}
+\multicolumn{1}{l}{gene}&\multicolumn{1}{c}{enrichment}\tabularnewline
+\hline
+axl-1&$37.1$\tabularnewline
+oac-49&$17.0$\tabularnewline
+nlp-11&$14.3$\tabularnewline
+fip-2&$11.9$\tabularnewline
+tpst-2&$11.8$\tabularnewline
+srh-67&$ 9.9$\tabularnewline
+nas-3&$ 9.0$\tabularnewline
+fbxb-95&$ 8.5$\tabularnewline
+oac-8&$ 8.1$\tabularnewline
+hlh-34&$ 8.1$\tabularnewline
+\hline
+\end{tabular}
+\end{table}
+
+\end{minipage}
+
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+G-protein coupled receptor signalling & {\em srw-113, gnrr-7, srg-31} (12 total) & $10^{-4}$ \\
+axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
+\end{tabular}
+\end{table}
+
+\includegraphics[width=0.15\textwidth,angle=270]{/gpfs/fs0/l/murr/trees/20100730_ceh-6_L1.png}
+\end{frame}
+
+\begin{frame}{Genes enriched in sorted fractions}
+
+\begin{table}\footnotesize
+\begin{tabular}{lllll}
+sort & \% of & num. genes & enriched GO & enriched \\
+marker & cells & enriched & categories & tissues \\
+\hline
+
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}{Clusters of genes enriched in the same sort fractions}
+
+
 
 
 
 \end{frame}
 
-\begin{frame}{Genes enriched in pha-4 (etc.) fractions}
 
 
+\begin{frame}{Fourteen reporters distinguish many cells}
 
+\begin{figure}
+\begin{centering}
+\includegraphics[width=0.9\textwidth]{R/unmix/sort_paper/plot/distinguishableCells.pdf}
+
+\end{centering}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Cell-type-specific expression data can suggest regulatory relationships}
+
+\includegraphics[height=0.8\textheight]{imported/novoshtern2011fig3.jpg}
+
+Human hematopoeisis (Novoshtern et al., 2011)
+
+{\small flow sorted blood cells into groups, then profiled expression of each group}
 
 \end{frame}
 
-\begin{frame}{Including negative fraction increases dynamic range}
-
-FIXME include evidence that it does...
-
-
-\end{frame}
-
-\begin{frame}{Which cells are being included by the sorting?}
 
 
 
-\end{frame}
+
+
+
 
 
 
