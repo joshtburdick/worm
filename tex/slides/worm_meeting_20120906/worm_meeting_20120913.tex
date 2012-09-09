@@ -22,13 +22,27 @@
 \titlepage
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
+\begin{frame}{Where a gene is expressed is important}
 
-\begin{itemize}
+\begin{centering}
+\includegraphics[width=\textwidth]{notch_example_1.png}
+\end{centering}
 
-\item 
+\hfill Neves and Priess, 2005
 
-\end{itemize}
+\end{frame}
+
+\begin{frame}{Where {\em many} genes are expressed is important}
+
+\includegraphics[width=\textwidth]{yanai2008.png}
+
+\hfill Yanai, 2008
+
+\end{frame}
+
+\begin{frame}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
 
 \end{frame}
 
@@ -36,9 +50,13 @@
 
 \begin{itemize}
 
-\item What genes are enriched in cells expressing some TF?
+\item What genes are enriched in cells that express some TF?
+
+\pause 
 
 \item What genes are enriched in cells expressing several of the same TFs?
+
+\pause
 
 \item What does this imply about how genes are regulated?
 
@@ -48,15 +66,13 @@
 
 \begin{frame}{Samples sorted}
 
-GFP-protein fusions
+FIXME: include Travis' FACSlog
 
+GFP-protein fusions
 
 RFP-promotor fusions
 
-
 Controls
-
-
 
 \end{frame}
 
@@ -78,7 +94,8 @@ Controls
 
 \end{frame}
 
-\begin{frame}{Some genes are specific to particular embryonic times}
+
+\begin{frame}{Some genes are mostly expressed at a particular time}
 
 \includegraphics[height=0.8\textheight]{git/unmix/seq/timing/timeMeanAndSD.pdf}
 
@@ -86,6 +103,13 @@ Controls
 
 \end{frame}
 
+\begin{frame}{Picking time-specific genes}
+
+\includegraphics[width=\textwidth]{time_figure.png}
+
+\hfill Boeck and Waterston {\em et al}, 2012
+
+\end{frame}
 
 \begin{frame}{Which embryonic times are included in the sorting?}
 
@@ -112,12 +136,26 @@ C(a/p)p & 25 & 0.0002
 \end{table}
 \end{minipage}
 
-\end{frame}
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
 
+\end{frame}
 
 \begin{frame}{{\em unc-130}}
 
+\begin{minipage}{0.4\textwidth}
 \includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/unc-130.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+
+\end{tabular}
+\end{table}
+\end{minipage}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110927_RW11144_L4.png}
 
 \end{frame}
 
@@ -127,13 +165,16 @@ C(a/p)p & 25 & 0.0002
 \includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-26.pdf}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
-
+\begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
 \hline
 excretory secretory system & 5 & 0.006 
 \end{tabular}
+\end{table}
 \end{minipage}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120401_JIM122_L3.png}
 
 \end{frame}
 
@@ -172,7 +213,8 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 \end{tabular}
 \end{table}
 
-\includegraphics[width=0.15\textwidth,angle=270]{/gpfs/fs0/l/murr/trees/20100730_ceh-6_L1.png}
+FIXME add tree here...
+% \includegraphics[width=0.15\textwidth,angle=270]{/gpfs/fs0/l/murr/trees/20100730_ceh-6_L1.png}
 \end{frame}
 
 \begin{frame}{Genes enriched in sorted fractions}
@@ -192,11 +234,7 @@ marker & cells & enriched & categories & tissues \\
 
 
 
-
-
 \end{frame}
-
-
 
 \begin{frame}{Fourteen reporters distinguish many cells}
 
