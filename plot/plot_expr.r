@@ -75,7 +75,10 @@ scale.to.unit = function(x) {
 }
 
 # Scales data to an interval.
-scale.interval.to.unit = function(x, lo=0, hi=1) {
+scale.interval.to.unit = function(x, interval) {
+  lo = interval[1]
+  hi = interval[2]
+
   x[ is.na(x) ] = 0
   x1 = (x - lo) / (hi - lo)
   x1[ x1 < 0 ] = 0
