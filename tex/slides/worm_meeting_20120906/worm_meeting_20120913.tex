@@ -40,9 +40,15 @@
 
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Measuring expression using automated lineage tracing}
 
-\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
+{\center
+\includegraphics[width=0.75\textwidth]{image/movie/P0_1200x400/20110929_ceh-43_L1.png}
+
+\includegraphics[width=0.75\textwidth]{image/movie/P0_1200x400/20101213_RW10889_pal-1_L3.png}
+
+\includegraphics[width=0.75\textwidth]{image/movie/P0_1200x400/20110531_pha4_24C_L3.png}
+}
 
 \end{frame}
 
@@ -54,7 +60,7 @@
 
 \pause 
 
-\item What genes are enriched in cells expressing several of the same TFs?
+\item What genes are enriched in cells expressing several TFs?
 
 \pause
 
@@ -66,13 +72,11 @@
 
 \begin{frame}{Samples sorted}
 
-FIXME: include Travis' FACSlog
+\includegraphics[width=\textwidth]{FACSlog.png}
 
-GFP-protein fusions
+\hfill Travis Walton
 
-RFP-promotor fusions
-
-Controls
+{\small promoter fusions are mCherry, protein fusions are GFP}
 
 \end{frame}
 
@@ -97,7 +101,7 @@ Controls
 
 \begin{frame}{Some genes are mostly expressed at a particular time}
 
-\includegraphics[height=0.8\textheight]{git/unmix/seq/timing/timeMeanAndSD.pdf}
+\includegraphics[height=0.8\textheight]{git/unmix/seq/timing/gene_timeseries.pdf}
 
 \hfill Boeck and Waterston {\em et al}, 2012
 
@@ -111,12 +115,13 @@ Controls
 
 \end{frame}
 
-\begin{frame}{Which embryonic times are included in the sorting?}
+\begin{frame}{What times are included in the sorting?}
 
-\includegraphics[width=0.8\textwidth]{git/unmix/seq/timing/perStageMarkersUngated.pdf}
+\begin{centering}
+\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersUngated.pdf}
+\end{centering}
 
 \end{frame}
-
 
 \begin{frame}{{\em cnd-1}}
 \begin{minipage}{0.4\textwidth}
@@ -135,6 +140,14 @@ C(a/p)p & 25 & 0.0002
 \end{tabular}
 \end{table}
 \end{minipage}
+
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+
+\end{tabular}
+\end{table}
 
 \includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
 
@@ -155,7 +168,43 @@ anatomy term & \# genes & adjusted $p$ \\
 \end{table}
 \end{minipage}
 
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+
+\end{tabular}
+\end{table}
+
 \includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110927_RW11144_L4.png}
+
+\end{frame}
+
+\begin{frame}{{\em ceh-6}}
+
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-6.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+excretory secretory system & 5 & 0.006 
+\end{tabular}
+\end{table}
+\end{minipage}
+
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+G-protein coupled receptor signalling & {\em srw-113, gnrr-7, srg-31} (12 total) & $10^{-4}$ \\
+axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
+\end{tabular}
+\end{table}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120331_RW10871_L4.png}
 
 \end{frame}
 
@@ -174,64 +223,34 @@ excretory secretory system & 5 & 0.006
 \end{table}
 \end{minipage}
 
-\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120401_JIM122_L3.png}
-
-\end{frame}
-
-\begin{frame}{{\em ceh-6}}
-
-\begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-6.pdf}
-\end{minipage}
-\begin{minipage}{0.58\textwidth}
-\begin{table}[!tbp]\footnotesize
-\begin{tabular}{lr}
-\multicolumn{1}{l}{gene}&\multicolumn{1}{c}{enrichment}\tabularnewline
-\hline
-axl-1&$37.1$\tabularnewline
-oac-49&$17.0$\tabularnewline
-nlp-11&$14.3$\tabularnewline
-fip-2&$11.9$\tabularnewline
-tpst-2&$11.8$\tabularnewline
-srh-67&$ 9.9$\tabularnewline
-nas-3&$ 9.0$\tabularnewline
-fbxb-95&$ 8.5$\tabularnewline
-oac-8&$ 8.1$\tabularnewline
-hlh-34&$ 8.1$\tabularnewline
-\hline
-\end{tabular}
-\end{table}
-
-\end{minipage}
-
 \begin{table}\footnotesize
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-G-protein coupled receptor signalling & {\em srw-113, gnrr-7, srg-31} (12 total) & $10^{-4}$ \\
-axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
+
 \end{tabular}
 \end{table}
 
-FIXME add tree here...
-% \includegraphics[width=0.15\textwidth,angle=270]{/gpfs/fs0/l/murr/trees/20100730_ceh-6_L1.png}
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120401_JIM122_L3.png}
+
 \end{frame}
 
 \begin{frame}{Genes enriched in sorted fractions}
 
 \begin{table}\footnotesize
 \begin{tabular}{lllll}
-sort & \% of & num. genes & enriched GO & enriched \\
-marker & cells & enriched & categories & tissues \\
+sort & \# genes & \# genes & enriched GO & enriched \\
+marker & enriched & depleted & categories & tissues \\
 \hline
-
 \end{tabular}
 \end{table}
 
 \end{frame}
 
+
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 
+FIXME
 
 
 \end{frame}
@@ -258,12 +277,76 @@ Human hematopoeisis (Novoshtern et al., 2011)
 \end{frame}
 
 
+\begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
+
+\includegraphics[width=1\textwidth]{IGV/nhr-236_2.png}
+
+\end{frame}
+
+\begin{frame}{A tissue-specific bidirectional promoter}
+
+\includegraphics[width=1\textwidth]{IGV/C25E10_13.png}
+
+\end{frame}
+
+\begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
+\begin{center}
+\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
+\end{center} 
+\end{frame}
+
+\begin{frame}{Summary}
+
+\begin{itemize}
+
+\item RNA-seq of sorted samples is consistent with
+expression of many known genes.
+
+\item Although unmixing isn't working, the combined expression data
+set is informative about tissue-specific expression.
+
+\item We can see examples of splicing and antisense transcription
+which are enriched in different tissues.
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Future directions}
+
+\begin{itemize}
+
+\item Apply prediction method to estimate where genes are expressed.
+
+\item Measure accuracy of predictions, using RNA-FISH and fluorescent reporters.
+
+\item Predict regulatory targets of transcription factors, by combining
+expression data with motif, chromatin and transcription factor ChIP data.
+
+\item Determine significance of particular genes being expressed in particular cells.
+
+\end{itemize}
+
+\end{frame}
 
 
 
+\begin{frame}{Thank you}
 
+\begin{itemize}
 
+\item John Murray, and the Murray lab (particularly for lineaging)
 
+\item particularly Travis Walton, who did all of the worm prep, FACS sorting,
+and library preparation
+
+\item sequencing core
+
+\item many others, for useful questions and commments
+
+\end{itemize}
+
+\end{frame}
 
 
 \end{document}
