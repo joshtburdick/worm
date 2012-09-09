@@ -74,6 +74,15 @@ scale.to.unit = function(x) {
   x2
 }
 
+# Scales data to an interval.
+scale.interval.to.unit = function(x, lo=0, hi=1) {
+  x[ is.na(x) ] = 0
+  x1 = (x - lo) / (hi - lo)
+  x1[ x1 < 0 ] = 0
+  x1[ x1 > 1 ] = 1
+  x1
+}
+
 # Given a dendrogram, computes columns such that the leaves
 # are all evenly spaced, and intermediate nodes are halfway
 # in between those.
@@ -129,7 +138,6 @@ plot.segments = function(r, main, root="P0",
 
   # part of the lineage to plot
   lin1 = get.lineage.by.name(lin, root)
-
   num.leaves = length(c(lin1, recursive=TRUE))
   r = r[ r$cell %in% names(lineage.to.list(lin1)) , ]
 
@@ -139,7 +147,6 @@ plot.segments = function(r, main, root="P0",
 
   # get first and last times for each cell
   cells = unique(r$cell)
-
   time.1 = c(by(r$time.1, r$cell, min))
   time.2 = c(by(r$time.2, r$cell, max))
 
