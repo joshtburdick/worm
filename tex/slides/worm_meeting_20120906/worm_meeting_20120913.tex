@@ -77,7 +77,21 @@
 
 \hfill Travis Walton
 
-{\small promoter fusions are mCherry, protein fusions are GFP}
+\begin{itemize}
+
+\item promoter fusions are mCherry, protein fusions are GFP
+
+\item additional controls (for {\em cnd-1} and {\em pha-4}):
+
+\begin{itemize}
+
+\item ``singlets'': cells run through the sorter, without any gating
+
+\item unsorted: cells which were dissociated, but not sorted
+
+\end{itemize}
+
+\end{itemize}
 
 \end{frame}
 
@@ -99,12 +113,17 @@
 
 \end{frame}
 
+\begin{frame}{Which cells are depleted from the sorting process?}
+
+
+
+\end{frame}
 
 \begin{frame}{Some genes are mostly expressed at a particular time}
 
 \includegraphics[height=0.8\textheight]{git/unmix/seq/timing/gene_timeseries.pdf}
 
-\hfill Boeck and Waterston {\em et al}, 2012
+\hfill Boeck and Waterston (modENCODE)
 
 \end{frame}
 
@@ -112,15 +131,52 @@
 
 \includegraphics[width=\textwidth]{time_figure.png}
 
-\hfill Boeck and Waterston {\em et al}, 2012
+\hfill Boeck and Waterston (modENCODE)
 
 \end{frame}
 
 \begin{frame}{What times are included in the sorting?}
 
 \begin{centering}
-\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersUngated.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersControls.pdf}
 \end{centering}
+
+\end{frame}
+
+\begin{frame}{What times are included in the sorting?}
+
+\begin{centering}
+\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersVsSinglets.pdf}
+\end{centering}
+
+\end{frame}
+
+\begin{frame}{{\em ceh-26}}
+
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-26.pdf}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+excretory secretory system & 5 & 0.006 \\
+\end{tabular}
+\end{table}
+\end{minipage}
+
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+integral to membrane & {\em srx-47, vha-17, clc-2} (23 others) & $2 \cdot 10^{-7}$ \\
+astacin activity & {\em nas-12, nas-2, Y19D10A.6, nas-31, toh-1} & 0.017 \\
+carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
+\end{tabular}
+\end{table}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120401_JIM122_L3.png}
 
 \end{frame}
 
@@ -212,35 +268,6 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 
 \end{frame}
 
-\begin{frame}{{\em ceh-26}}
-
-\begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-26.pdf}
-\end{minipage}
-\begin{minipage}{0.58\textwidth}
-\begin{table}[!tbp]\scriptsize
-\begin{tabular}{lll}
-anatomy term & \# genes & adjusted $p$ \\
-\hline
-excretory secretory system & 5 & 0.006 \\
-\end{tabular}
-\end{table}
-\end{minipage}
-
-\begin{table}\footnotesize
-\begin{tabular}{llr}
-GO category & genes & $p$ value \\
-\hline
-integral to membrane & {\em srx-47, vha-17, clc-2} (23 others) & $2 \cdot 10^{-7}$ \\
-astacin activity & {\em nas-12, nas-2, Y19D10A.6, nas-31, toh-1} & 0.017 \\
-carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
-\end{tabular}
-\end{table}
-
-\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120401_JIM122_L3.png}
-
-\end{frame}
-
 \begin{frame}{Genes enriched in sorted fractions}
 
 FIXME
@@ -288,26 +315,6 @@ marker & enriched & depleted & categories & tissues \\
 
 \item Presumably co-clustered genes such as {\em W09G10.3} are expressed
 in similar cells.
-
-\end{itemize}
-}
-\end{minipage}
-\vspace{5mm}
-
-\hfill TMEV (TIGR Multi-Experiment Viewer)
-\end{frame}
-
-\begin{frame}{Clusters of genes enriched in the same sort fractions}
-\begin{minipage}{0.5\textwidth}
-\includegraphics[width=\columnwidth]{TMEV_2.png}
-\end{minipage}
-\begin{minipage}{0.48\textwidth}
-{\small 
-\begin{itemize}
-
-\item Several of these are 7TM or serpentine receptors.
-
-\item Presumably they're expressed in similar cells.
 
 \end{itemize}
 }
