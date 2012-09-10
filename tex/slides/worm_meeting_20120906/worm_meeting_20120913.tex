@@ -48,6 +48,7 @@
 \includegraphics[width=0.75\textwidth]{image/movie/P0_1200x400/20101213_RW10889_pal-1_L3.png}
 
 \includegraphics[width=0.75\textwidth]{image/movie/P0_1200x400/20110531_pha4_24C_L3.png}
+
 }
 
 \end{frame}
@@ -145,7 +146,8 @@ C(a/p)p & 25 & 0.0002
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-
+regulation of transcription & {\em ceh-5, cnd-1, Y51H4A.4, unc-3, hlh-32} & 0.02 \\
+oviposition & {\em cnd-1, bar-1, ZK930.3} & 0.036 \\
 \end{tabular}
 \end{table}
 
@@ -190,7 +192,9 @@ GO category & genes & $p$ value \\
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
 \hline
-excretory secretory system & 5 & 0.006 
+ventral cord neuron & 607 & $10^{-10}$ \\
+nerve ring & 632 & $10^{-8}$ \\
+preanal ganglion & 25 & 0.004 \\
 \end{tabular}
 \end{table}
 \end{minipage}
@@ -218,7 +222,7 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
 \hline
-excretory secretory system & 5 & 0.006 
+excretory secretory system & 5 & 0.006 \\
 \end{tabular}
 \end{table}
 \end{minipage}
@@ -227,7 +231,9 @@ excretory secretory system & 5 & 0.006
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-
+integral to membrane & {\em srx-47, vha-17, clc-2} (23 others) & $2 \cdot 10^{-7}$ \\
+astacin activity & {\em nas-12, nas-2, Y19D10A.6, nas-31, toh-1} & 0.017 \\
+carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 \end{tabular}
 \end{table}
 
@@ -236,6 +242,8 @@ GO category & genes & $p$ value \\
 \end{frame}
 
 \begin{frame}{Genes enriched in sorted fractions}
+
+FIXME
 
 \begin{table}\footnotesize
 \begin{tabular}{lllll}
@@ -247,12 +255,85 @@ marker & enriched & depleted & categories & tissues \\
 
 \end{frame}
 
+\begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
+
+\includegraphics[width=1\textwidth]{IGV/nhr-236_2.png}
+
+\end{frame}
+
+\begin{frame}{A tissue-specific bidirectional promoter}
+
+\includegraphics[width=1\textwidth]{IGV/C25E10_13.png}
+
+\end{frame}
+
+\begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
+\begin{center}
+\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
+\end{center} 
+\end{frame}
+
+
+\begin{frame}{Clusters of genes enriched in the same sort fractions}
+\begin{minipage}{0.5\textwidth}
+\includegraphics[width=\columnwidth]{TMEV_1.png}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+{\small 
+\begin{itemize}
+
+\item {\em tax-2} is expressed in AWB, AWC, ASG, ASI, ASK, and ASJ (WormBase.)
+
+\item {\em tax-4} is expressed in AFD thermosensory neurons, the AWC olfactory neurons, and the ASE, ASG, ASK, ASI, and ASJ gustatory neurons. Also observed expression in BAG and URX (WormBase.)
+
+\item Presumably co-clustered genes such as {\em W09G10.3} are expressed
+in similar cells.
+
+\end{itemize}
+}
+\end{minipage}
+\vspace{5mm}
+
+\hfill TMEV (TIGR Multi-Experiment Viewer)
+\end{frame}
+
+\begin{frame}{Clusters of genes enriched in the same sort fractions}
+\begin{minipage}{0.5\textwidth}
+\includegraphics[width=\columnwidth]{TMEV_2.png}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+{\small 
+\begin{itemize}
+
+\item Several of these are 7TM or serpentine receptors.
+
+\item Presumably they're expressed in similar cells.
+
+\end{itemize}
+}
+\end{minipage}
+\vspace{5mm}
+
+\hfill TMEV (TIGR Multi-Experiment Viewer)
+\end{frame}
 
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 
-FIXME
+\begin{minipage}{0.45\textwidth}
+\includegraphics[width=0.9\columnwidth]{TMEV_3.png}
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{itemize}
 
+\item {\em che-2}, {\em dyf-13} and {\em osm 5} are expressed in ciliated
+sensory neurons
 
+\item Presumably, co-clustering genes also are expressed there.
+\end{itemize}
+
+\end{minipage}
+
+\hfill TMEV (TIGR Multi-Experiment Viewer)
 \end{frame}
 
 \begin{frame}{Fourteen reporters distinguish many cells}
@@ -276,25 +357,6 @@ Human hematopoeisis (Novoshtern et al., 2011)
 
 \end{frame}
 
-
-\begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
-
-\includegraphics[width=1\textwidth]{IGV/nhr-236_2.png}
-
-\end{frame}
-
-\begin{frame}{A tissue-specific bidirectional promoter}
-
-\includegraphics[width=1\textwidth]{IGV/C25E10_13.png}
-
-\end{frame}
-
-\begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
-\begin{center}
-\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
-\end{center} 
-\end{frame}
-
 \begin{frame}{Summary}
 
 \begin{itemize}
@@ -316,20 +378,15 @@ which are enriched in different tissues.
 
 \begin{itemize}
 
-\item Apply prediction method to estimate where genes are expressed.
-
-\item Measure accuracy of predictions, using RNA-FISH and fluorescent reporters.
+\item Determine significance of particular genes being expressed in particular
+groups of cells.
 
 \item Predict regulatory targets of transcription factors, by combining
 expression data with motif, chromatin and transcription factor ChIP data.
 
-\item Determine significance of particular genes being expressed in particular cells.
-
 \end{itemize}
 
 \end{frame}
-
-
 
 \begin{frame}{Thank you}
 
