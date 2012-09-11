@@ -4,6 +4,19 @@
 \renewcommand{\sfdefault}{times}
 
 % \usetheme{Warsaw}
+\AtBeginSection[]
+{
+  \begin{frame}{Outline}
+ %   \frametitle{\thesection}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+\AtBeginSubsection[]
+{
+    \begin{frame}{Outline}
+        \tableofcontents[currentsection,currentsubsection]
+    \end{frame}
+}
 
 \graphicspath{
 {/home/jburdick/gcb/work/svnroot/trunk/tex/image/}
@@ -21,6 +34,12 @@
 \begin{frame}
 \titlepage
 \end{frame}
+
+\begin{frame}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
 
 \begin{frame}{Where a gene is expressed is important}
 
@@ -70,22 +89,8 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item {\bf What cells does FACS sorting include?}
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
-\end{frame}
+
+\section{Sequencing of 14 flow-sorted samples}
 
 \begin{frame}{Samples sorted}
 
@@ -101,15 +106,17 @@
 
 \begin{itemize}
 
-\item ``singlets'': cells run through the sorter, without any gating
+\item ungated: cells which were dissociated, but not sorted
 
-\item unsorted: cells which were dissociated, but not sorted
+\item singlets: cells which were gated by size to probably not be clumps
 
 \end{itemize}
 
 \end{itemize}
 
 \end{frame}
+
+\subsection{Reproducibility}
 
 \begin{frame}{How reproducible are the data?}
 
@@ -140,6 +147,8 @@
 \end{itemize}
 \end{frame}
 
+\subsection{Cells included in sorting}
+
 \begin{frame}{Are some cells depleted from the sorting process?}
 
 \begin{minipage}{0.58\textwidth}
@@ -160,6 +169,8 @@ hypodermis & 1036 & $10^{-16}$ \\
 \end{minipage}
 
 \end{frame}
+
+\subsection{Times included by sorting}
 
 \begin{frame}{Where and when is each gene expressed in development?}
 \begin{itemize}
@@ -226,6 +237,10 @@ hypodermis & 1036 & $10^{-16}$ \\
 \item What genes are enriched in cells expressing several TFs?
 \end{itemize}
 \end{frame}
+
+\section{Transcriptomes of cells expressing a TF}
+
+\subsection{Genes enriched in fractions}
 
 \begin{frame}{{\em ceh-26}}
 
@@ -417,6 +432,8 @@ marker & enriched & depleted & categories & tissues \\
 \end{itemize}
 \end{frame}
 
+\subsection{Antisense transcription}
+
 \begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
 
 \includegraphics[width=1\textwidth]{IGV/nhr-236_2.png}
@@ -428,7 +445,6 @@ marker & enriched & depleted & categories & tissues \\
 \includegraphics[width=1\textwidth]{IGV/C25E10_13.png}
 
 \end{frame}
-
 
 \begin{frame}{Where and when is each gene expressed in development?}
 \begin{itemize}
@@ -446,6 +462,10 @@ marker & enriched & depleted & categories & tissues \\
 \item {\bf What genes are enriched in cells expressing several TFs?}
 \end{itemize}
 \end{frame}
+
+\section{Genes enriched in cells expressing several TFs}
+
+\subsection{Hierarchical clustering}
 
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 \begin{minipage}{0.5\textwidth}
@@ -489,6 +509,8 @@ sensory neurons.
 \hfill TMEV (TIGR Multi-Experiment Viewer)
 \end{frame}
 
+\subsection{Prospects for unmixing}
+
 \begin{frame}{Fourteen reporters distinguish many cells}
 
 \begin{figure}
@@ -500,6 +522,8 @@ sensory neurons.
 
 \end{frame}
 
+\section{Summary}
+
 \begin{frame}{Summary}
 
 \begin{itemize}
@@ -507,7 +531,7 @@ sensory neurons.
 \item RNA-seq of sorted samples is consistent with
 expression of many known genes.
 
-\item Although unmixing isn't working, the combined expression data
+\item Although unmixing isn't working very well, the combined expression data
 set is informative about tissue-specific expression.
 
 \item We can see examples of splicing and antisense transcription
