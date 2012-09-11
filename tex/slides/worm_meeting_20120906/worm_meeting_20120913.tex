@@ -62,9 +62,9 @@
 \item Stage of embryo
 \end{itemize}
 
-\item What genes are enriched in cells that express some TF?
+\item What genes are expressed in cells that express some TF?
 \begin{itemize}
-\item Expression level
+\item Enriched genes
 \item Splicing
 \item Antisense transcription
 \end{itemize}
@@ -183,7 +183,7 @@ carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 
 \end{frame}
 
-\begin{frame}{{\em cnd-1}}
+\begin{frame}{{\em cnd-1} (POSSIBLY OMIT)}
 \begin{minipage}{0.4\textwidth}
 \includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/cnd-1.pdf}
 \end{minipage}
@@ -214,15 +214,22 @@ oviposition & {\em cnd-1, bar-1, ZK930.3} & 0.036 \\
 
 \end{frame}
 
-\begin{frame}{{\em unc-130}}
+\begin{frame}{{\em hlh-16}}
 
 \begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/unc-130.pdf}
+\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/hlh-16.pdf}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
+\hline
+phasmid neuron & 168 & $10^{-9}$ \\
+amphid neuron & 271 & $10^{-5}$ \\
+AWCR/L & 83 & $10^{-4}$ \\
+VB neuron & 58 & $10^{-4}$ \\
+DB neuron & 67 & $10^{-3}$ \\
+ASHR/L & 91 & $10^{-3}$ \\
 \hline
 
 \end{tabular}
@@ -233,7 +240,8 @@ anatomy term & \# genes & adjusted $p$ \\
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-
+signal transducer activity & {\em gpa-13, acr-15, glr-5, nhr-124, odr-3, srg-30} (+ 62 others) & $10^{-17}$ \\
+neurotransmitter binding & {\em npr-9, lgc-31, flp-9} (+ 14 others) & $10^{-8}$ \\
 \end{tabular}
 \end{table}
 
@@ -273,13 +281,25 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 
 \begin{frame}{Genes enriched in sorted fractions}
 
-FIXME
-
 \begin{table}\footnotesize
 \begin{tabular}{lllll}
 sort & \# genes & \# genes & enriched GO & enriched \\
 marker & enriched & depleted & categories & tissues \\
 \hline
+{\em ceh-26} & 515 & 2316 & membrane, astacin activity & excretory secretory system \\
+{\em ceh-27} & 142 & 336 & GPCR, neuron morphogenesis &       \\
+{\em ceh-36} & 25 & 58 & cation symporter, myosin complex &       \\
+{\em ceh-6} & 105 & 226 & GPCR, axon guidance &       \\
+{\em cnd-1} & 22 & 394 & regulation of transcription & QR.a/p      \\
+{\em F21D5.9} & 545 & 495 & substrate-specific channel, oxygen transport &       \\
+{\em hlh-16} & 544 & 1309 & signal transduction, chemosensory &       \\
+{\em irx-1} & 102 & 213 & post-synaptic membrane, unfolded protein response &       \\
+{\em mir-57} & 583 & 213 & oxidoreductase activity, carboxylic acid metabolism &       \\
+{\em mls-2} & 140 & 397 & signal transduction, nerve terminal &       \\
+{\em pal-1} & 213 & 887 & Wnt receptor, oviposition &       \\
+{\em pha-4} & 72 & 567 & protease inhibitor, UPR, lipid metabolism   &       \\
+{\em ttx-3} & 133 & 169 & receptor activity, membrane &       \\
+{\em unc-130} & 146 & 393 & membrane, GPCR &       \\
 \end{tabular}
 \end{table}
 
@@ -302,7 +322,6 @@ marker & enriched & depleted & categories & tissues \\
 \includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
 \end{center} 
 \end{frame}
-
 
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 \begin{minipage}{0.5\textwidth}
