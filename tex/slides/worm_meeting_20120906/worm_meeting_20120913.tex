@@ -54,25 +54,37 @@
 \end{frame}
 
 \begin{frame}{Where and when is each gene expressed in development?}
-
 \begin{itemize}
 \item What cells does FACS sorting include?
 \begin{itemize}
 \item Tissue
 \item Stage of embryo
 \end{itemize}
-
-\item What genes are expressed in cells that express some TF?
+\item What genes are expressed in cells that express a TF?
 \begin{itemize}
 \item Enriched genes
 \item Splicing
 \item Antisense transcription
 \end{itemize}
-
 \item What genes are enriched in cells expressing several TFs?
-
 \end{itemize}
+\end{frame}
 
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item {\bf What cells does FACS sorting include?}
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Samples sorted}
@@ -111,15 +123,59 @@
 
 \end{frame}
 
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Are some cells depleted from the sorting process?}
 
-\includegraphics[width=0.8\textwidth]{git/unmix/seq/FACS/ungated_and_singlets.pdf}
+\begin{minipage}{0.58\textwidth}
+\includegraphics[width=\textwidth]{git/unmix/seq/FACS/ungated_and_singlets.pdf}
+\end{minipage}
+\pause
+\begin{minipage}{0.4\textwidth}
+Genes depleted from singlets:
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+intestine & 2234 & $10^{-34}$ \\
+germ line & 295 & $10^{-32}$ \\
+hypodermis & 1036 & $10^{-16}$ \\
+\end{tabular}
+\end{table}
+\end{minipage}
 
 \end{frame}
 
-\begin{frame}{Which cells are depleted from the sorting process?}
-
-
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Some genes are mostly expressed at a particular time}
@@ -154,6 +210,23 @@
 
 \end{frame}
 
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
+\end{frame}
+
 \begin{frame}{{\em ceh-26}}
 
 \begin{minipage}{0.4\textwidth}
@@ -173,7 +246,7 @@ excretory secretory system & 5 & 0.006 \\
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-integral to membrane & {\em srx-47, vha-17, clc-2} (23 others) & $2 \cdot 10^{-7}$ \\
+integral to membrane & {\em srx-47, vha-17, clc-2} (23 others) & $10^{-6}$ \\
 astacin activity & {\em nas-12, nas-2, Y19D10A.6, nas-31, toh-1} & 0.017 \\
 carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 \end{tabular}
@@ -183,7 +256,7 @@ carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 
 \end{frame}
 
-\begin{frame}{{\em cnd-1} (POSSIBLY OMIT)}
+\begin{frame}{{\em cnd-1}}
 \begin{minipage}{0.4\textwidth}
 \includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/cnd-1.pdf}
 \end{minipage}
@@ -192,11 +265,10 @@ carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
 \hline
-germ line & 295 & $10^{-17}$ \\
-QR.a/p & 8 & 0.005 \\
-cc(A/P)(L/R) & 8 & 0.005 \\
-D & 25 & 0.0001 \\
-C(a/p)p & 25 & 0.0002 
+QR.a/p & 8 & 0.002 \\
+Z1.aa & 0.009 \\
+C(a/p)p & 0.02 \\
+QL & 9 & 0.03 \\
 \end{tabular}
 \end{table}
 \end{minipage}
@@ -240,7 +312,7 @@ ASHR/L & 91 & $10^{-3}$ \\
 \begin{tabular}{llr}
 GO category & genes & $p$ value \\
 \hline
-signal transducer activity & {\em gpa-13, acr-15, glr-5, nhr-124, odr-3, srg-30} (+ 62 others) & $10^{-17}$ \\
+signal transducer activity & {\em gpa-13, acr-15, srg-30} (+ 66 others) & $10^{-17}$ \\
 neurotransmitter binding & {\em npr-9, lgc-31, flp-9} (+ 14 others) & $10^{-8}$ \\
 \end{tabular}
 \end{table}
@@ -281,28 +353,68 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 
 \begin{frame}{Genes enriched in sorted fractions}
 
-\begin{table}\footnotesize
-\begin{tabular}{lllll}
+\begin{table}\scriptsize
+\begin{tabular}{lll p{1.2in} p{1.2in} }
 sort & \# genes & \# genes & enriched GO & enriched \\
 marker & enriched & depleted & categories & tissues \\
 \hline
 {\em ceh-26} & 515 & 2316 & membrane, astacin activity & excretory secretory system \\
-{\em ceh-27} & 142 & 336 & GPCR, neuron morphogenesis &       \\
-{\em ceh-36} & 25 & 58 & cation symporter, myosin complex &       \\
-{\em ceh-6} & 105 & 226 & GPCR, axon guidance &       \\
-{\em cnd-1} & 22 & 394 & regulation of transcription & QR.a/p      \\
-{\em F21D5.9} & 545 & 495 & substrate-specific channel, oxygen transport &       \\
-{\em hlh-16} & 544 & 1309 & signal transduction, chemosensory &       \\
-{\em irx-1} & 102 & 213 & post-synaptic membrane, unfolded protein response &       \\
-{\em mir-57} & 583 & 213 & oxidoreductase activity, carboxylic acid metabolism &       \\
-{\em mls-2} & 140 & 397 & signal transduction, nerve terminal &       \\
-{\em pal-1} & 213 & 887 & Wnt receptor, oviposition &       \\
-{\em pha-4} & 72 & 567 & protease inhibitor, UPR, lipid metabolism   &       \\
-{\em ttx-3} & 133 & 169 & receptor activity, membrane &       \\
-{\em unc-130} & 146 & 393 & membrane, GPCR &       \\
+{\em ceh-27} & 142 & 336 & GPCR, neuron morphogenesis & nerve ring, ventral cord neuron, AIY \\
+{\em ceh-36} & 25 & 58 & cation symporter, myosin complex & pharynx, germ line, intestine \\
+{\em ceh-6} & 105 & 226 & GPCR, axon guidance & ventral cord neuron, nerve ring \\
+{\em cnd-1} & 22 & 394 & regulation of transcription, oviposition & QR.a/p, Z1.aa, C(a/p)p \\
+{\em F21D5.9} & 545 & 495 & substrate-specific channel, oxygen transport & nerve ring, head/tail neuron \\
+{\em hlh-16} & 544 & 1309 & signal transduction, chemosensory & amphid, phasmid neuron \\
+{\em irx-1} & 102 & 213 & post-synaptic membrane, unfolded protein response & body wall muscle, ASE, PVN \\
+{\em mir-57} & 583 & 213 & oxidoreductase activity, carboxylic acid metabolism & hypodermis, intestine, seam cell, germ line \\
+{\em mls-2} & 140 & 397 & signal transduction, nerve terminal & AFD, ASK, CAN, ASI, AIY, ASG neurons \\
+{\em pal-1} & 213 & 887 & Wnt receptor, oviposition & gubernacular muscles, Z1.pp      \\
+{\em pha-4} & 72 & 567 & protease inhibitor, UPR, lipid metabolism & pharynx, germ line, intestine \\
+{\em ttx-3} & 133 & 169 & receptor activity, membrane & intestine, germ line, nervous system \\
+{\em unc-130} & 146 & 393 & membrane, GPCR & preanal ganglion, excretory cell \\
 \end{tabular}
 \end{table}
 
+\end{frame}
+
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
+\begin{center}
+\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
+\end{center} 
+\end{frame}
+
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
@@ -317,10 +429,22 @@ marker & enriched & depleted & categories & tissues \\
 
 \end{frame}
 
-\begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
-\begin{center}
-\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
-\end{center} 
+
+\begin{frame}{Where and when is each gene expressed in development?}
+\begin{itemize}
+\item What cells does FACS sorting include?
+\begin{itemize}
+\item Tissue
+\item Stage of embryo
+\end{itemize}
+\item What genes are expressed in cells that express a TF?
+\begin{itemize}
+\item Enriched genes
+\item Splicing
+\item Antisense transcription
+\end{itemize}
+\item What genes are enriched in cells expressing several TFs?
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
@@ -376,16 +500,6 @@ sensory neurons.
 
 \end{frame}
 
-\begin{frame}{Cell-type-specific expression data can suggest regulatory relationships}
-
-\includegraphics[height=0.8\textheight]{imported/novoshtern2011fig3.jpg}
-
-Human hematopoeisis (Novoshtern et al., 2011)
-
-{\small flow sorted blood cells into groups, then profiled expression of each group}
-
-\end{frame}
-
 \begin{frame}{Summary}
 
 \begin{itemize}
@@ -400,6 +514,16 @@ set is informative about tissue-specific expression.
 which are enriched in different tissues.
 
 \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Cell-type-specific expression data can suggest regulatory relationships}
+
+\includegraphics[height=0.8\textheight]{imported/novoshtern2011fig3.jpg}
+
+Human hematopoeisis (Novoshtern et al., 2011)
+
+{\small flow sorted blood cells into groups, then profiled expression of each group}
 
 \end{frame}
 
