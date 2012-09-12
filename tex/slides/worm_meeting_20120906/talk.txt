@@ -9,16 +9,70 @@ Not that we'll necessarily answer that question.
 But first, why do we care?
 
 Sometimes, a gene is expressed in, and functions
-in, a particular tissue. For instance, pha-4 is
-expressed in the pharynx, as well as the pharyngeal
-valve cell, and 
-
+in, a particular tissue. For instance, pha-4 
+specifies where the pharynx is. It's expressed
+in the pharynx, pharyngeal gland cells, and somewhat
+in the valve cell.
 
 Furthermore, where many genes are expressed is
 important.
 
-
 For instance, in the C lineage, 
+
+
+
+Using automated lineage tracing, we can measure expression
+in many cells.
+
+
+
+
+Travis sorted 14 samples. 
+This included several controls.
+
+The mCherry reporters were somewhat dimmer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+How reproducible are the data?
+
+
+Another way to look at this is to cluster samples with
+similar expression profiles together.
+The red AU numbers are "approximately unbiased" p-value,
+calculated by multiscale bootstrap resampling.
+
+"One can consider that clusters (edges) with high AU values
+(e.g. 95%) are strongly supported by data."
+
+Samples that cluster together have similar levels of
+genes expressed in them. Reassuringly, the pha-4
+replicates cluster together, as do two of three cnd-1
+samples.
+
+Note that the ungated samples cluster together, as do the singlets.
+Also, note that the ceh-36 negatives -- that is, the genes not
+expressing ceh-36 -- cluster with the ungated cells, whilst the
+positives cluster with the singlets.
+
+
+
+
+
+
+
+
 
 
 
@@ -49,9 +103,9 @@ splicing and antisense, but we're hoping to do that.
 Besides seeing what genes are enriched in individual
 sort fractions, we can also see what genes are
 enriched in groups of sort fractions. To do this,
-we used hierarchical clustering, which groups
-similar samples and genes together. 
-
+we used hierarchical clustering, which is like that
+figure I showed you before, except this groups the
+samples and the genes. 
 
 
 
@@ -75,6 +129,9 @@ the unmixing.
 
 
 
+
+
+Future work
 
 
 
