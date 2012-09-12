@@ -1,0 +1,82 @@
+
+
+
+- I'll be describing our efforts to answer the
+question: In the C. elegans embryo, which genes
+are expressed in which cell?
+
+Not that we'll necessarily answer that question.
+But first, why do we care?
+
+Sometimes, a gene is expressed in, and functions
+in, a particular tissue. For instance, pha-4 is
+expressed in the pharynx, as well as the pharyngeal
+valve cell, and 
+
+
+Furthermore, where many genes are expressed is
+important.
+
+
+For instance, in the C lineage, 
+
+
+
+
+
+
+Splicing
+
+
+What features of the transcriptome might differ
+between tissues, besides "how much a gene is
+expressed?"
+
+Different splice forms are expressed in different
+tissues. For instance, this gene has one splice
+form enriched in 
+
+Furthermore, since we're using strand-specific
+sequencing, we can see whether the sense or antisense
+strand is being expressed. In some 
+
+
+
+We haven't done very much quantification of such
+splicing and antisense, but we're hoping to do that.
+
+
+Besides seeing what genes are enriched in individual
+sort fractions, we can also see what genes are
+enriched in groups of sort fractions. To do this,
+we used hierarchical clustering, which groups
+similar samples and genes together. 
+
+
+
+
+
+
+
+
+
+
+Whither unmixing?
+
+We have been trying to find the difference between
+theory and practice here. One difference is that
+some cells are being lost. Possibly a bigger problem
+is that the gating in the sorting, and the data from
+imaging, isn't perfectly matched.
+
+We're sequencing the negatives now, which besides
+increasing our dynamic range, also may help with
+the unmixing.
+
+
+
+
+
+
+
+
