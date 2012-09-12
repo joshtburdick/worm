@@ -43,19 +43,54 @@
 
 \begin{frame}{Where a gene is expressed is important}
 
-\begin{centering}
-\includegraphics[width=\textwidth]{notch_example_1.png}
-\end{centering}
+\begin{minipage}{0.27\textwidth}
+\includegraphics[width=\textwidth]{pha-4_emb_expr.png}
 
-\hfill Neves and Priess, 2005
+\hfill {\footnotesize Mango {\em et al} 1994}
+\end{minipage}
+\pause
+\hspace{0.01\textwidth}
+\begin{minipage}{0.7\textwidth}
+\includegraphics[width=\textwidth]{pha-4_phenotype.png}
+
+\hfill {\footnotesize Kalb {\em et al} 1998}
+\end{minipage}
 
 \end{frame}
 
 \begin{frame}{Where {\em many} genes are expressed is important}
 
+\begin{minipage}{0.7\textwidth}
 \includegraphics[width=\textwidth]{yanai2008.png}
 
 \hfill Yanai, 2008
+
+\end{minipage}
+\hspace{0.01\textwidth}
+\begin{minipage}{0.27\textwidth}
+
+\begin{itemize}
+{\small
+\item The C lineage contains both hypodermis and muscle.
+
+\pause
+\item POP-1 accumulates in nuclei of Ca daughter cells, activting
+tissue-specific expression modules.
+
+\pause
+\item Genes in these modules repress each other.
+}
+\end{itemize}
+
+\end{minipage}
+
+\end{frame}
+
+\begin{frame}{Measuring expression using automated lineage tracing}
+
+\includegraphics[width=\textwidth]{MurrayFig5.png}
+
+\hfill Murray {\em et al}, 2012
 
 \end{frame}
 
@@ -72,29 +107,11 @@
 
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
-\end{frame}
-
-
 \section{Sequencing of 14 flow-sorted samples}
 
 \begin{frame}{Samples sorted}
 
-\includegraphics[width=\textwidth]{FACSlog.png}
+\includegraphics[width=\textwidth]{FACSlog.pdf}
 
 \hfill Travis Walton
 
@@ -106,9 +123,9 @@
 
 \begin{itemize}
 
-\item ungated: cells which were dissociated, but not sorted
+\item ungated: cells which were dissociated, but not gated
 
-\item singlets: cells which were gated by size to probably not be clumps
+\item singlets: cells which were gated by size, to probably not be clumps
 
 \end{itemize}
 
@@ -130,29 +147,12 @@
 
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item {\bf Tissue}
-\item Stage of embryo
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
-\end{frame}
-
 \subsection{Cells included in sorting}
 
 \begin{frame}{Are some cells depleted from the sorting process?}
 
 \begin{minipage}{0.58\textwidth}
-\includegraphics[width=\textwidth]{git/unmix/seq/FACS/ungated_and_singlets.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/cnd-1_ungated.png}
 \end{minipage}
 \pause
 \begin{minipage}{0.4\textwidth}
@@ -171,23 +171,6 @@ hypodermis & 1036 & $10^{-16}$ \\
 \end{frame}
 
 \subsection{Times included by sorting}
-
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item {\bf Stage of embryo}
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
-\end{frame}
 
 \begin{frame}{Some genes are mostly expressed at a particular time}
 
@@ -213,29 +196,23 @@ hypodermis & 1036 & $10^{-16}$ \\
 
 \end{frame}
 
-\begin{frame}{What times are included in the sorting?}
+\begin{frame}{Sequencing of 14 flow-sorted samples}
 
-\begin{centering}
-\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersVsSinglets.pdf}
-\end{centering}
+\begin{itemize}
 
-\end{frame}
+\item Data are fairly reproducible between biological replicates.
 
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
+\item Gating for single cells depletes some tissues, particularly
+intestine and hypodermis.
+
+\item Gating for single cells enriches somewhat for later embryonic
+cells (after 200 minutes.)
+
+\pause
+\item Future direction: sequencing of negative fractions
+
 \end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item {\bf Enriched genes}
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
+
 \end{frame}
 
 \section{Transcriptomes of cells expressing a TF}
@@ -245,9 +222,12 @@ hypodermis & 1036 & $10^{-16}$ \\
 \begin{frame}{{\em ceh-26}}
 
 \begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-26.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/ceh-26.png}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
+
+{\small Expressed in excretory cell, some pharyngeal gland cells}
+
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
@@ -273,17 +253,19 @@ carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 
 \begin{frame}{{\em cnd-1}}
 \begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/cnd-1.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/cnd-1_12_14.png}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
+
+{\small Expressed in various AB neurons, pharyngeal gland cell (g2L)}
+
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
 \hline
-QR.a/p & 8 & 0.002 \\
-Z1.aa & 0.009 \\
-C(a/p)p & 0.02 \\
-QL & 9 & 0.03 \\
+Q(L/R) {\tiny (ABp(l/r)apapaaa)} & 8 & 0.003 \\
+Z1.aa & 3 & 0.009 \\
+C(a/p)p & 25 & 0.02 \\
 \end{tabular}
 \end{table}
 \end{minipage}
@@ -304,9 +286,12 @@ oviposition & {\em cnd-1, bar-1, ZK930.3} & 0.036 \\
 \begin{frame}{{\em hlh-16}}
 
 \begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/hlh-16.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/hlh-16.png}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
+{\small Expressed in excretory duct,
+neurons (AWC, SAAVL, AIYL, SMDDL, SIAD, DB1)}
+
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
@@ -332,16 +317,22 @@ neurotransmitter binding & {\em npr-9, lgc-31, flp-9} (+ 14 others) & $10^{-8}$ 
 \end{tabular}
 \end{table}
 
-\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110927_RW11144_L4.png}
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20111011_L1.png}
 
 \end{frame}
 
 \begin{frame}{{\em ceh-6}}
 
 \begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{R/unmix/sort_paper/seq/fraction/plots_and_stats/ceh-6.pdf}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/ceh-6.png}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
+
+{\small Expressed in excretory duct and socket, rectal epithelium,
+neurons (DB, SMBVR, PVT, RIS),
+two pharyngeal gland cells (g2L/R) }
+
+
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
@@ -363,6 +354,14 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 \end{table}
 
 \includegraphics[width=\textwidth]{image/movie/P0_1200x400/20120331_RW10871_L4.png}
+
+\end{frame}
+
+\begin{frame}{Sorting enriches genes at particular times}
+
+\begin{centering}
+\includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersVsSinglets.pdf}
+\end{centering}
 
 \end{frame}
 
@@ -392,75 +391,43 @@ marker & enriched & depleted & categories & tissues \\
 
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item {\bf Splicing}
-\item Antisense transcription
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
-\end{frame}
+\subsection{Alternative splicing}
 
 \begin{frame}{{\em alp-1} appears to express a different splice form in the pharynx}
 \begin{center}
-\includegraphics[height=0.8\textheight]{IGV/alp-1_1.png}
+\includegraphics[height=0.8\textheight]{alp-1_1.png}
 \end{center} 
-\end{frame}
-
-\begin{frame}{Where and when is each gene expressed in development?}
-\begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
-\end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item {\bf Antisense transcription}
-\end{itemize}
-\item What genes are enriched in cells expressing several TFs?
-\end{itemize}
 \end{frame}
 
 \subsection{Antisense transcription}
 
 \begin{frame}{Antisense transcription enriched in specific tissues: {\em nhr-236}}
 
-\includegraphics[width=1\textwidth]{IGV/nhr-236_2.png}
+\includegraphics[width=1\textwidth]{nhr-236_2.png}
 
 \end{frame}
 
 \begin{frame}{A tissue-specific bidirectional promoter}
 
-\includegraphics[width=1\textwidth]{IGV/C25E10_13.png}
+\includegraphics[width=1\textwidth]{C25E10_13.png}
 
 \end{frame}
 
-\begin{frame}{Where and when is each gene expressed in development?}
+\begin{frame}{Transcriptomes of cells expressing a TF}
+
 \begin{itemize}
-\item What cells does FACS sorting include?
-\begin{itemize}
-\item Tissue
-\item Stage of embryo
+
+\item Many genes are enriched or depleted in samples expressing a
+particular TF.
+
+\item The sets of genes enriched or depleted are often consistent with
+known annotation of expression patterns.
+
+\item We can see differences in alternative splicing and antisense
+transcription between tissues.
+
 \end{itemize}
-\item What genes are expressed in cells that express a TF?
-\begin{itemize}
-\item Enriched genes
-\item Splicing
-\item Antisense transcription
-\end{itemize}
-\item {\bf What genes are enriched in cells expressing several TFs?}
-\end{itemize}
+
 \end{frame}
 
 \section{Genes enriched in cells expressing several TFs}
@@ -516,9 +483,42 @@ sensory neurons.
 \begin{figure}
 \begin{centering}
 \includegraphics[width=0.9\textwidth]{R/unmix/sort_paper/plot/distinguishableCells.pdf}
-
 \end{centering}
 \end{figure}
+
+\end{frame}
+
+\begin{frame}{{\em nhr-25}}
+
+\begin{figure}
+\begin{centering}
+\includegraphics[height=0.9\textheight]{git/tex/slides/worm_meeting_20120906/nhr-25.png}
+\end{centering}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{{\em lin-32}}
+
+\begin{figure}
+\begin{centering}
+\includegraphics[height=0.9\textheight]{git/tex/slides/worm_meeting_20120906/lin-32.png}
+\end{centering}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Genes enriched in cells expressing several TFs}
+
+\begin{itemize}
+
+\item Many clusters of genes are coexpressed across the sorted fractions,
+suggesting that they are expressed in similar tissues.
+
+\item Unmixing is not currently working well. Including negative fractions,
+and correcting for sort purity, may help.
+
+\end{itemize}
 
 \end{frame}
 
@@ -531,7 +531,7 @@ sensory neurons.
 \item RNA-seq of sorted samples is consistent with
 expression of many known genes.
 
-\item Although unmixing isn't working very well, the combined expression data
+\item Although unmixing isn't working well, the combined expression data
 set is informative about tissue-specific expression.
 
 \item We can see examples of splicing and antisense transcription
@@ -555,8 +555,13 @@ Human hematopoeisis (Novoshtern et al., 2011)
 
 \begin{itemize}
 
+\item Quantify differences in splicing and antisense transcription between
+sorted fractions
+\pause
+
 \item Determine significance of particular genes being expressed in particular
 sorted fractions
+\pause
 
 \item Predict regulatory targets of transcription factors, by combining
 expression data with motif, chromatin and transcription factor ChIP data
