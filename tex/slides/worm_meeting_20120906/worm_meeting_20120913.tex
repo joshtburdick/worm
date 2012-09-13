@@ -60,35 +60,15 @@
 
 \begin{frame}{Where {\em many} genes are expressed is important}
 
-\begin{minipage}{0.7\textwidth}
-\includegraphics[width=\textwidth]{yanai2008.png}
+\includegraphics[width=0.9\textwidth]{yanai2008.png}
 
 \hfill Yanai, 2008
-
-\end{minipage}
-\hspace{0.01\textwidth}
-\begin{minipage}{0.27\textwidth}
-
-\begin{itemize}
-{\small
-\item The C lineage contains both hypodermis and muscle.
-
-\pause
-\item POP-1 accumulates in nuclei of Ca daughter cells, activting
-tissue-specific expression modules.
-
-\pause
-\item Genes in these modules repress each other.
-}
-\end{itemize}
-
-\end{minipage}
 
 \end{frame}
 
 \begin{frame}{Measuring expression using automated lineage tracing}
 
-\includegraphics[width=\textwidth]{MurrayFig5.png}
+\includegraphics[width=\textwidth]{DeepLineageTracing.png}
 
 \hfill Murray {\em et al}, 2012
 
@@ -180,14 +160,6 @@ hypodermis & 1036 & $10^{-16}$ \\
 
 \end{frame}
 
-\begin{frame}{Picking time-specific genes}
-
-\includegraphics[width=\textwidth]{time_figure.png}
-
-\hfill Boeck and Waterston (modENCODE)
-
-\end{frame}
-
 \begin{frame}{What times are included in the sorting?}
 
 \begin{centering}
@@ -208,14 +180,11 @@ intestine and hypodermis.
 \item Gating for single cells enriches somewhat for later embryonic
 cells (after 200 minutes.)
 
-\pause
-\item Future direction: sequencing of negative fractions
-
 \end{itemize}
 
 \end{frame}
 
-\section{Transcriptomes of cells expressing a TF}
+\section{Transcriptomes of cells expressing a marker}
 
 \subsection{Genes enriched in fractions}
 
@@ -251,45 +220,13 @@ carbohydrate binding & {\em clec-185, clec-65, clec101} (+ 10 others) & 0.04 \\
 
 \end{frame}
 
-\begin{frame}{{\em cnd-1}}
-\begin{minipage}{0.4\textwidth}
-\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/cnd-1_12_14.png}
-\end{minipage}
-\begin{minipage}{0.58\textwidth}
-
-{\small Expressed in various AB neurons, pharyngeal gland cell (g2L)}
-
-\begin{table}[!tbp]\scriptsize
-\begin{tabular}{lll}
-anatomy term & \# genes & adjusted $p$ \\
-\hline
-Q(L/R) {\tiny (ABp(l/r)apapaaa)} & 8 & 0.003 \\
-Z1.aa & 3 & 0.009 \\
-C(a/p)p & 25 & 0.02 \\
-\end{tabular}
-\end{table}
-\end{minipage}
-
-\begin{table}\footnotesize
-\begin{tabular}{llr}
-GO category & genes & $p$ value \\
-\hline
-regulation of transcription & {\em ceh-5, cnd-1, Y51H4A.4, unc-3, hlh-32} & 0.02 \\
-oviposition & {\em cnd-1, bar-1, ZK930.3} & 0.036 \\
-\end{tabular}
-\end{table}
-
-\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
-
-\end{frame}
-
 \begin{frame}{{\em hlh-16}}
 
 \begin{minipage}{0.4\textwidth}
 \includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/hlh-16.png}
 \end{minipage}
 \begin{minipage}{0.58\textwidth}
-{\small Expressed in excretory duct,
+{\small Expressed in excretory duct and pore,
 neurons (AWC, SAAVL, AIYL, SMDDL, SIAD, DB1)}
 
 \begin{table}[!tbp]\scriptsize
@@ -332,7 +269,6 @@ neurotransmitter binding & {\em npr-9, lgc-31, flp-9} (+ 14 others) & $10^{-8}$ 
 neurons (DB, SMBVR, PVT, RIS),
 two pharyngeal gland cells (g2L/R) }
 
-
 \begin{table}[!tbp]\scriptsize
 \begin{tabular}{lll}
 anatomy term & \# genes & adjusted $p$ \\
@@ -357,7 +293,39 @@ axon guidance & {\em ceh-17, zag-1, unc-6} & $10^{-3}$ \\
 
 \end{frame}
 
-\begin{frame}{Sorting enriches genes at particular times}
+\begin{frame}{{\em cnd-1}}
+\begin{minipage}{0.4\textwidth}
+\includegraphics[width=\textwidth]{git/unmix/seq/quant/scatterplot/cnd-1_12_14.png}
+\end{minipage}
+\begin{minipage}{0.58\textwidth}
+
+{\small Expressed in various AB neurons, pharyngeal gland cell (g2L)}
+
+\begin{table}[!tbp]\scriptsize
+\begin{tabular}{lll}
+anatomy term & \# genes & adjusted $p$ \\
+\hline
+Q(L/R) {\tiny (ABp(l/r)apapaaa)} & 8 & 0.003 \\
+Z1.aa {\tiny (anterior distal tip cell)} & 3 & 0.009 \\
+C(a/p)p & 25 & 0.02 \\
+\end{tabular}
+\end{table}
+\end{minipage}
+
+\begin{table}\footnotesize
+\begin{tabular}{llr}
+GO category & genes & $p$ value \\
+\hline
+regulation of transcription & {\em ceh-5, cnd-1, Y51H4A.4, unc-3, hlh-32} & 0.02 \\
+oviposition & {\em cnd-1, bar-1, ZK930.3} & 0.036 \\
+\end{tabular}
+\end{table}
+
+\includegraphics[width=\textwidth]{image/movie/P0_1200x400/20110731_RW10434_L1.png}
+
+\end{frame}
+
+\begin{frame}{Sorting enriches sorted fractions at times when reporters are on}
 
 \begin{centering}
 \includegraphics[width=\textwidth]{git/unmix/seq/timing/perStageMarkersVsSinglets.pdf}
@@ -386,6 +354,10 @@ marker & enriched & depleted & categories & tissues \\
 {\em pha-4} & 72 & 567 & protease inhibitor, UPR, lipid metabolism & pharynx, germ line, intestine \\
 {\em ttx-3} & 133 & 169 & receptor activity, membrane & intestine, germ line, nervous system \\
 {\em unc-130} & 146 & 393 & membrane, GPCR & preanal ganglion, excretory cell \\
+\hline
+{\em ceh-36} vs. - & 158 & 118 & & \\
+{\em cnd-1} vs. - & 42 & 602 & & \\
+{\em pha-4} vs. - & 482 & 714 & &  \\
 \end{tabular}
 \end{table}
 
@@ -413,7 +385,7 @@ marker & enriched & depleted & categories & tissues \\
 
 \end{frame}
 
-\begin{frame}{Transcriptomes of cells expressing a TF}
+\begin{frame}{Transcriptomes of cells expressing a marker}
 
 \begin{itemize}
 
@@ -423,6 +395,9 @@ particular TF.
 \item The sets of genes enriched or depleted are often consistent with
 known annotation of expression patterns.
 
+\item More genes are enriched relative to the corresponding negative
+sort sample, than compared to one control.
+
 \item We can see differences in alternative splicing and antisense
 transcription between tissues.
 
@@ -430,23 +405,22 @@ transcription between tissues.
 
 \end{frame}
 
-\section{Genes enriched in cells expressing several TFs}
+\section{Genes enriched in cells expressing several markers}
 
 \subsection{Hierarchical clustering}
 
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 \begin{minipage}{0.5\textwidth}
-\includegraphics[width=\columnwidth]{TMEV_1.png}
+\includegraphics[width=\columnwidth]{TMEV4.png}
 \end{minipage}
 \begin{minipage}{0.48\textwidth}
 {\small 
 \begin{itemize}
 
-\item {\em tax-2} is expressed in AWB, AWC, ASG, ASI, ASK, and ASJ (WormBase.)
+\item {\em che-11} and {\em ifta-1} are localized to cilia in
+amphid and phasmid neurons.
 
-\item {\em tax-4} is expressed in AFD thermosensory neurons, the AWC olfactory neurons, and the ASE, ASG, ASK, ASI, and ASJ gustatory neurons. Also observed expression in BAG and URX (WormBase.)
-
-\item Presumably co-clustered genes such as {\em W09G10.3} are expressed
+\item Presumably co-clustered genes are expressed
 in similar cells.
 
 \end{itemize}
@@ -460,13 +434,13 @@ in similar cells.
 \begin{frame}{Clusters of genes enriched in the same sort fractions}
 
 \begin{minipage}{0.45\textwidth}
-\includegraphics[width=0.9\columnwidth]{TMEV_3.png}
+\includegraphics[width=0.9\columnwidth]{TMEV5.png}
 \end{minipage}
 \begin{minipage}{0.48\textwidth}
 \begin{itemize}
 
-\item {\em che-2}, {\em dyf-13} and {\em osm-5} are expressed in ciliated
-sensory neurons.
+\item {\em unc-96, unc-45, ketn-1} are expressed in muscle ({\em ketn-1}
+also is expressed in pharynx)
 
 \item Presumably, co-clustering genes also are expressed there.
 \end{itemize}
@@ -474,38 +448,6 @@ sensory neurons.
 \end{minipage}
 
 \hfill TMEV (TIGR Multi-Experiment Viewer)
-\end{frame}
-
-\subsection{Prospects for unmixing}
-
-\begin{frame}{Fourteen reporters distinguish many cells}
-
-\begin{figure}
-\begin{centering}
-\includegraphics[width=0.9\textwidth]{R/unmix/sort_paper/plot/distinguishableCells.pdf}
-\end{centering}
-\end{figure}
-
-\end{frame}
-
-\begin{frame}{{\em nhr-25}}
-
-\begin{figure}
-\begin{centering}
-\includegraphics[height=0.9\textheight]{git/tex/slides/worm_meeting_20120906/nhr-25.png}
-\end{centering}
-\end{figure}
-
-\end{frame}
-
-\begin{frame}{{\em lin-32}}
-
-\begin{figure}
-\begin{centering}
-\includegraphics[height=0.9\textheight]{git/tex/slides/worm_meeting_20120906/lin-32.png}
-\end{centering}
-\end{figure}
-
 \end{frame}
 
 \begin{frame}{Genes enriched in cells expressing several TFs}
@@ -528,11 +470,17 @@ and correcting for sort purity, may help.
 
 \begin{itemize}
 
-\item RNA-seq of sorted samples is consistent with
-expression of many known genes.
+\item RNA-seq finds thousands of genes enriched in particular sets
+of cells.
+\pause
 
-\item Although unmixing isn't working well, the combined expression data
+\item These enrichments are generally consistent with
+expression of many known genes.
+\pause
+
+\item The combined expression data
 set is informative about tissue-specific expression.
+\pause
 
 \item We can see examples of splicing and antisense transcription
 which are enriched in different tissues.
@@ -559,12 +507,9 @@ Human hematopoeisis (Novoshtern et al., 2011)
 sorted fractions
 \pause
 
-\item Determine significance of particular genes being expressed in particular
-sorted fractions
-\pause
-
 \item Predict regulatory targets of transcription factors, by combining
 expression data with motif, chromatin and transcription factor ChIP data
+\pause
 
 \end{itemize}
 
