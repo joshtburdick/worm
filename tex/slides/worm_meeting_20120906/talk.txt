@@ -1,12 +1,11 @@
 
+Introduction
 
-
-- I'll be describing our efforts to answer the
+I'll be describing our efforts to answer the
 question: In the C. elegans embryo, which genes
 are expressed in which cell?
 
-Not that we'll necessarily answer that question.
-But first, why do we care?
+Why do we care?
 
 Sometimes, a gene is expressed in, and functions
 in, a particular tissue. For instance, pha-4 
@@ -26,13 +25,34 @@ in many cells.
 
 
 
-
 Travis sorted 14 samples. 
 This included several controls.
 
 The mCherry reporters were somewhat dimmer.
 
 
+
+
+Sequencing of 14 flow-sorted samples
+
+
+
+
+
+Reproducibility
+
+
+
+
+Cells included in sorting
+Times included by sorting
+Transcriptomes of cells expressing a TF
+Genes enriched in fractions
+Alternative splicing
+Antisense transcription
+Genes enriched in cells expressing several TFs
+Hierarchical clustering
+Summary
 
 
 
