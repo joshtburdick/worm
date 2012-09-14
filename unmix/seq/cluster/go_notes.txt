@@ -2,8 +2,7 @@ Notes on GO categories enriched in 4-fold-enriched genes in each fraction
 using GOstat, at http://gostat.wehi.edu.au/
 
 "ceh-26"	515	2316
-biological regulation : 0.0185
-G-protein coupled receptor activity : 0.0265
+FIXME
 
 "ceh-27"	142	336
 G-protein coupled receptor activity : 0.0194
