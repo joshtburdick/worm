@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 # Gets some chunks of sequence.
 # Input: a BED file of regions.
+# Output: FASTA file containing those regions.
 
 use strict;
 
