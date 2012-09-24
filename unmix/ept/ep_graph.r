@@ -34,6 +34,14 @@ make.factor = function(x, f) {
     update = f$update, log.evidence = f$log.evidence)
 }
 
+# An equality factor (maybe.)
+eq.f = function(log.partition) function(a) {
+  a1 = a[[1]]
+  a2 = a[[2]]
+  list(update = list(a2, a1), log.evidence = 
+
+}
+
 # Updates a model some number of times, using "parallel" updating.
 # Currently, no convergence testing.
 #   m - a model, as a list with elements "vars" and "factors"

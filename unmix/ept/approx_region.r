@@ -14,15 +14,15 @@ backspace = cat(paste(rep("\b", 70), collapse=""))
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
- v[v<0] = 1e10   # XXX hack
+# v[v<0] = 1e10   # XXX hack
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
 
   # hack to deal with when z is very negative
-  r = cbind(m = ifelse(z < -30, 1e-3, - (m1 - s * a)),
-    v = ifelse(z < -30, 1e-6, v * (1 - z*a - a^2)))
-#  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
+#  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
+#    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
+  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
 
@@ -67,21 +67,22 @@ mvnorm.2 = function(m, v, A, b, b.var) {
 
 # Distribution of x ~ N(m,v) | Ax ~ N(b,b.var).
 lin.constraint.1 = function(m, v, A, b, b.var) {
-# print("m =")
-# print(m)
-# print("v =")
-# print(v)
+
+#  cat("m in", range(m), "   v in", range(v), "\n")
+
   # first, compute (A V A^T + diag(v)) ^ -1, which I'll call B
 #  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
   M = A %*% (v * t(A))
   diag(M) = diag(M) + b.var
 #  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
 
+# print("M =")
+# print(M[1:5,1:5])
+# print(as.numeric(determinant(M, logarithm=TRUE)))
+
   # using Cholesky would be slightly faster, but maybe less stable
   M.qr = qr(M)
 
-# print("M =")
-# print(M)
   r = cbind(m = m - v * as.vector(t(A) %*% solve(M.qr, A %*% m - b)),
     v = v - v * apply(A * solve(M.qr, A), 2, sum) * v)
 # print(colnames(r))
@@ -138,26 +139,37 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 
     terms.1 = q - terms
 
-    if (!is.null(debug.dir)) {
-      system(paste("mkdir -p", debug.dir))
-      ep.trace = list(terms=terms, terms.1=terms.1, q=q)
-      save(ep.trace, file=paste(debug.dir, "/", iter, ".Rdata", sep=""))
-    }
-
     mm = positive.moment.match.canonical(terms.1)
+
 #    mm[ is.nan(mm[,"e1"]) | is.nan(mm[,"e2"]) |
 #      is.infinite(mm[,"e1"]) | is.infinite(mm[,"e2"]) , ] = 0
 
 # print(as.vector(mm))
     # update terms.
-#    terms = 0.5 * (mm - q) + 0.5 * terms   #  XXX not sure this is right
+    # one way to add damping. XXX not sure this is right.
+#    terms = 0.5 * (mm - q) + terms
     terms = (mm - q) + terms
+
+    if (!is.null(debug.dir)) {
+      system(paste("mkdir -p", debug.dir))
+      ep.trace = list(terms=terms, terms.1=terms.1, q=q, mm=mm)
+      save(ep.trace, file=paste(debug.dir, "/", iter, ".Rdata", sep=""))
+    }
 
 #    terms[ is.na(terms) ] = 0
 
     # add in Ax ~ N(-,-) constraint
     q = lin.constraint( prior + terms )
 
+    # constraints on posterior
+if (FALSE) {
+print(sum(is.na(q)))
+    q1 = canonical.to.mean.and.variance(q)
+    q1[ q1[,"m"] < 0 , "m" ] = 0
+    q1[ q1[,"v"] < 1e-10, "v" ] = 1e-10
+    q = mean.and.variance.to.canonical(q1)
+print(sum(is.na(q)))
+}
     # ??? show change in mean and variance separately?
     diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
 cat(backspace, signif(diff, 2), " ")
