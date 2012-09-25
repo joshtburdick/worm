@@ -52,7 +52,7 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
   r
 }
 
-# Updates several linear constraints at once.
+# Posterior for several independent linear constraints.
 # Args:
 #   m, v - mean and variance
 #   A, b - these give individual constraints
@@ -63,10 +63,8 @@ lin.constraint.1eq = function(m, v, A, b) {
   M = apply(A * v * A, 1, sum)
 cat("M =", M, "\n")
 
-#  B = 1 / M     # hopefully no zero variances here...
-
-  list(m = m - v * t(A) %*% (A %*% m - b) / M,
-    v = v - v * t( t(A) * apply(A / M, 2, sum)) * v)
+  list(m = m - v * t(A) %*% (A * m - b) / M)
+#    v = v - v * t( t(A) * apply(A / M, 2, sum)) * v)
 }
 
 # Estimates messages from each factor.
@@ -102,7 +100,7 @@ approx.region.beta = function(a, b, max.iters = 20) {
 
 
     # update messages from each factor
-    q1 = q1 + 
+#    q1 = q1 + 
 
 
     # update posterior

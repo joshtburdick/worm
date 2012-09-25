@@ -28,7 +28,7 @@ new.factor = function(x) {
 # Constructs a factor with some set of methods.
 make.factor = function(x, f) {
   # the messages start at the belief, zeroed out
-  z = lapply(x, function(a) a$b - a$b )
+  z = lapply(x, function(a) 0 * a$b )
 
   list(x = x, to.f = z, from.f = z,
     update = f$update, log.evidence = f$log.evidence)
@@ -38,8 +38,8 @@ make.factor = function(x, f) {
 eq.f = function(log.partition) function(a) {
   a1 = a[[1]]
   a2 = a[[2]]
-  list(update = list(a2, a1), log.evidence = 
-
+  list(update = list(a2, a1),
+    log.evidence = log.partition(a1+a2) - (log.partition(a1) + log.partition(a2)))
 }
 
 # Updates a model some number of times, using "parallel" updating.
