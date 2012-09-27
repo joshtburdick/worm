@@ -3,18 +3,20 @@
 library("corpcor")
 
 # source("import.r")
-source("deconvolve.r")
+# source("deconvolve.r")
 
-reporters = read.csv("out/reporters/P0.csv", stringsAsFactors=FALSE)
-# reporters = reporters[1:15,]
+source("~/gcb/R/unmix/eval.r")
 
-# reporter matrix, using a fixed cutoff
-m = ifelse(expr.cell >= 2000, 1, 0)
-m = rbind(1, m)
-rownames(m)[1] = "all"
-m1 = m[ c("all", reporters$embryo.movie.name), ]
+load("~/gcb/git/unmix/unmix_comp/data/tree_utils.Rdata")
+
+wd = getwd()
+setwd("~/gcb/git/unmix/unmix_comp/src/")
+source("unmix_test.r")
+setwd(wd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
+
+m1 = m.cell[ rownames(reporters[1:30,]) , ]
 
 # Picks some missing cells, by picking some random lineages.
 # Args: see sim.with.missing.cells()
@@ -121,33 +123,33 @@ cat(num.lineages.missing, min.cells, "\n")
 
 missing.cells = data.frame(sim.with.various.params())
 write.table(missing.cells,
-  file="prob/gating/missing_cells.txt", sep="\t")
+  file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
 missing.cells.separate.fractions = data.frame(sim.removing.from.individual.fractions())
 write.table(missing.cells.separate.fractions,
-  file="prob/gating/missing_cells_separate_fractions.txt", sep="\t")
+  file="git/unmix/missing/sim/missing_cells_separate_fractions.txt", sep="\t")
 
 plot.it = function() {
 
-  pdf("prob/gating/missing_cells_1.pdf", width=9, height=3)
+  pdf("git/unmix/missing/sim/missing_cells_1.pdf", width=9, height=3)
   par(mfrow=c(1,3))
 
-  plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=1,
     xlab="number of cells missing", ylab="correlation",
     main="")
   par(new=TRUE)
-  plot(missing.cells$num.missing, missing.cells$cor.correct.m, ylim=c(0,1), pch=1,
+  plot(missing.cells$num.missing, missing.cells$cor.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", legend = c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(1, 20))
+    pch=c(20, 1))
 
-  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0,1), pch=1,
     xlab="number of cells missing", ylab="area under the curve",
     main="")
   par(new=TRUE)
-  plot(missing.cells$num.missing, missing.cells$auc.correct.m, ylim=c(0,1), pch=1,
+  plot(missing.cells$num.missing, missing.cells$auc.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(1, 20))
+    pch=c(20, 1))
 
   plot(missing.cells$cor.correct.m, missing.cells$cor.incorrect.m,
     xlim=c(0,1), ylim=c(0,1), pch=20, main="",
@@ -157,26 +159,26 @@ plot.it = function() {
 
   dev.off()
 
-  pdf("prob/gating/missing_cells_2.pdf", width=9, height=3)
+  pdf("git/unmix/missing/sim/missing_cells_2.pdf", width=9, height=3)
   par(mfrow=c(1,3))
 
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=1,
     xlab="number of cells missing", ylab="correlation",
     main="")
   par(new=TRUE)
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.correct.m, ylim=c(0,1), pch=1,
+  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", legend = c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(1, 20))
+    pch=c(20, 1))
 
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=1,
     xlab="number of cells missing", ylab="area under the curve",
     main="")
   par(new=TRUE)
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.correct.m, ylim=c(0,1), pch=1,
+  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(1, 20))
+    pch=c(20, 1))
 
   plot(missing.cells.separate.fractions$cor.correct.m, missing.cells.separate.fractions$cor.incorrect.m,
     xlim=c(0,1), ylim=c(0,1), pch=20, main="",
