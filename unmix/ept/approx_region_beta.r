@@ -43,7 +43,7 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
 
   M = A %*% (v * t(A))
   diag(M) = diag(M) + b.var
-cat("M =", M, "\n")
+# cat("M =", M, "\n")
 
   # using Cholesky would be slightly faster, but maybe less stable
   M.qr = qr(M)
@@ -63,18 +63,15 @@ lin.constraint.1eq = function(m, v, A, b) {
 
   # hopefully none of these end up <= 0...
   M = apply(A * v * A, 1, sum)
-cat("M =", M, "\n")
+# cat("M =", M, "\n")
 
   z = (apply(A * m, 1, sum) - b) / M
-#  z = (A * m - b) / M
-print(z)
+# print(z)
+  y = A * (A / M)
+# print(y)
 
   list(m = t( t(m) - t(v * A * z) ),
-    v = v)
-
-#  list(m = m - v * A * z,    # ((A * m - b) / M),
-#    v = v)
-#    v = v - v * t( t(A) * apply(A / M, 2, sum)) * v)
+    v = v - v * y * v )
 }
 
 # Estimates messages from each factor.
