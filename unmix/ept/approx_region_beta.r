@@ -1,5 +1,6 @@
 # Attempts to approximate a region using beta distributions
-# (instead of Gaussians.)
+# (instead of Gaussians.) It's a fairly conservative design,
+# in that other than that, it's basically the same.
 
 source("git/unmix/ept/approx_region.r")
 
@@ -42,6 +43,7 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
 
   M = A %*% (v * t(A))
   diag(M) = diag(M) + b.var
+cat("M =", M, "\n")
 
   # using Cholesky would be slightly faster, but maybe less stable
   M.qr = qr(M)
@@ -63,7 +65,15 @@ lin.constraint.1eq = function(m, v, A, b) {
   M = apply(A * v * A, 1, sum)
 cat("M =", M, "\n")
 
-  list(m = m - v * t(A) %*% (A * m - b) / M)
+  z = (apply(A * m, 1, sum) - b) / M
+#  z = (A * m - b) / M
+print(z)
+
+  list(m = t( t(m) - t(v * A * z) ),
+    v = v)
+
+#  list(m = m - v * A * z,    # ((A * m - b) / M),
+#    v = v)
 #    v = v - v * t( t(A) * apply(A / M, 2, sum)) * v)
 }
 
