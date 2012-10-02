@@ -18,41 +18,41 @@ beta.natural.to.params = function(x) {
   p
 }
 
-# Converts from beta parameters to moments.
+# Converts beta parameters to moments.
+# from http://en.wikipedia.org/wiki/Beta_distribution
 beta.params.to.moments = function(p) {
-  p1 = array(p, dim=c(2, length(a)/2))
-  a = p1[1,]
-  b = p1[2,]
-
-  m = array(cbind(   ,    ), dim=dim(a))
-  dimnames(m) = dimnames(a)
-  dimnames(m)[[1]] = c("m", "v")
+  a = p["a",]
+  b = p["b",]
+  m = rbind(mu = a / (a+b), si2 = a*b / ((a+b)^2 * (a+b+1)) )
+#  rownames(m) = c("mu", "si2")
   m
 }
 
-# Converts from beta moments to parameters.
+# Converts beta moments to parameters.
+# from http://en.wikipedia.org/wiki/Beta_distribution
 beta.moments.to.params = function(m) {
-
-
-
-
+  mu = m["mu",]
+  si2 = m["si2",]
+  s = (mu * (1-mu) / si2) - 1     # ??? not sure what this is
+  m = rbind(a = mu * s, b = (1-mu) * s)
+#  rownames(m) = c("a", "b")
+  m
 }
 
-# Distribution of x ~ N(m,v) | Ax ~ N(b,b.var).
-lin.constraint.1 = function(m, v, A, b, b.var) {
 
-  M = A %*% (v * t(A))
-  diag(M) = diag(M) + b.var
-# cat("M =", M, "\n")
+# Converts from beta parameters to moments.
+# FIXME this would preserve array dimensions, which
+# might be nice. But may be irrelevant.
+#beta.params.to.moments = function(p) {
+#  p1 = array(p, dim=c(2, length(a)/2))
+#  a = p1[1,]
+#  b = p1[2,]
 
-  # using Cholesky would be slightly faster, but maybe less stable
-  M.qr = qr(M)
-
-  r = cbind(m = m - v * as.vector(t(A) %*% solve(M.qr, A %*% m - b)),
-    v = v - v * apply(A * solve(M.qr, A), 2, sum) * v)
-# print(colnames(r))
-  r
-}
+#  m = array(cbind(   ,    ), dim=dim(a))
+#  dimnames(m) = dimnames(a)
+#  dimnames(m)[[1]] = c("m", "v")
+#  m
+#}
 
 # Posterior for several independent linear constraints.
 # Args:
