@@ -59,16 +59,17 @@ sim.with.missing.cells = function(expr, m,
       num.missing = num.missing + sum(missing.cells)
       mask[ sample(1:nrow(m1), 1), missing.cells ] = 0
     }
-    m1 = m1 * mask
+    # m1 = m1 * mask     this only zeros out some entries
+    m1 = m1 * mask + (1 - m1) * (1 - mask)  # this "flips" the selected entries
     num.missing = sum( mask==0 )
   }
 
-  # compute fractions (with the altered matrix)
-  sim.frac = expr %*% t(m1)
+  # compute fractions (with the _original_ matrix)
+  sim.frac = expr %*% t(m)
 
   # do deconvolving (with incorrect and correct sort matrix)  
-  x.d.incorrect.m = sim.frac %*% pseudoinverse(t(m))
-  x.d.correct.m = sim.frac %*% pseudoinverse(t(m1))
+  x.d.correct.m = sim.frac %*% pseudoinverse(t(m))
+  x.d.incorrect.m = sim.frac %*% pseudoinverse(t(m1))
 
   list(x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
     num.missing = num.missing,
@@ -87,10 +88,12 @@ sim.with.missing.cells = function(expr, m,
 sim.with.various.params = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1:9))
-    for(min.cells in c(1, 20, 40)) {
+#  for(num.lineages.missing in c(1:9))
+#    for(min.cells in c(1, 20, 40)) {
+  for(num.lineages.missing in c(1:20))
+    for(min.cells in c(1, 15, 30)) {
 cat(num.lineages.missing, min.cells, "\n")
-      max.cells = min.cells + 20
+      max.cells = min.cells + 10
       a = sim.with.missing.cells(expr.cell, m1,
         num.lineages.missing, min.cells, max.cells, TRUE)
       r = rbind(r, c(num.lineages.missing = num.lineages.missing,
@@ -106,8 +109,8 @@ cat(num.lineages.missing, min.cells, "\n")
 sim.removing.from.individual.fractions = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1:30))
-    for(min.cells in c(20, 40, 60)) {
+  for(num.lineages.missing in c(1:50))
+    for(min.cells in c(20, 40, 60, 80)) {
 cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 20
       a = sim.with.missing.cells(expr.cell, m1,
@@ -121,16 +124,27 @@ cat(num.lineages.missing, min.cells, "\n")
   r
 }
 
-missing.cells = data.frame(sim.with.various.params())
-write.table(missing.cells,
-  file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
-missing.cells.separate.fractions = data.frame(sim.removing.from.individual.fractions())
-write.table(missing.cells.separate.fractions,
-  file="git/unmix/missing/sim/missing_cells_separate_fractions.txt", sep="\t")
+write.accuracy.tables = function() {
+  missing.cells = data.frame(sim.with.various.params())
+  write.table(missing.cells, col.names=NA,
+    file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
+
+  missing.cells.separate.fractions = data.frame(sim.removing.from.individual.fractions())
+  missing.cells.separate.fractions$percent.missing =
+    100 * (missing.cells.separate.fractions$num.missing / prod(dim(m1)))
+  write.table(missing.cells.separate.fractions, col.names=NA,
+    file="git/unmix/missing/sim/missing_cells_separate_fractions.txt", sep="\t")
+}
 
 plot.it = function() {
+  missing.cells = read.table(
+    "git/unmix/missing/sim/missing_cells.txt",
+    sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
+  missing.cells.separate.fractions = read.table(
+    "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
+    sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/missing_cells_1.pdf", width=9, height=3)
+  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=9, height=3)
   par(mfrow=c(1,3))
 
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=1,
@@ -159,29 +173,29 @@ plot.it = function() {
 
   dev.off()
 
-  pdf("git/unmix/missing/sim/missing_cells_2.pdf", width=9, height=3)
+  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=9, height=3)
   par(mfrow=c(1,3))
 
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=1,
-    xlab="number of cells missing", ylab="correlation",
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=1,
+    xlab="percent incorrect entries", ylab="correlation",
     main="")
   par(new=TRUE)
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$cor.correct.m, ylim=c(0,1), pch=20,
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", legend = c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
     pch=c(20, 1))
 
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=1,
-    xlab="number of cells missing", ylab="area under the curve",
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=1,
+    xlab="percent incorrect entries", ylab="area under the curve",
     main="")
   par(new=TRUE)
-  plot(missing.cells.separate.fractions$num.missing, missing.cells.separate.fractions$auc.correct.m, ylim=c(0,1), pch=20,
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.correct.m, ylim=c(0,1), pch=20,
     xlab="", ylab="", main="")
   legend("bottomleft", c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
     pch=c(20, 1))
 
   plot(missing.cells.separate.fractions$cor.correct.m, missing.cells.separate.fractions$cor.incorrect.m,
-    xlim=c(0,1), ylim=c(0,1), pch=20, main="",
+    xlim=c(0,1), ylim=c(0,1),           pch=20, main="",
     xlab="correlation with correct cell-sorting matrix",
     ylab="correlation with incorrect cell-sorting matrix")
   abline(0, 1, col="#303030")
@@ -189,5 +203,6 @@ plot.it = function() {
   dev.off()
 }
 
+# write.accuracy.tables()
 plot.it()
 
