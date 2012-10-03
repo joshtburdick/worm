@@ -64,12 +64,15 @@ sim.with.missing.cells = function(expr, m,
     num.missing = sum( mask==0 )
   }
 
-  # compute fractions (with the _original_ matrix)
+  # compute fractions (with the original matrix, and the perturbed matrix)
   sim.frac = expr %*% t(m)
+  sim.frac.perturbed = expr %*% t(m1)
 
   # do deconvolving (with incorrect and correct sort matrix)  
   x.d.correct.m = sim.frac %*% pseudoinverse(t(m))
-  x.d.incorrect.m = sim.frac %*% pseudoinverse(t(m1))
+  # XXX this is poorly named; the matrix is only "incorrect" because the
+  # underlying fractions have been perturbed.
+  x.d.incorrect.m = sim.frac.perturbed %*% pseudoinverse(t(m))
 
   list(x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
     num.missing = num.missing,
@@ -109,8 +112,8 @@ cat(num.lineages.missing, min.cells, "\n")
 sim.removing.from.individual.fractions = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1:50))
-    for(min.cells in c(20, 40, 60, 80)) {
+  for(num.lineages.missing in c(1:70))
+    for(min.cells in c(20, 40, 60)) {
 cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 20
       a = sim.with.missing.cells(expr.cell, m1,
@@ -144,65 +147,29 @@ plot.it = function() {
     "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=9, height=3)
-  par(mfrow=c(1,3))
+  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=8, height=6)
+  par(mfrow=c(2,2))
 
-  plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=1,
+  plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="correlation",
-    main="")
-  par(new=TRUE)
-  plot(missing.cells$num.missing, missing.cells$cor.correct.m, ylim=c(0,1), pch=20,
-    xlab="", ylab="", main="")
-  legend("bottomleft", legend = c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(20, 1))
+    main="Accuracy with cells missing")
 
-  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0,1), pch=1,
+  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="area under the curve",
-    main="")
-  par(new=TRUE)
-  plot(missing.cells$num.missing, missing.cells$auc.correct.m, ylim=c(0,1), pch=20,
-    xlab="", ylab="", main="")
-  legend("bottomleft", c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(20, 1))
+    main="Accuracy with cells missing")
 
-  plot(missing.cells$cor.correct.m, missing.cells$cor.incorrect.m,
-    xlim=c(0,1), ylim=c(0,1), pch=20, main="",
-    xlab="correlation with correct cell-sorting matrix",
-    ylab="correlation with incorrect cell-sorting matrix")
-  abline(0, 1, col="#303030")
 
-  dev.off()
-
-  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=9, height=3)
-  par(mfrow=c(1,3))
-
-  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=1,
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="percent incorrect entries", ylab="correlation",
-    main="")
-  par(new=TRUE)
-  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.correct.m, ylim=c(0,1), pch=20,
-    xlab="", ylab="", main="")
-  legend("bottomleft", legend = c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(20, 1))
+    main="Accuracy with incorrect sorting")
 
-  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=1,
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=20,
     xlab="percent incorrect entries", ylab="area under the curve",
-    main="")
-  par(new=TRUE)
-  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.correct.m, ylim=c(0,1), pch=20,
-    xlab="", ylab="", main="")
-  legend("bottomleft", c("correct cell-sorting matrix", "incorrect cell-sorting matrix"),
-    pch=c(20, 1))
-
-  plot(missing.cells.separate.fractions$cor.correct.m, missing.cells.separate.fractions$cor.incorrect.m,
-    xlim=c(0,1), ylim=c(0,1),           pch=20, main="",
-    xlab="correlation with correct cell-sorting matrix",
-    ylab="correlation with incorrect cell-sorting matrix")
-  abline(0, 1, col="#303030")
+    main="Accuracy with incorrect sorting")
 
   dev.off()
 }
 
-# write.accuracy.tables()
+write.accuracy.tables()
 plot.it()
 
