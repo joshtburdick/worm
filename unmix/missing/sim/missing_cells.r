@@ -12,11 +12,42 @@ load("~/gcb/git/unmix/unmix_comp/data/tree_utils.Rdata")
 wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
+source("pseudoinverse/unmix.r")
 setwd(wd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
 
-m1 = m.cell[ rownames(reporters[1:30,]) , ]
+m1 = m.cell[ c("all", rownames(reporters[1:31,])) , ]
+
+# Runs an unmixing function with different numbers of reporters.
+# When predicting a given gene, avoids using it as a reporter.
+# This version also simulates data using a perturbed matrix.
+run.unmix.perturbed.matrix = function(x, m, m.perturbed, unmix.f, reporter.list, nr) {
+  x.predicted = matrix(nrow=nrow(x), ncol=ncol(x))
+  dimnames(x.predicted) = dimnames(x)
+
+  for(g in rownames(x)) {
+ cat(g, "")
+
+    # set of reporters, with another one added in if g is present
+    r1 = if (g %in% reporter.list[1:nr])
+      setdiff(reporter.list[1:(nr+1)], g)
+    else
+      reporter.list[1:nr]
+# cat("r1 =", r1, "\n")
+
+    m1 = m[ c("all", r1), ]
+    m.perturbed.1 = m.perturbed[ c("all", r1), ]
+    x.fraction = x[g,] %*% t(m.perturbed.1)
+
+    r = unmix.f(m1, as.vector(x.fraction))
+    x.predicted[g,] = as.vector(r$x)
+  }
+
+  rownames(x.predicted) = rownames(x)
+
+  x.predicted
+}
 
 # Picks some missing cells, by picking some random lineages.
 # Args: see sim.with.missing.cells()
@@ -60,7 +91,7 @@ sim.with.missing.cells = function(expr, m,
       mask[ sample(1:nrow(m1), 1), missing.cells ] = 0
     }
     # m1 = m1 * mask     this only zeros out some entries
-    m1 = m1 * mask + (1 - m1) * (1 - mask)  # this "flips" the selected entries
+    m1 = m1 * mask + (1 - m1) * (1 - mask)   # this "flips" the selected entries
     num.missing = sum( mask==0 )
   }
 
@@ -68,11 +99,14 @@ sim.with.missing.cells = function(expr, m,
   sim.frac = expr %*% t(m)
   sim.frac.perturbed = expr %*% t(m1)
 
-  # do deconvolving (with incorrect and correct sort matrix)  
-  x.d.correct.m = sim.frac %*% pseudoinverse(t(m))
+  # do deconvolving (with correct and incorrect sort matrix)  
+  x.d.correct.m = run.unmix.perturbed.matrix(expr, m, m, unmix.pseudoinverse,
+    rownames(m), 30)
+
   # XXX this is poorly named; the matrix is only "incorrect" because the
   # underlying fractions have been perturbed.
-  x.d.incorrect.m = sim.frac.perturbed %*% pseudoinverse(t(m))
+  x.d.incorrect.m = run.unmix.perturbed.matrix(expr, m, m1, unmix.pseudoinverse,
+    rownames(m), 30)
 
   list(x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
     num.missing = num.missing,
@@ -147,7 +181,7 @@ plot.it = function() {
     "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=8, height=6)
+  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=8, height=6)
   par(mfrow=c(2,2))
 
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
