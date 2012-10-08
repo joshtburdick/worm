@@ -56,11 +56,25 @@ cat("after lsei\n")
   x
 }
 
+# Summarizes samples.
+# Args:
+#   x - matrix of samples
+# Returns: matrix 
+summarize.samples = function(x) {
+  r = rbind(apply(x, 2, mean),
+    apply(x, 2, var),
+    apply(x, 2, median),
+    apply(x, 2, min),
+    apply(x, 2, max))
+  rownames(r) = c("mean", "var", "median", "min", "max")
+  r
+}
+
 unmix.xsample = function(m, x.fraction) {
   X = run.xsample(m, x.fraction, 5000, 50000)
-  r = list(x = apply(X, 2, mean), x.var = apply(X, 2, var),
-    x.sampling = X)
-  r
+  x.summary = summarize.samples(X)
+
+  list(x = x.summary["mean",], x.summary = x.summary)
 }
 
 # Does unmixing of one gene using sampling.
