@@ -37,7 +37,11 @@ names(method.offset) = method.name
 plot.correlation.accuracy = function() {
 
   # way to compute accuracy
-  accuracy = function(x, x.d) diag(cor(t(x), t(x.d)))
+  accuracy = function(x, x.d) {
+    r = diag(cor(t(x), t(x.d)))
+    r = r[!is.na(r)]
+    r
+  }
 
   plot.it = function(data.set, data.set.name) {
     plot(0,0, xlim=xlim, ylim=c(0,1), type="n",
@@ -74,30 +78,15 @@ plot.correlation.accuracy = function() {
 # w.r.t. number of reporters.
 plot.roc.accuracy = function() {
 
-  # Computes AUC.
-  compute.auc = function(x.on.off, x.prediction) {
-    x.on.off = ifelse(as.matrix(x.on.off) >= 0.5, 1, 0)
-
-    n = dim(x.on.off)[1]
-    auc = rep(NA, n)
-
-    for(i in 1:n) {
-      if (sd(x.on.off[i,]) > 0 && sum(is.na(x.prediction[i,])==0)) {
-#        cat(i, "")
-        a = roc.area.test(x.prediction[i,], x.on.off[i,])
-        auc[i] = as.numeric(a$area)
-      }
-    }
-
-    auc
-  }
-
   # Accuracy by AUC.
-  accuracy = function(x, x.d) compute.auc(x, x.d)
-  ylim = c(0.75, 1)
+  accuracy = function(x, x.d) {
+    r = auc(x, x.d)
+    r = r[!is.na(r)]
+  }
+  ylim = c(0.5, 1)
 
   plot.it = function(data.set, data.set.name) {
-    plot(0,0, xlim=xlim, ylim=c(0,1), type="n",
+    plot(0,0, xlim=xlim, ylim=ylim, type="n",
       main=data.set.name, xlab="Number of reporters", ylab="Area under curve",
       cex.main=1.1, cex.axis=1, cex.lab=1, xaxt="n")
     axis(1, at=0.4+(1:length(num.reporters)), labels=num.reporters)
@@ -111,7 +100,7 @@ plot.roc.accuracy = function() {
       for(j in 1:length(num.reporters)) {
         nr = num.reporters[[j]]
         par(new=TRUE)
-        a = accuracy(expr[[data.set]],
+        a = accuracy(expr.on.off[[data.set]],
           unmix.r[[method.name[i] ]][[data.set]][[nr]])
         boxplot(a, at = j + method.offset[[method.name[[i]] ]],
           boxwex = 1 / 3, lwd = 0.7,
