@@ -27,7 +27,7 @@ plot.movie = function(series.name, main, lwd=5,
     stringsAsFactors=FALSE)
 
   plot.segments(r1, main, root="P0",
-    times=c(0, 350), lwd=lwd)
+    times=c(-20, 320), lwd=lwd)
 }
 
 # Plots several movies as PNGs.
@@ -42,7 +42,7 @@ plot.movie = function(series.name, main, lwd=5,
 #   time - times to include
 #   lwd - line width
 plot.movie.pngs = function(movie.list, output.dir,
-  width=1200, height=400) {
+  width=3000, height=400) {
   system(paste("mkdir -p", output.dir))
 
   for(i in 1:nrow(movie.list)) {
@@ -58,7 +58,5 @@ plot.movie.pngs = function(movie.list, output.dir,
 movie.list = read.table("git/plot/movie_list.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
-plot.movie.pngs(movie.list, "~/tmp/movie.pngs/")
-
-
+plot.movie.pngs(movie.list, "image/movie/P0_3000x400/")
 
