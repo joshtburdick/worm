@@ -134,10 +134,12 @@ number.lineage.columns = function(lin) {
 #   root (= P0) - root of the tree
 #   times (= c(0, 350) - time interval to include
 #   lwd - width of lines
+#   yaxt - type of y-axis
+#   int.n.to.label - names of interior nodes to include
 # XXX assumes Sulston-style node naming.
 # Side effects: draws a tree, colored according to the given colors.
 plot.segments = function(r, main, root="P0",
-  times=c(0, 350), lwd=3) {
+  times=c(0, 350), lwd=3, yaxt="s") {
 
   # part of the lineage to plot
   lin1 = get.lineage.by.name(lin, root)
@@ -159,7 +161,8 @@ plot.segments = function(r, main, root="P0",
   # set up graph
   par(bg="#ffffff")
   plot(0, 0, xlim=xlim, ylim=ylim,
-    main=main, xlab="", ylab="time", xaxt="n", type="n")
+    main=main, xlab="",
+    ylab=if(yaxt=="s") "time" else "", xaxt="n", yaxt=yaxt, type="n")
 # print(xlim)
 
   # plot the tree: first one line per cell, then the connecting line
@@ -175,12 +178,21 @@ plot.segments = function(r, main, root="P0",
     col=r$col, xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
 
   # add labels for a few branches in the tree
-  int.n.1 = int.n  # %in% lineage.to.list(lin1)
-  # XXX hack
+#print(int.n)
+  int.n.1 = int.n    # [ int.n %in% c(lineage.to.list(lin1)) ]
+  # XXX hacks
   if (root == "ABplp") {
     int.n.1 = c(int.n.1, "ABplpaa", "ABplpap", "ABplppa", "ABplppp")
   }
-  text(cell.to.x[int.n.1], time.1[int.n.1]-5, int.n.1,
+  if (root == "C") {
+    int.n.1 = c(int.n.1, grep("^C.?.?.?$", lin.node.names, value=TRUE))
+  }
+#print("int.n.1")
+#print(int.n.1)
+# print("cell.to.x")
+# print(cell.to.x)
+print(cell.to.x[int.n.1])
+  text(cell.to.x[int.n.1], time.1[int.n.1]-7, int.n.1,
     adj=0, cex=0.7, srt=90)
 
 #  axis(1, at=cell.to.column[axis.nodes], labels=axis.nodes, cex=0.5, las=3)
@@ -217,23 +229,23 @@ plot.segments.old = function(cell.time, main, x.red, x.green, x.blue) {
 }
 
 # Plots data, with one color per cell.
-#   r - data frame with columns
-#     cell - cell name (as a string, not a factor)
-#     time.1, time.2 - start and end time for this segment (in minutes)
-#     col - a color (as a string; see rgb() or hsv())
+#   r - color for each cell, as a vector of colors
+#     indexed by cell name
 #   main - title
 #   root (= P0) - root of the tree
 #   times (= c(0, 350) - time interval to include
 #   lwd - width of lines
 # XXX assumes Sulston-style node naming.
 # Side effects: draws a tree, colored according to the given colors.
-plot.segments.per.cell = function(col, main, root="P0", times=c(0,350), lwd=3) {
+plot.segments.per.cell = function(col, main, root="P0", times=c(0,350),
+    lwd=3, yaxt="s") {
   r = data.frame(cell = as.character(rownames(cell.time.on.off)),
     time.1=cell.time.on.off$on, time.2=cell.time.on.off$off,
     stringsAsFactors=FALSE)
   r = r[ r$cell %in% names(col) , ]
   r$col = col[r$cell]
-  plot.segments(r, main, root, times, lwd)
+
+  plot.segments(r, main, root=root, times, lwd=lwd, yaxt=yaxt)
 }
 
 # Plots per-cell expression data.
@@ -242,7 +254,7 @@ plot.segments.per.cell = function(col, main, root="P0", times=c(0,350), lwd=3) {
 #     "standard" 1341 cells.
 #   cell.time.on.off - matrix indicating which cell is on when
 plot.segments.per.cell.old = function(col, cell.time.on.off,
-    times=c(-30, 350), lwd=5) {
+    times=c(-30, 350), lwd=5, int.n = int.n) {
 
   ylim = c(times[2], times[1])
 
