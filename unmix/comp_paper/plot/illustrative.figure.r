@@ -33,7 +33,7 @@ fig.1 = function() {
 
   plot.expr.1(expr.cell["pes-1",], "pes-1", 1400, "purple")
   plot.new()
-  plot.expr.1(expr.prediction["pes-1",], "pes-1 prediction", 1500, "purple")
+  plot.expr.1(expr.prediction["pes-1",], "pes-1 prediction", 1450, "purple")
 
   dev.off()
 }
