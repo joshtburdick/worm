@@ -181,14 +181,14 @@ plot.it = function() {
     "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=8, height=6)
+  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=8, height=7)
   par(mfrow=c(2,2))
 
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="correlation",
     main="Accuracy with cells missing")
 
-  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="number of cells missing", ylab="area under the curve",
     main="Accuracy with cells missing")
 
@@ -197,13 +197,13 @@ plot.it = function() {
     xlab="percent incorrect entries", ylab="correlation",
     main="Accuracy with incorrect sorting")
 
-  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0,1), pch=20,
+  plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="percent incorrect entries", ylab="area under the curve",
     main="Accuracy with incorrect sorting")
 
   dev.off()
 }
 
-write.accuracy.tables()
+# write.accuracy.tables()
 plot.it()
 
