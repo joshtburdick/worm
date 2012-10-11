@@ -13,6 +13,7 @@ wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
 source("pseudoinverse/unmix.r")
+source("EP/unmix.r")
 setwd(wd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
@@ -34,14 +35,13 @@ run.unmix.perturbed.matrix = function(x, m, m.perturbed, unmix.f, reporter.list,
       setdiff(reporter.list[1:(nr+1)], g)
     else
       reporter.list[1:nr]
-# cat("r1 =", r1, "\n")
-
     m1 = m[ c("all", r1), ]
     m.perturbed.1 = m.perturbed[ c("all", r1), ]
     x.fraction = x[g,] %*% t(m.perturbed.1)
-
-    r = unmix.f(m1, as.vector(x.fraction))
-    x.predicted[g,] = as.vector(r$x)
+    try({   # added in case unmixing fails
+      r = unmix.f(m1, as.vector(x.fraction))
+      x.predicted[g,] = as.vector(r$x)
+    })
   }
 
   rownames(x.predicted) = rownames(x)
@@ -100,13 +100,13 @@ sim.with.missing.cells = function(expr, m,
   sim.frac.perturbed = expr %*% t(m1)
 
   # do deconvolving (with correct and incorrect sort matrix)  
-  x.d.correct.m = run.unmix.perturbed.matrix(expr, m, m, unmix.pseudoinverse,
-    rownames(m), 30)
+  x.d.correct.m = run.unmix.perturbed.matrix(expr, m, m, unmix.ep,
+    rownames(m)[-1], 30)
 
   # XXX this is poorly named; the matrix is only "incorrect" because the
   # underlying fractions have been perturbed.
-  x.d.incorrect.m = run.unmix.perturbed.matrix(expr, m, m1, unmix.pseudoinverse,
-    rownames(m), 30)
+  x.d.incorrect.m = run.unmix.perturbed.matrix(expr, m, m1, unmix.ep,
+    rownames(m)[-1], 30)
 
   list(x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
     num.missing = num.missing,
@@ -161,8 +161,9 @@ cat(num.lineages.missing, min.cells, "\n")
   r
 }
 
+missing.cells = NULL
 write.accuracy.tables = function() {
-  missing.cells = data.frame(sim.with.various.params())
+  missing.cells <- data.frame(sim.with.various.params())
   write.table(missing.cells, col.names=NA,
     file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
 
@@ -204,6 +205,6 @@ plot.it = function() {
   dev.off()
 }
 
-# write.accuracy.tables()
-plot.it()
+write.accuracy.tables()
+# plot.it()
 
