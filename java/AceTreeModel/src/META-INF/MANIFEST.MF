@@ -1,0 +1,16 @@
+Manifest-Version: 201008200920
+ToolsLocation: /gpfs/fs0/l/murr/tools3/
+SNDefaultParms: /gpfs/fs0/l/murr/parameters/greenParameters
+Class-Path: AceTree.jar ij.jar flanagan.jar sgt_v30.jar ij-ImageIO_.ja
+ r
+Laboratory: Murray Laboratory
+Created-By: biowolp biowolp@u.washington.edu
+DBLocation: /gpfs/fs0/l/murr/embryoDB/
+AnnotsLocation: /gpfs/fs0/l/murr/
+University-of-Washington: Department of Genome Sciences
+ArchiveLocation: /gpfs/fs0/l/murr/
+UserNameLocation: 3
+StarryNite: /gpfs/fs0/l/murr/tools3/starrynite-debug
+MatlabDefaultParams: mparmDEFAULT.txt
+Main-Class: AceTreeLauncher
+

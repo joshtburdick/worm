@@ -1,0 +1,57 @@
+<?xml version="1.0"?> 
+<project name="AceTree" default="dist" basedir="./"> 
+
+     <property name="ImageJ" value ="/usr/share/java/ij.jar"/>
+     <property name="ij-plugins" value ="/usr/share/java/ij-plugins_toolkit.jar"/>
+     <property name="ATV" value = "/home/jburdick/lib/java/forester.jar"/>
+     <property name="flanagan" value="/home/jburdick/lib/java/flanagan.jar"/>
+     <property name="sgt" value="/home/jburdick/lib/java/sgt_v30.jar"/>
+     <property name="ij-imageio" value="/home/jburdick/lib/java/ij-ImageIO_.jar"/>
+
+     <property name="src" value="../src"/> 
+     <property name="build" value="../bin"/>
+     <property name="jar" value="AceTree.jar"/>
+     <property name="dist" value="../dist"/>
+
+     <target name="init">  
+          <mkdir dir="${build}"/>
+          <mkdir dir="${dist}"/>
+     </target>
+
+     <target name="build" depends="init"> 
+          <!-- Compile the java code -->
+          
+          <javac srcdir="${src}" destdir="${build}"> 
+                <classpath>
+                    <fileset file="${ImageJ}"/>
+                    <fileset file="${ij-imageio}"/>
+                    <fileset file="${ATV}"/>
+                    <fileset file="${flanagan}"/>
+                    <fileset file="${sgt}"/>
+                </classpath>
+          </javac>
+          <copy file="${src}/org/rhwlab/tree/lineage2.gtr" tofile="${build}/org/rhwlab/tree/lineage2.gtr"/>
+          <copy todir="${build}/images"> 
+            <fileset dir="${src}/images"/>
+          </copy>
+     </target>
+     
+     <target name="copyImageJ" depends="build">
+          <copy todir="${dist}">
+            <fileset file="${ImageJ}"/>
+          </copy>
+     </target>
+
+	<target name="dist" depends="copyImageJ">
+        <jar jarfile="${dist}/${jar}" basedir="${build}">
+            <manifest>
+                <attribute name="Main-Class" value="AceTreeLauncher"/>
+            </manifest>
+        </jar>
+    </target>
+
+     <target name="clean" description="Deletes the build directory and the jarfile">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+     </target>
+</project>
