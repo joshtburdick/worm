@@ -91,15 +91,14 @@ public class SulstonTree extends JFrame implements ActionListener, WindowFocusLi
         jp.add(iRootCell);
         iToolBar.add(jp);
 
-
         jp = new JPanel(new FlowLayout());
         JLabel endTime = new JLabel("End time");
         jp.add(endTime);
-        //iToolBar.add(endTime);
+//        iToolBar.add(endTime);
         int endTimeData = iCurrentCell.getEndTime();
         iLateTimeField = new JTextField(String.valueOf(endTimeData), 7);
         jp.add(iLateTimeField);
-        //iToolBar.add(iLateTimeField);
+//        iToolBar.add(iLateTimeField);
         iToolBar.add(jp);
 
         jp = new JPanel(new FlowLayout());
@@ -107,24 +106,35 @@ public class SulstonTree extends JFrame implements ActionListener, WindowFocusLi
         iMaxRedField = new JTextField("5000", 7);
         jp.add(new JLabel("minRed"));
         jp.add(iMinRedField);
-        iToolBar.add(jp);
+//        iToolBar.add(jp);
         jp = new JPanel(new FlowLayout());
         jp.add(new JLabel("maxRed"));
         jp.add(iMaxRedField);
-        iToolBar.add(jp);
-
+//        iToolBar.add(jp);
 
 
         jp = new JPanel(new FlowLayout());
         iRefresh = new JButton("Refresh");
         iRefresh.addActionListener(this);
-        //iToolBar.add(iRefresh);
+//        iToolBar.add(iRefresh);
         jp.add(iRefresh);
         JButton jb1 = new JButton("Print");
         jb1.addActionListener(this);
-        //iToolBar.add(jb1);
+//        iToolBar.add(jb1);
         jp.add(jb1);
         iToolBar.add(jp);
+
+// jtb: refresh this if either field changes
+        iRootCell.addActionListener(new ActionListener(){
+          public void actionPerformed(ActionEvent e) {
+            iRefresh.doClick();
+          }
+        });
+        iLateTimeField.addActionListener(new ActionListener(){
+          public void actionPerformed(ActionEvent e) {
+            iRefresh.doClick();
+          }
+        });
 
         getContentPane().add(iToolBar, "North");
         //ScrollPane sp = new ScrollPane(ScrollPane.SCROLLBARS_ALWAYS);

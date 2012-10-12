@@ -210,8 +210,9 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         menu.add(iExit);
 
         // the Action menu
+
         JMenu menu2 = new JMenu(ACTION);
-        add(menu2);
+//        add(menu2);
         iBuildTree = new JMenuItem(BUILDTREE);
         iBuildTree.addActionListener(this);
         menu2.add(iBuildTree);
@@ -227,7 +228,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
 
         // the Edit menu
         menu = new JMenu(EDIT);
-        add(menu);
+//        add(menu);
         iEdit2 = new JMenuItem(EDITTOOLS);
         iEdit2.addActionListener(this);
         menu.add(iEdit2);
@@ -295,7 +296,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
 
         // the Analyze menu
         menu = new JMenu(ANALYZE);
-        add(menu);
+//        add(menu);
         iShowLog = new JMenuItem(SHOWLOG);
         iShowLog.addActionListener(this);
         menu.add(iShowLog);
@@ -349,7 +350,6 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         iViewNuclei.addActionListener(this);
         menu.add(iViewNuclei);
 
-
         // the trees menu
         menu = new JMenu(TREES);
         add(menu);
@@ -358,23 +358,25 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         menu.add(iAncestralTree);
         iSulstonTree = new JMenuItem(CANONICAL);
         iSulstonTree.addActionListener(this);
-        menu.add(iSulstonTree);
+//        menu.add(iSulstonTree);
         iVTree = new JMenuItem(VTREE);
         iVTree.addActionListener(this);
         menu.add(iVTree);
         iSubTrees = new JMenuItem("SubTrees");
         iSubTrees.addActionListener(this);
-        menu.add(iSubTrees);
+//        menu.add(iSubTrees);
         iATVTree = new JMenuItem(ATVTREE);
         iATVTree.addActionListener(this);
-        menu.add(iATVTree);
+//        menu.add(iATVTree);
 
         // the view
         menu = new JMenu(VIEW);
         add(menu);
+/*
         i3D = new JMenuItem(THREED);
         i3D.addActionListener(this);
         menu.add(i3D);
+*/
         i3D2 = new JMenuItem(THREED2);
         i3D2.addActionListener(this);
         menu.add(i3D2);
@@ -384,6 +386,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         i3Dsave = new JCheckBoxMenuItem(THREEDSAVE);
         i3Dsave.addItemListener(this);
         menu.add(i3Dsave);
+/*
         i3D2save = new JCheckBoxMenuItem(THREEDTWOSAVE);
         i3D2save.addItemListener(this);
         menu.add(i3D2save);
@@ -405,8 +408,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         iCellMovementImage = new JMenuItem(CELLMOVEMENT);
         iCellMovementImage.addActionListener(this);
         menu.add(iCellMovementImage);
-
-
+*/
         // the help menu
         menu = new JMenu(HELP);
         add(menu);
