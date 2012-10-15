@@ -5,8 +5,12 @@
 (cd src; ant)
 
 # copy a bunch of text files which seem important.
-cp old_jar/org/rhwlab/snight/*.txt bin/org/rhwlab/snight
+# cp jar/org/rhwlab/snight/*.txt src/org/rhwlab/snight
+
+# copy source files over
+# cp -R src/* bin/
 
 # jar command including old manifest.
-jar cfm AceTree_recomp.jar old_jar/META-INF/MANIFEST.MF -C bin .
+# jar cfm AceTree_recomp.jar old_jar/META-INF/MANIFEST.MF -C bin .
+jar cfm AceTree.jar src/META-INF/MANIFEST.MF -C src .
 

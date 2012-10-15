@@ -9,7 +9,7 @@
      <property name="ij-imageio" value="/home/jburdick/lib/java/ij-ImageIO_.jar"/>
 
      <property name="src" value="../src"/> 
-     <property name="build" value="../bin"/>
+     <property name="build" value="../src"/>  <!-- was bin/-->
      <property name="jar" value="AceTree.jar"/>
      <property name="dist" value="../dist"/>
 
