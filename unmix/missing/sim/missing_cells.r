@@ -146,7 +146,7 @@ cat(num.lineages.missing, min.cells, "\n")
 sim.removing.from.individual.fractions = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1:70))
+  for(num.lineages.missing in c(1))       # :70))
     for(min.cells in c(20, 40, 60)) {
 cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 20
@@ -163,10 +163,11 @@ cat(num.lineages.missing, min.cells, "\n")
 
 missing.cells = NULL
 write.accuracy.tables = function() {
+if(FALSE) {
   missing.cells <- data.frame(sim.with.various.params())
   write.table(missing.cells, col.names=NA,
     file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
-
+}
   missing.cells.separate.fractions = data.frame(sim.removing.from.individual.fractions())
   missing.cells.separate.fractions$percent.missing =
     100 * (missing.cells.separate.fractions$num.missing / prod(dim(m1)))
@@ -188,16 +189,16 @@ plot.it = function() {
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="correlation",
     main="Accuracy with cells missing")
-
   plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="number of cells missing", ylab="area under the curve",
     main="Accuracy with cells missing")
 
 
+
+
   plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="percent incorrect entries", ylab="correlation",
     main="Accuracy with incorrect sorting")
-
   plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="percent incorrect entries", ylab="area under the curve",
     main="Accuracy with incorrect sorting")
@@ -205,6 +206,6 @@ plot.it = function() {
   dev.off()
 }
 
-write.accuracy.tables()
-# plot.it()
+# write.accuracy.tables()
+plot.it()
 
