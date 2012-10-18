@@ -15,6 +15,10 @@ compute.coverage = function(data.dir, output.file) {
     sep="\t", row.names=TRUE, col.names=NA)
 }
 
-compute.coverage("git/unmix/seq/quant/Murray_050912/", "git/unmix/seq/quant/rawCoverage.tsv.gz")
+# compute.coverage("git/unmix/seq/quant/Murray_050912/", "git/unmix/seq/quant/rawCoverage.tsv.gz")
 # compute.coverage("src/seq/coverage/Murray_050912_as/", "R/unmix/sort_paper/seq/quant/rawCoverage_as.tsv")
+
+compute.coverage("git/unmix/seq/quant/Murray_52831_092812/", "git/unmix/seq/quant/rawCoverage_Murray_52831_092812.tsv.gz")
+
+
 
