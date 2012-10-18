@@ -2,7 +2,13 @@
 # Computes coverage for all BAM files.
 
 # confusingly, this is the "sense" strand quantification
-compute_coverage("geneBounds_flip.tsv", "/murrlab/seq/tophat2/Murray050912/strand_flip", "Murray_050912");
+# compute_coverage("geneBounds_flip.tsv", "/murrlab/seq/tophat2/Murray050912/strand_flip", "Murray_050912");
+# compute_coverage("geneBounds_flip.tsv",
+#   "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
+#   "Murray_52831_092812");
+compute_coverage("geneBounds.tsv",
+  "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
+  "Murray_52831_092812_as");
 
 sub compute_coverage {
   my($bed_file, $bam_dir, $out_dir) = @_;
@@ -29,3 +35,4 @@ sub compute_coverage {
 
   close COUNTS;
 }
+
