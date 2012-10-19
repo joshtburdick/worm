@@ -35,11 +35,12 @@ names(method.offset) = method.name
 
 # Plots "correlation" accuracy for several data sets w.r.t. number of reporters.
 plot.correlation.accuracy = function() {
+  accuracies = NULL
 
   # way to compute accuracy
   accuracy = function(x, x.d) {
     r = diag(cor(t(x), t(x.d)))
-    r = r[!is.na(r)]
+#    r = r[!is.na(r)]
     r
   }
 
@@ -56,6 +57,7 @@ plot.correlation.accuracy = function() {
 
     for(i in 1:length(method.name)) {
       for(j in 1:length(num.reporters)) {
+cat("data.set =", data.set, "", class(data.set), "\n")
         nr = num.reporters[[j]]
         par(new=TRUE)
         a = accuracy(expr[[data.set]],
@@ -64,6 +66,12 @@ plot.correlation.accuracy = function() {
           boxwex = 1 / 3, lwd = 0.7,
           xlab="", ylab="", xaxt="n", yaxt="n",
           add=TRUE, col=method.color[[i]])
+        f = data.frame(method.name = method.name[[i]],
+          data.set = data.set,
+          num.reporters = nr, gene = rownames(expr[[data.set]]),
+          a = as.vector(a))
+print(dim(accuracies))
+        accuracies <<- rbind(accuracies, f)
       }
     }
   }
@@ -72,16 +80,20 @@ plot.correlation.accuracy = function() {
   plot.it("sim.cell.cor", "Simulated patterns based on correlation")
   plot.it("sim.expr.cell", "Simulated one-lineage patterns")
   plot.it("sim.expr.sym", "Simulated two-lineage symmetric patterns")
+
+  accuracies
 }
 
 # Plots "area under curve" accuracy for several data sets
 # w.r.t. number of reporters.
 plot.roc.accuracy = function() {
+  accuracies = NULL
 
   # Accuracy by AUC.
   accuracy = function(x, x.d) {
     r = auc(x, x.d)
-    r = r[!is.na(r)]
+#    r = r[!is.na(r)]
+    r
   }
   ylim = c(0.5, 1)
 
@@ -98,6 +110,7 @@ plot.roc.accuracy = function() {
 
     for(i in 1:length(method.name)) {
       for(j in 1:length(num.reporters)) {
+cat("data.set =", data.set, "", class(data.set), "\n")
         nr = num.reporters[[j]]
         par(new=TRUE)
         a = accuracy(expr.on.off[[data.set]],
@@ -106,14 +119,22 @@ plot.roc.accuracy = function() {
           boxwex = 1 / 3, lwd = 0.7,
           xlab="", ylab="", xaxt="n", yaxt="n",
           add=TRUE, col=method.color[[i]])
+        f = data.frame(method.name = method.name[[i]],
+          data.set = data.set, num.reporters = nr,
+          gene = rownames(expr.on.off[[data.set]]), a = as.vector(a))
+print(dim(accuracies))
+        accuracies <<- rbind(accuracies, f)
       }
     }
+
   }
 
   plot.it("expr.cell", "Measured expression")
   plot.it("sim.cell.cor", "Simulated patterns based on correlation")
   plot.it("sim.expr.cell", "Simulated one-lineage patterns")
   plot.it("sim.expr.sym", "Simulated two-lineage symmetric patterns")
+
+  accuracies
 }
 
 plot.it = function() {
@@ -121,9 +142,11 @@ plot.it = function() {
     title="Boxplot of accuracy vs. number of reporters", width=11.5, height=7)
   par(mfrow=c(2,4))
 
-  plot.correlation.accuracy()
+  cor.accuracy = plot.correlation.accuracy()
+  save(cor.accuracy, file="git/unmix/comp_paper/cor.accuracy.Rdata")
 
-  plot.roc.accuracy()
+  auc.accuracy = plot.roc.accuracy()
+  save(auc.accuracy, file="git/unmix/comp_paper/auc.accuracy.Rdata")
 
   dev.off()
 }
