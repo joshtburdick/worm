@@ -1085,13 +1085,13 @@ public class Image3D2 extends MouseAdapter
         ImageComponent2D buffer = new ImageComponent2D(ImageComponent.FORMAT_RGB,bImage);
         //buffer.setCapability(ImageComponent2D.ALLOW_IMAGE_READ);
 
-        //System.out.println("Rendering...");
+        System.out.println("Rendering...");
         c.setOffScreenBuffer(buffer);
         c.renderOffScreenBuffer();
         c.waitForOffScreenRendering();
 
         bImage = c.getOffScreenBuffer().getImage();
-        //System.out.println("Saving..");
+        System.out.println("Saving..");
         String saveDir = iAceTree.iImgWin.getSaveImageDirectory();
 
         try {
@@ -1622,7 +1622,7 @@ public class Image3D2 extends MouseAdapter
         try {
             robot = new Robot();
             BufferedImage image = robot.createScreenCapture(screenRect);
-            //BufferedImage image = getBufferedImage();
+            // BufferedImage image = getBufferedImage();
             title += iTitle + "." + IMAGETYPE;
             ImageIO.write(image, IMAGETYPE, new File(title));
         } catch(Exception e) {
@@ -1665,8 +1665,8 @@ public class Image3D2 extends MouseAdapter
         try {
             robot = new Robot();
             BufferedImage image = robot.createScreenCapture(screenRect);
-            //BufferedImage image = getBufferedImage();
-            //title += iTitle + "." + IMAGETYPE;
+            // BufferedImage image = getBufferedImage();
+            // title += iTitle + "." + IMAGETYPE;
             ImageIO.write(image, IMAGETYPE, new File(path + "." + IMAGETYPE));
         } catch(Exception e) {
             e.printStackTrace();

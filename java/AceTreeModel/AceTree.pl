@@ -18,5 +18,5 @@ foreach(<IN>){
 }
 
 # jtb: altering this so that standard output is printed
-system("java -jar -Xmx500m AceTree_recomp.jar LocalReferenceModel.xml");
+system("java -jar -Xmx500m AceTree.jar LocalReferenceModel.xml");
 

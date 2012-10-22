@@ -2770,7 +2770,7 @@ public class AceTree extends JPanel
 
         // jtb: hacking this so that the initial tree displays
         if (iCurrentCell.toString().equals("P")) {
-          new SulstonTree(this, "Ancestral Tree", new Cell("P0"), true);
+          new SulstonTree(this, "Ancestral Tree", new Cell("AB"), true);
         }
         else {
           new SulstonTree(this, "Ancestral Tree", iCurrentCell, true);
@@ -2875,12 +2875,18 @@ public class AceTree extends JPanel
             threeDview2();
             //return;
         } else {
-            //iImage3D2.saveImage();
-        	//println("image3D2Save, " + iImgWin.getTitle());
-        	//println("image3D2Save, " + iImgWin.getName());
+//            iImage3D2.saveImage();
+        	println("image3D2Save, " + iImgWin.getTitle());
+        	println("image3D2Save, " + iImgWin.getName());
         	String name = iImgWin.getTitle();
-        	name = name.substring(0, name.length() - 8);
-        	name = name.substring(4, name.length());
+
+// jtb: not sure of why these are here; replacing them with
+// something else which is hopefully equivalent.
+//        	name = name.substring(0, name.length() - 8);
+//        	name = name.substring(4, name.length());
+          int i = name.lastIndexOf(java.io.File.separatorChar);
+          name = name.substring(i+1, name.length() - 8);
+System.out.println("name is now " + name);
             iImage3D2.offScreenRendering(name);
         }
     }

@@ -383,16 +383,20 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         i3D2Z = new JMenuItem(THREED3);
         i3D2Z.addActionListener(this);
         menu.add(i3D2Z);
+/*
         i3Dsave = new JCheckBoxMenuItem(THREEDSAVE);
         i3Dsave.addItemListener(this);
         menu.add(i3Dsave);
-/*
+*/
         i3D2save = new JCheckBoxMenuItem(THREEDTWOSAVE);
         i3D2save.addItemListener(this);
         menu.add(i3D2save);
+/*
         i3D2Zsave = new JCheckBoxMenuItem(THREEDTWOZSAVE);
         i3D2Zsave.addItemListener(this);
         menu.add(i3D2Zsave);
+*/
+/*
         i2Dsave = new JCheckBoxMenuItem(TWODSAVE);
         i2Dsave.addItemListener(this);
         menu.add(i2Dsave);

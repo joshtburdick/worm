@@ -95,7 +95,8 @@ public class SulstonTree extends JFrame implements ActionListener, WindowFocusLi
         JLabel endTime = new JLabel("End time");
         jp.add(endTime);
 //        iToolBar.add(endTime);
-        int endTimeData = iCurrentCell.getEndTime();
+        // jtb: arbitrarily setting this to 100
+        int endTimeData = 100;    // iCurrentCell.getEndTime();
         iLateTimeField = new JTextField(String.valueOf(endTimeData), 7);
         jp.add(iLateTimeField);
 //        iToolBar.add(iLateTimeField);
