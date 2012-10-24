@@ -9,7 +9,8 @@ load("~/gcb/git/unmix/unmix_comp/data/tree_utils.Rdata")
 wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
-source("pseudoinverse/unmix.r")
+# source("pseudoinverse/unmix.r")
+source("EP/unmix.r")
 setwd(wd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
@@ -42,9 +43,10 @@ run.unmix.perturbed.matrix = function(x, m, unmix.f, reporter.list, nr, noise.sd
     x.fraction = x[g,] %*% t(m1)
     x.fraction = x.fraction *
       rnorm(nrow(x.fraction), mean = 1, sd = noise.sd)
-
-    r = unmix.f(m1, as.vector(x.fraction))
-    x.predicted[g,] = as.vector(r$x)
+    try({
+      r = unmix.f(m1, as.vector(x.fraction))
+      x.predicted[g,] = as.vector(r$x)
+    })
   }
 
   rownames(x.predicted) = rownames(x)
@@ -54,15 +56,15 @@ run.unmix.perturbed.matrix = function(x, m, unmix.f, reporter.list, nr, noise.sd
 
 # Computes accuracy for some noise level.
 compute.accuracy.with.noise = function(noise.sd) {
-  x.unmix = run.unmix.perturbed.matrix(expr.cell, m.cell, unmix.pseudoinverse,
+cat(noise.sd, "\n")
+  x.unmix = run.unmix.perturbed.matrix(expr.cell, m.cell, unmix.ep,
     reporters$picked, 30, noise.sd)
 
   c(noise.sd = noise.sd,
-    cor = mean(diag(cor(expr.cell, x.unmix)), na.rm=TRUE),
-    auc = mean(auc(expr.cell >= 2000, x.unmix)),
-    num.nonzero = sum(apply(x.unmix, 1, sum) > 0))
+    cor = mean(diag(cor(t(expr.cell), t(x.unmix))), na.rm=TRUE),
+    auc = mean(auc(expr.cell >= 2000, x.unmix), na.rm=TRUE),
+    num.non.na = sum(apply(!is.na(x.unmix), 1, sum) > 0))
 }
-
 
 accuracy.with.noise = NULL
 for(iter in 1:3)
@@ -74,7 +76,8 @@ write.table(accuracy.with.noise,
   col.names=NA, sep="\t")
 
 plot.it = function() {
-  pdf("git/unmix/comp_paper/accuracy with measurement noise.pdf", width=8, height=4)
+  pdf("git/unmix/comp_paper/accuracy with measurement noise.pdf",
+    width=9, height=4)
   par(mfrow=c(1,2))
 
   plot(accuracy.with.noise[,"noise.sd"], accuracy.with.noise[,"cor"],
@@ -97,4 +100,5 @@ plot.it = function() {
 #   reporters$picked, 30, 1)
 
 
+plot.it()
 
