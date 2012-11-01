@@ -6,6 +6,7 @@
  */
 package org.rhwlab.acetree;
 
+import org.murrlab.image.MedianSmoother;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -547,6 +548,10 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
                 String path = file.getPath();
                 iAceTree.setConfigFileName(path);
                 iAceTree.bringUpSeriesUI(path);
+
+                // jtb: just testing to see if this works
+                iAceTree.medianSmooth();
+                
                 //iAceTree.setConfigFileName(file.getName());
                 //boolean haveConfig = iAceTree.getStartingParms();
                 //if (haveConfig) {

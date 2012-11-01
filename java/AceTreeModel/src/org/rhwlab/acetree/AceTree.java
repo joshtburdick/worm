@@ -4,6 +4,7 @@
  */
 package org.rhwlab.acetree;
 
+import org.murrlab.image.MedianSmoother;
 
 import org.rhwlab.analyze.DeathAndDivisionLog;
 import org.rhwlab.help.AceTreeHelp;
@@ -3271,5 +3272,13 @@ System.out.println("name is now " + name);
 
     private static void println(String s) {System.out.println(s);}
 
+    public void medianSmooth() {
+    	// jtb: trying to add smoothing
+    	MedianSmoother smoother
+    		= new MedianSmoother(iNucleiMgr.getRoot(), 20);
+    	System.out.println("about to smooth");
+    	smoother.computeMedians();
+    	System.out.println("finished smoothing");
+    }
 
 }

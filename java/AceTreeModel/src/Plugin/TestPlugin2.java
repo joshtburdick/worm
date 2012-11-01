@@ -1,3 +1,5 @@
+package Plugin;
+
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Hashtable;

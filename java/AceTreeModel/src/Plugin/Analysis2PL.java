@@ -4,7 +4,8 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-//package org.rhwlab.analyze;
+// package org.rhwlab.analyze;
+package Plugin;
 
 import gov.noaa.pmel.sgt.dm.SGTData;
 import gov.noaa.pmel.sgt.dm.SGTLine;

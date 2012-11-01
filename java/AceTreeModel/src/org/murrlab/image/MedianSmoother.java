@@ -31,6 +31,7 @@ public class MedianSmoother {
 	public MedianSmoother(Cell root, int k) {
 		this.root = root;
 		this.k = k;
+		a = new DoubleArrayList();
 	}
 	
 	/** Sets everything to its median. */
@@ -84,7 +85,7 @@ public class MedianSmoother {
 		Double oldLast = null;
 		if (x.size() >= k)
 			oldLast = x.removeLast();
-		x.addFirst(cd.iNucleus.rweight + 0.0);
+		x.addFirst(cd.iNucleus.rwcorr3 + 0.0);
 		
 		// compute median of current cell
 		median.put(cd, getMedian());
@@ -96,10 +97,11 @@ public class MedianSmoother {
 	
 	/** Gets the median for a given cell. */
 	private double getMedian(Cell c, int i) {
-		Vector<CellData> v = (Vector<CellData>) c.getCellData();
-		
+		a.setSize(k);
+		Vector<CellData> v = c.getCellData();
 		int j;
 		for(j = 0; j < k; j++) {
+			System.out.println("c = " + c + "   i = " + i);
 			CellData cd = v.elementAt(i);
 			a.set(j, cd.iNucleus.rweight);
 			i--;
@@ -110,7 +112,9 @@ public class MedianSmoother {
 				if (c == null)
 					break;
 				else {
-					v = (Vector<CellData>) c.getCellData();
+					v = c.getCellData();
+					if (v == null || v.size() == 0)
+						break;
 					i = v.size() - 1;
 				}
 			}
@@ -122,8 +126,8 @@ public class MedianSmoother {
 	
 	/** Sets the medians for all cells. */
 	private void setMedians() {
-		for(Enumeration e = root.depthFirstEnumeration(); e.hasMoreElements(); ) {
-			Cell c = (Cell) e.nextElement();
+		for(Enumeration<Cell> e = root.depthFirstEnumeration(); e.hasMoreElements(); ) {
+			Cell c = e.nextElement();
 			Vector<CellData> v = c.getCellData();
 			for(int i=0; i<v.size(); i++) {
 				CellData cd = (CellData) v.elementAt(i);

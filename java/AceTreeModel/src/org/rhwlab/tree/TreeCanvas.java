@@ -1,5 +1,7 @@
 package org.rhwlab.tree;
 
+// jtb: AFAIK, this isn't actually used.
+
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;

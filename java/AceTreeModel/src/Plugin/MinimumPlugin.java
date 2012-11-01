@@ -1,3 +1,5 @@
+package Plugin;
+
 public class MinimumPlugin extends org.rhwlab.analyze.AnalysisTemplate {
 	
 	public void test1() {
