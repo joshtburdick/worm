@@ -107,11 +107,11 @@ public class SulstonTree extends JFrame implements ActionListener, WindowFocusLi
         iMaxRedField = new JTextField("5000", 7);
         jp.add(new JLabel("minRed"));
         jp.add(iMinRedField);
-//        iToolBar.add(jp);
+        iToolBar.add(jp);   // jtb: usually omitting this
         jp = new JPanel(new FlowLayout());
         jp.add(new JLabel("maxRed"));
         jp.add(iMaxRedField);
-//        iToolBar.add(jp);
+        iToolBar.add(jp);   // jtb: usually omitting this
 
 
         jp = new JPanel(new FlowLayout());

@@ -3253,6 +3253,10 @@ System.out.println("name is now " + name);
 ///// end of stuff that gets modified for the AceTree object in EmbryoDB ///////////////////////
 /////////////////////////////////////////////////////////////////////////////
     public static void main(String[] args) throws IOException {
+    	
+    	System.out.println("Working Directory = " +
+            System.getProperty("user.dir"));
+    
         System.out.println("AceTree launched: " + new GregorianCalendar().getTime());
         ManifestX.reportAndUpdateManifest();
         String config = null;
@@ -3275,7 +3279,7 @@ System.out.println("name is now " + name);
     public void medianSmooth() {
     	// jtb: trying to add smoothing
     	MedianSmoother smoother
-    		= new MedianSmoother(iNucleiMgr.getRoot(), 20);
+    		= new MedianSmoother(iNucleiMgr.getRoot(), 30);
     	System.out.println("about to smooth");
     	smoother.computeMedians();
     	System.out.println("finished smoothing");

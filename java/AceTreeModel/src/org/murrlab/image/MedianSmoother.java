@@ -101,7 +101,7 @@ public class MedianSmoother {
 		Vector<CellData> v = c.getCellData();
 		int j;
 		for(j = 0; j < k; j++) {
-			System.out.println("c = " + c + "   i = " + i);
+//			System.out.println("c = " + c + "   i = " + i);
 			CellData cd = v.elementAt(i);
 			a.set(j, cd.iNucleus.rweight);
 			i--;

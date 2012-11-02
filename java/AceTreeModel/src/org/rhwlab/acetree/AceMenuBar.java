@@ -549,9 +549,6 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
                 iAceTree.setConfigFileName(path);
                 iAceTree.bringUpSeriesUI(path);
 
-                // jtb: just testing to see if this works
-                iAceTree.medianSmooth();
-                
                 //iAceTree.setConfigFileName(file.getName());
                 //boolean haveConfig = iAceTree.getStartingParms();
                 //if (haveConfig) {

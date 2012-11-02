@@ -168,11 +168,9 @@ public class ManifestX {
         return s.substring(s.length() - 2);
     }
     
-    public static final String 
-        SRC_MANIFEST_FILE = "src/org/rhwlab/manifest/manifest.txt"
-        ;    
-    
-
+    public static final String SRC_MANIFEST_FILE =
+    	"src/org/rhwlab/manifest/manifest.txt";
+//    	"org/rhwlab/manifest/manifest.txt";
     
     public static void main(String[] args) {
         reportAndUpdateManifest();
