@@ -1,4 +1,4 @@
-Manifest-Version: 201210311122
+Manifest-Version: 201211041238
 Main-Class: AceTreeLauncher
 Class-Path: AceTree.jar ij.jar flanagan.jar sgt_v30.jar ij-ImageIO_.jar
 Created-By: biowolp biowolp@u.washington.edu
