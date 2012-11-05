@@ -1,0 +1,26 @@
+March 25, 2010
+
+TO:     File
+FROM:   TomB
+
+MATLAB
+
+Maybe give some more attention to this.
+
+I would like to know how much of the source distribution is really needed.
+
+It would be interesting to see what Anthony did about comparing the new
+approach with the traditional SN.
+
+It might be good to get John's input on this issue.
+
+I was thinking of running 102405_pha4red thru the new code since it is the
+most heavily edited series we have and claims to be edited to 462 cells.
+
+I have not heard from Brian McNally but I would like his input so I can try
+this out on the cluster.
+
+I should also make a preliminary survey of how the code could be converted to
+java. Presumably if I volunteered, Anthony would be willing to consult.
+
+
