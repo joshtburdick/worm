@@ -349,7 +349,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         iViewNuclei.addActionListener(this);
         menu.add(iViewNuclei);
 
-        JMenuItem smoothItem = new JMenuItem("Median smooth");
+        JMenuItem smoothItem = new JMenuItem("Smooth");
         smoothItem.addActionListener(this);
         menu.add(smoothItem);
         
@@ -726,7 +726,7 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         	iAceTree.testWindow();
         }
 
-        if (e.getActionCommand() == "Median smooth")
+        if (e.getActionCommand() == "Smooth")
         	new edu.murrlab.image.SmoothDialog(iAceTree.getRoot()).show();
         //System.out.println("AceMenuBar.actionPerformed exiting");
 

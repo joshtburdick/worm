@@ -1,5 +1,5 @@
 Manifest-Version: 201003251309
-DBLocation: /nfs/waterston/embryoDB/
+DBLocation: /gpfs/fs0/l/murr/embryoDB/
 Class-Path: AceTree.jar dist/ij.jar flanagan.jar sgt_v30.jar ij-ImageIO_.jar
 Laboratory: Waterston Laboratory
 University-of-Washington: Department of Genome Sciences

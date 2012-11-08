@@ -61,7 +61,10 @@ public class OpenFromDB  extends JDialog implements ActionListener {
         iOpen.addActionListener(this);
         iNamingMethod = Config.cDefaultNaming;
         addIdentityChoices(p);
-        addDBChoices(p);
+
+        // jtb: removing this
+        // addDBChoices(p);
+        
         addEditedPointsCheckbox(p);
         setVisible(true);
         pack();
@@ -118,9 +121,11 @@ public class OpenFromDB  extends JDialog implements ActionListener {
     }
 
     void handleRadioButtons() {
+    	/* jtb: commenting out this stuff
     	if (iTraditional.isSelected()) {
     		DBAccess.cDBLocation = "/nfs/waterston/embryoDBnew";
     	} else DBAccess.cDBLocation = "/nfs/waterston/embryoDB";
+    	*/
     	if (iManual.isSelected()) {
     		Config.cDefaultNaming = Config.MANUAL;
     	} else Config.cDefaultNaming = Config.NEWCANONICAL;

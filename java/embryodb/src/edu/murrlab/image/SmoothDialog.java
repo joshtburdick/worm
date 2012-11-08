@@ -21,6 +21,13 @@ import java.awt.event.InputMethodListener;
 import java.awt.event.InputMethodEvent;
 
 import org.rhwlab.tree.Cell;
+import javax.swing.JRadioButton;
+import javax.swing.Box;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.Component;
+import javax.swing.ButtonGroup;
 
 public class SmoothDialog extends JDialog {
 
@@ -29,6 +36,8 @@ public class SmoothDialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField numPoints;
 	private JButton okButton;
+	private final ButtonGroup method = new ButtonGroup();
+	private JRadioButton gaussian;
 
 	/**
 	 * Create the dialog.
@@ -41,24 +50,76 @@ public class SmoothDialog extends JDialog {
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		GridBagLayout gbl_contentPanel = new GridBagLayout();
+		gbl_contentPanel.columnWidths = new int[]{368, 0};
+		gbl_contentPanel.rowHeights = new int[]{95, 42, 0};
+		gbl_contentPanel.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		contentPanel.setLayout(gbl_contentPanel);
 		{
-			JLabel lblNumberOfTime = new JLabel("Number of time points to smooth");
-			lblNumberOfTime.setHorizontalAlignment(SwingConstants.LEFT);
-			contentPanel.add(lblNumberOfTime);
-		}
-		{
-			numPoints = new JTextField();
-
-			numPoints.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					okButton.doClick();
+			Box verticalBox = Box.createVerticalBox();
+			GridBagConstraints gbc_verticalBox = new GridBagConstraints();
+			gbc_verticalBox.anchor = GridBagConstraints.WEST;
+			gbc_verticalBox.gridx = 0;
+			gbc_verticalBox.gridy = 1;
+			contentPanel.add(verticalBox, gbc_verticalBox);
+			{
+				Box horizontalBox = Box.createHorizontalBox();
+				verticalBox.add(horizontalBox);
+			}
+			{
+				Box horizontalBox_1 = Box.createHorizontalBox();
+				verticalBox.add(horizontalBox_1);
+				{
+					JLabel lblNewLabel = new JLabel("Smoothing method");
+					horizontalBox_1.add(lblNewLabel);
 				}
-			});
-			numPoints.setHorizontalAlignment(SwingConstants.RIGHT);
-			numPoints.setText("30");
-			contentPanel.add(numPoints);
-			numPoints.setColumns(5);
+				{
+					Box verticalBox_1 = Box.createVerticalBox();
+					horizontalBox_1.add(verticalBox_1);
+					{
+						gaussian = new JRadioButton("Gaussian convolve");
+						method.add(gaussian);
+						gaussian.setSelected(true);
+						verticalBox_1.add(gaussian);
+					}
+					{
+						JRadioButton median = new JRadioButton("median of window");
+						method.add(median);
+						verticalBox_1.add(median);
+					}
+				}
+			}
+			{
+				Box horizontalBox = Box.createHorizontalBox();
+				verticalBox.add(horizontalBox);
+				{
+					JLabel lblNumberOfTime = new JLabel("Window size (in time points)");
+					horizontalBox.add(lblNumberOfTime);
+					lblNumberOfTime.setHorizontalAlignment(SwingConstants.LEFT);
+				}
+				{
+					numPoints = new JTextField();
+					horizontalBox.add(numPoints);
+
+					numPoints.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							okButton.doClick();
+						}
+					});
+					numPoints.setHorizontalAlignment(SwingConstants.RIGHT);
+					numPoints.setText("4");
+					numPoints.setColumns(5);
+				}
+			}
+			{
+				Component verticalGlue = Box.createVerticalGlue();
+				verticalBox.add(verticalGlue);
+			}
+			{
+				Box horizontalBox = Box.createHorizontalBox();
+				verticalBox.add(horizontalBox);
+			}
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -68,7 +129,7 @@ public class SmoothDialog extends JDialog {
 				okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						medianSmooth();
+						smooth();
 					}
 				});
 				okButton.setActionCommand("OK");
@@ -88,22 +149,29 @@ public class SmoothDialog extends JDialog {
 		}
 	}
 
-	public void medianSmooth() {
+	public void smooth() {
 		try {
 			int k = Integer.parseInt(numPoints.getText());
 			if (k >= 1 && k < 500) {
-				MedianSmoother s = new MedianSmoother(root, k);
+				// MedianSmoother s = new MedianSmoother(root, k);
+				
+				boolean m = getGaussian().isSelected();
+				System.out.println(m);
+				Smoother s = new Smoother(root, getGaussian().isSelected(), k);
 				System.out.println("computing medians...");
 				s.computeMedians();
 				System.out.println("done computing medians...");
 				dispose();
 			}
 			else {
-				numPoints.setText("30");
+				numPoints.setText("4");
 			}
 		}
 		catch (NumberFormatException e) {
-			numPoints.setText("30");
+			numPoints.setText("4");
 		}
+	}
+	protected JRadioButton getGaussian() {
+		return gaussian;
 	}
 }
