@@ -1,6 +1,8 @@
 <?xml version="1.0"?> 
 <project name="AceTree" default="dist" basedir="./"> 
 
+	 <property name="external-lib-dir-1" value="/home/jburdick/lib/java/" />
+	
      <property name="ImageJ" value ="/usr/share/java/ij.jar"/>
      <property name="ij-plugins" value ="/usr/share/java/ij-plugins_toolkit.jar"/>
      <property name="ATV" value = "/home/jburdick/lib/java/forester.jar"/>
@@ -44,6 +46,8 @@
 
 	<target name="dist" depends="copyImageJ">
         <jar jarfile="${dist}/${jar}" basedir="${build}">
+ <!--     as seen at http://stackoverflow.com/questions/1821803/creating-a-bundle-jar-with-ant,
+ 	<zipgroupfileset dir="${external-lib-dir-1}" includes="*.jar"/> -->
             <manifest>
                 <attribute name="Main-Class" value="AceTreeLauncher"/>
             </manifest>
