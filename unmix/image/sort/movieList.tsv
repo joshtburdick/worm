@@ -1,32 +1,18 @@
-	"movie"	"minRed"	"maxRed"	"comment"
-"pal-1"	"20101213_RW10889_pal-1_L2"	300	2000	
-	"20110125_RW10890_pal-1_L4"	300	1400	"mp"
-	"20110203_RW10890_pal-1_L4"	700	2000	"mp"
-"mls-2"	"20110209_UP2051_mls-2_L2"	500	1500	"mp. is MSa stuff real?"
-"ttx-3"	"20110726_RW10713_L1"	300	1000	"mp. "
-"ceh-36"	"20110916_ceh-36_L1"	1100	2000	"mp"
-"hlh-16"	"20111011_L1"	500	1500	
-"ceh-27"	"20111205_ceh-27_L3"	2000	7000	"settings seem bright; also, not totally edited"
-				" "
-"-----possibly not used"				
-	"20101213_RW10889_pal-1_L3"			"mp"
-	"20110125_RW10890_pal-1_L3"			"mp"
-	"20110209_UP2051_mls-2_L3"			
-	"20110511_pha-4_25C_L2"			
-	"20110511_pha-4_25C_L3"			
-	"20110425_pal-1_25C_L1"			
-	"20110425_pal-1_25C_L2"			
-	"20110531_pha4_24C_L3"			
-	"20110531_pha4_24C_L4"			
-	"20110408_RW10425_pha-4_L2"			"mp. skip (not very edited?)"
-	"20110421_RW10890_pal-1_L1"			
-	"20110927_RW11144_L4"			"mp. not very edited?"
-	"20111208_JIM108_L1"			"has expr which isn't very edited"
-	"20120326_RW10048_L4"			"“"
-	"20120331_RW10871_L4"			"“"
-	"20110731_RW10434_L1"			"“"
-	"20120401_JIM122_L3"			"“"
-	"cnd-1"			"need newer movie"
-	"F21D5.9"			"“"
-	"unc-130"			"“"
-"mls-2"	"20110209_UP2051_mls-2_L1"	200	1400	"mp"
+"gene"	"series"	"threshold"	"minRed"	"maxRed"	"comment"	
+"pal-1"	"20101213_RW10889_pal-1_L2"	1500	300	2000		
+"pal-1"	"20110125_RW10890_pal-1_L4"	1300	300	1400	"mp"	
+"pal-1"	"20110203_RW10890_pal-1_L4"	1500	700	2000	"mp"	
+"mls-2"	"20110209_UP2051_mls-2_L2"	1000	500	1500	"mp."	
+"ttx-3"	"20110726_RW10713_L1"	1000	300	1000	"mp. "	
+"ceh-36"	"20110916_ceh-36_L1"	1300	1100	2000	"MSap?"	"*"
+"hlh-16"	"20111011_L1"	1000	500	1500		
+"ceh-27"	"20111205_ceh-27_L3"	2500	2000	7000	"settings seem bright. ABalpaapaa?"	
+"cnd-1"	"20110731_RW10434_L1"	1100			"need to get ABpxpa stuff right"	
+"F21D5.9"	"20120612_JIM127_L4"	2100			"ABplpappppa? ABplappppp"	
+"unc-130"	"20110927_RW11144_L4"	1000				
+"pha-4"	"20110408_RW10425_pha-4_L2"	1200				
+"ceh-26"	"20120426_JIM122_L2"	800				
+"irx-1"	"20111208_JIM108_L1"	2300				
+"mir-57"	"20120326_RW10048_L4"	1100				
+"ceh-6"	"20120331_RW10871_L4"	800				
+"ceh-6"	"20120331_RW10871_L3"	900				
