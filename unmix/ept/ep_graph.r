@@ -1,29 +1,23 @@
 # Attempt at a more general tool for EP.
 
-# A variable is a list with at least two elements:
+# A model is represented by a list with at least:
+#   var - a named list of variables (the names should
+#     be unique)
+#   factor - a list of factors
+
+# A variable is a list with at least these elements:
 #   b - the total messages to/from this variable (as a matrix)
-#   observed - boolean, indicating whether this is observed
+#   log.evidence - function which computes log-evidence
 
 # Makes a variable.
-make.var = function(b) list(b = b, observed = FALSE)
+make.var = function(b, log.evidence) list(b = b)
 
 # A factor is a list with:
-#   x - list of variables to which it's connected
+#   x - list of names of vars to which it's connected
 #   to.f, from.f - lists of messages to and from this factor
 #   update - function which, given messages to this factor ("to.f"),
 #     sends messages from this factor ("from.f")
 #   log.evidence - computes log-evidence for this factor (not yet implemented)
-# ??? should this include both messages "from"?
-# ??? should this compute messages and log-evidence at once?
-
-# Constructs a basic factor (this is a sort of "superclass constructor.")
-# Possibly deprecated.
-new.factor = function(x) {
-  z = sapply(x, function(a) a$b)
-  z = z - z   # set these all to 0
-
-  list(x = x, to.f = z)
-}
 
 # Constructs a factor with some set of methods.
 make.factor = function(x, f) {
@@ -42,6 +36,20 @@ eq.f = function(log.partition) function(a) {
     log.evidence = log.partition(a1+a2) - (log.partition(a1) + log.partition(a2)))
 }
 
+
+# Factor which constrains a variable (almost the same thing.)
+constrain.f = function(log.partition, x) function(a) {
+  a1 = a[[1]]
+
+  list(update = list(x),
+    log.evidence = log.partition(x+a1) - (log.partition(x) + log.partition(a1)))
+}
+
+
+
+
+
+# FIXME not working
 # Updates a model some number of times, using "parallel" updating.
 # Currently, no convergence testing.
 #   m - a model, as a list with elements "vars" and "factors"
