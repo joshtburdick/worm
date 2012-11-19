@@ -108,12 +108,13 @@ sim.with.missing.cells = function(expr, m,
   x.d.incorrect.m = run.unmix.perturbed.matrix(expr, m, m1, unmix.ep,
     rownames(m)[-1], 30)
 
-  list(x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
+  data.frame(   # x.d.incorrect.m = x.d.incorrect.m, x.d.correct.m = x.d.correct.m,
     num.missing = num.missing,
-    cor.incorrect.m = cor1(expr.cell, x.d.incorrect.m),
-    auc.incorrect.m = mean(auc(ifelse(expr.cell>=2000, 1, 0), x.d.incorrect.m), na.rm=TRUE),
-    cor.correct.m = cor1(expr.cell, x.d.correct.m),
-    auc.correct.m = mean(auc(ifelse(expr.cell>=2000, 1, 0), x.d.correct.m), na.rm=TRUE))
+    cor.incorrect.m = row.cor(standardize.rows(expr.cell),
+      standardize.rows(x.d.incorrect.m)),
+    auc.incorrect.m = auc(ifelse(expr.cell>=2000, 1, 0), x.d.incorrect.m),
+    cor.correct.m = row.cor(standardize.rows(expr.cell), standardize.rows(x.d.correct.m)),
+    auc.correct.m = auc(ifelse(expr.cell>=2000, 1, 0), x.d.correct.m))
 }
 
 # Simulates with a variety of different numbers of missing cells.
@@ -122,7 +123,7 @@ sim.with.missing.cells = function(expr, m,
 #   num.missing - number of cells which were missing
 #   cor.incorrect.m, auc.incorrect.m - accuracy when using the incorrect sort matrix
 #   cor.correct.m, auc.correct.m - accuracy when using the correct sort matrix
-sim.with.various.params = function() {
+sim.with.various.missing.cells = function() {
   r = NULL
 
 #  for(num.lineages.missing in c(1:9))
@@ -133,10 +134,12 @@ cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 10
       a = sim.with.missing.cells(expr.cell, m1,
         num.lineages.missing, min.cells, max.cells, TRUE)
-      r = rbind(r, c(num.lineages.missing = num.lineages.missing,
-        min.cells = min.cells, max.cells = max.cells, num.missing = a$num.missing,
-        cor.incorrect.m = a$cor.incorrect.m, auc.incorrect.m = a$auc.incorrect.m,
-        cor.correct.m = a$cor.correct.m, auc.correct.m = a$auc.correct.m))
+      a$num.lineages.missing = num.lineages.missing
+      r = rbind(r, a)
+#      r = rbind(r, c(num.lineages.missing = num.lineages.missing,
+#        min.cells = min.cells, max.cells = max.cells, num.missing = a$num.missing,
+#        cor.incorrect.m = a$cor.incorrect.m, auc.incorrect.m = a$auc.incorrect.m,
+#        cor.correct.m = a$cor.correct.m, auc.correct.m = a$auc.correct.m))
   }
 
   r
@@ -146,28 +149,29 @@ cat(num.lineages.missing, min.cells, "\n")
 sim.removing.from.individual.fractions = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1))       # :70))
+  for(num.lineages.missing in c(1:70))
     for(min.cells in c(20, 40, 60)) {
 cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 20
       a = sim.with.missing.cells(expr.cell, m1,
         num.lineages.missing, min.cells, max.cells, FALSE)
-      r = rbind(r, c(num.lineages.missing = num.lineages.missing,
-        min.cells = min.cells, max.cells = max.cells, num.missing = a$num.missing,
-        cor.incorrect.m = a$cor.incorrect.m, auc.incorrect.m = a$auc.incorrect.m,
-        cor.correct.m = a$cor.correct.m, auc.correct.m = a$auc.correct.m))
+      a$num.lineages.missing = num.lineages.missing
+      r = rbind(r, a)
+#      r = rbind(r, c(num.lineages.missing = num.lineages.missing,
+#        min.cells = min.cells, max.cells = max.cells, num.missing = a$num.missing,
+#        cor.incorrect.m = a$cor.incorrect.m, auc.incorrect.m = a$auc.incorrect.m,
+#        cor.correct.m = a$cor.correct.m, auc.correct.m = a$auc.correct.m))
   }
 
   r
 }
 
-missing.cells = NULL
+# missing.cells = NULL
 write.accuracy.tables = function() {
-if(FALSE) {
-  missing.cells <- data.frame(sim.with.various.params())
+  missing.cells = data.frame(sim.with.various.missing.cells())
   write.table(missing.cells, col.names=NA,
     file="git/unmix/missing/sim/missing_cells.txt", sep="\t")
-}
+
   missing.cells.separate.fractions = data.frame(sim.removing.from.individual.fractions())
   missing.cells.separate.fractions$percent.missing =
     100 * (missing.cells.separate.fractions$num.missing / prod(dim(m1)))
@@ -175,16 +179,13 @@ if(FALSE) {
     file="git/unmix/missing/sim/missing_cells_separate_fractions.txt", sep="\t")
 }
 
-plot.it = function() {
+plot.with.missing.cells = function() {
   missing.cells = read.table(
     "git/unmix/missing/sim/missing_cells.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
-  missing.cells.separate.fractions = read.table(
-    "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
-    sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with incorrect matrix.pdf", width=8, height=7)
-  par(mfrow=c(2,2))
+  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=9, height=4)
+  par(mfrow=c(1,2))
 
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="correlation",
@@ -192,20 +193,31 @@ plot.it = function() {
   plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="number of cells missing", ylab="area under the curve",
     main="Accuracy with cells missing")
+  dev.off()
+}
 
+plot.with.incorrect.matrix = function() {
+  missing.cells.separate.fractions = read.table(
+    "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
+    sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-
+  pdf("git/unmix/missing/sim/accuracy with incorrect sorting.pdf",
+    width=9, height=4)
+  par(mfrow=c(1,2))
 
   plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=20,
-    xlab="percent incorrect entries", ylab="correlation",
+    xlab="percent incorrect entries", ylab="correlation", xlim=c(0, 4),
     main="Accuracy with incorrect sorting")
   plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$auc.incorrect.m, ylim=c(0.5,1), pch=20,
-    xlab="percent incorrect entries", ylab="area under the curve",
+    xlab="percent incorrect entries", ylab="area under the curve", xlim=c(0, 4),
     main="Accuracy with incorrect sorting")
 
   dev.off()
 }
 
-# write.accuracy.tables()
-plot.it()
+if (FALSE) {
+  # write.accuracy.tables()
+  plot.with.missing.cells()
+  plot.with.incorrect.matrix()
+}
 
