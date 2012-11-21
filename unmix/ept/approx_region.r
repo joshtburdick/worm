@@ -20,9 +20,9 @@ positive.moment.match = function(m, v) {
   a = dnorm(z) / pnorm(z)
 
   # hack to deal with when z is very negative
-#  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
-#    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
-  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
+  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
+    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
+#  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
 
@@ -64,7 +64,6 @@ mvnorm.2 = function(m, v, A, b, b.var) {
     V = as.matrix( V - V %*% t(A) %*% B %*% A %*% V) )
 }
 
-
 # Distribution of x ~ N(m,v) | Ax ~ N(b,b.var).
 lin.constraint.1 = function(m, v, A, b, b.var) {
 
@@ -75,17 +74,25 @@ lin.constraint.1 = function(m, v, A, b, b.var) {
   M = A %*% (v * t(A))
   diag(M) = diag(M) + b.var
 #  M = as.matrix( A %*% (v * t(A)) + Diagonal(x = b.var) )
-
+# print(v[1:3])
 # print("M =")
-# print(M[1:5,1:5])
+# print(M[1:3,1:3])
 # print(as.numeric(determinant(M, logarithm=TRUE)))
 
   # using Cholesky would be slightly faster, but maybe less stable
-  M.qr = qr(M)
+r = NULL
+if (FALSE) {  M.qr = qr(M)
 
   r = cbind(m = m - v * as.vector(t(A) %*% solve(M.qr, A %*% m - b)),
     v = v - v * apply(A * solve(M.qr, A), 2, sum) * v)
-# print(colnames(r))
+}
+
+  M.pi = pseudoinverse(M)
+
+  # trying to use the pseudoinverse here
+  r = cbind(m = m - v * as.vector(t(A) %*% (M.pi %*% (A %*% m - b))),
+    v = v - v * apply(A * (M.pi %*% A), 2, sum) * v)
+
   r
 }
 
@@ -114,8 +121,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   converge.tolerance = 1e-9, max.iters=100) {
   n = ncol(A)
 
-#  debug.dir = "~/tmp/approx.region.debug"
-  debug.dir = NULL
+  debug.dir = "~/tmp/approx.region.debug"
+#  debug.dir = NULL
 
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
@@ -147,7 +154,7 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 # print(as.vector(mm))
     # update terms.
     # one way to add damping. XXX not sure this is right.
-#    terms = 0.5 * (mm - q) + terms
+#    terms = 0.5 * (mm - q) + 0.5 * terms
     terms = (mm - q) + terms
 
     if (!is.null(debug.dir)) {

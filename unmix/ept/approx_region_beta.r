@@ -2,6 +2,9 @@
 # (instead of Gaussians.) It's a fairly conservative design,
 # in that other than that, it's basically the same.
 
+# Possibly deprecated (Dirichlet seems like the thing to
+# use eventually, anyway.)
+
 source("git/unmix/ept/approx_region.r")
 
 # Natural parameters of a beta distribution.
