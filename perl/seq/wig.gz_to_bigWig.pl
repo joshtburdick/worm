@@ -21,19 +21,21 @@ import_dir("$wig_gz_path/$data_path", "$bigwig_path/$data_path");
 # each location.
 # Args:
 #   wig_gz_file - the .wig.gz file to read
-sub take_max {
+#   out_file - where to write output to
+sub write_max_file {
   my($wig_gz_file, $out_file) = @_;
 
   # hash storing maximum for each location
   my %m = ();
 
   # first, get maximum score for each location
-  open IN, "<$wig_gz_file" || die;
+  open IN, "gunzip -c $wig_gz_file |" || die;
   while (<IN>) {
     chomp;
+    next if /track/;
     my($chr, $a, $b, $score) = split /\t/;
     my $k = "$chr:$a";
-    if (!defined $m{$k} || $score >= $m{$k}) {
+    if (!defined $m{$k} || ((defined $m{$k} && $score >= $m{$k}))) {
       $m{$k} = $score;
     }
   }
@@ -41,16 +43,18 @@ sub take_max {
 
   # then, write out maximum score for each location
   # (making sure to write out each only once)
-  open IN, "<$wig_gz_file" || die;
+  open IN, "gunzip -c $wig_gz_file |" || die;
   open OUT, ">$out_file" || die;
   while (<IN>) {
     chomp;
+    next if /track/;
     my($chr, $a, $b, $score) = split /\t/;
     my $k = "$chr:$a";
     if (defined $m{$k}) {
-      print OUT (join "\t", ($chr, $a, $b, $m{k}));
-      print OUT;
+      print OUT (join "\t", ($chr, $a, $b, $m{$k}));
+      print OUT "\n";
       $m{$k} = undef;    # to avoid writing something out twice
+    }
   }
   close IN;
   close OUT;
@@ -77,12 +81,12 @@ sub import_dir {
     my $tmp_file = $f;
     $tmp_file =~ s/\.wig\.gz/\.tmp.bedGraph/;
 
-    system("gunzip -c $wig_gz_dir/$f | fgrep -v track > $bigwig_dir/$tmp_file");
+#    system("gunzip -c $wig_gz_dir/$f | fgrep -v track > $bigwig_dir/$tmp_file");
+    write_max_file("$wig_gz_dir/$f", "$bigwig_dir/$tmp_file");
 
     system("bedGraphToBigWig $bigwig_dir/$tmp_file $chromosome_sizes_file $bigwig_dir/$bw_file");
 
     unlink("$bigwig_dir/$tmp_file");
   }
-
 }
 
