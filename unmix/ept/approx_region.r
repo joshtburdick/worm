@@ -148,13 +148,16 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 
     mm = positive.moment.match.canonical(terms.1)
 
+# ???
+#    mm = positive.moment.match.canonical(q) - terms
+
 #    mm[ is.nan(mm[,"e1"]) | is.nan(mm[,"e2"]) |
 #      is.infinite(mm[,"e1"]) | is.infinite(mm[,"e2"]) , ] = 0
 
 # print(as.vector(mm))
     # update terms.
     # one way to add damping. XXX not sure this is right.
-#    terms = 0.5 * (mm - q) + 0.5 * terms
+#    terms = 0.1 * (mm - q) + 0.9 * terms
     terms = (mm - q) + terms
 
     if (!is.null(debug.dir)) {
