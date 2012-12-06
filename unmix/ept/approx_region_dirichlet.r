@@ -59,8 +59,13 @@ approx.region.dirichlet = function(A, b,
   m = array(0, dim=c(ncol(b), ncol(A), nrow(b)),
     dimnames=list(colnames(b), colnames(A), rownames(b)))
 
+  prior = 0 * m[,,1]
+  # XXX hack to deal with case when many genes are aggregated with "_"
+  prior["_",] = 2* (19723 - ncol(b)) - 1
+  prior = prior + 1
+
   # the posterior
-  x = apply(m, c(1,2), sum)
+  x = prior + apply(m, c(1,2), sum)
 
   # messages to and from each factor
   m.to = 0 * m
@@ -86,14 +91,14 @@ cat(backspace, i, "")
     # update messages from each factor
     # (again, m.from and x are different sizes; see above about m.to)
     m.change = m.from - as.vector(x)
-    m = m.change + m    # ??? damp this?
+    m = 0.05 * m.change + m       # includes damping
 
     # update posterior (as sum of messages from each factor)
-    x = apply(m, c(1,2), sum)
+    x = prior + apply(m, c(1,2), sum)
 
     # for tracking convergence
     update.stats = rbind(update.stats, c(mean=mean(m.change), sd=sd(m.change)))
-    cat(backspace, iter, update.stats[nrow(update.stats),])
+    cat(backspace, iter, update.stats[nrow(update.stats),], "\n")
 
     # stop if we've converged
     if (max(m.change) < converge.tolerance)
@@ -107,6 +112,7 @@ cat("\n")
   list(x = x1, b1 = b1, update.stats = update.stats)
 }
 
+if (FALSE) {
 # test data sets
 t1 = list(
   A = rbind(c(1,1,1,1,0),
@@ -123,7 +129,8 @@ max.iters=2
 
 # x1 = dirichlet.cond(x, A, b)
 
-r = approx.region.dirichlet(t1$A, t1$b, max.iters=100)
+r = approx.region.dirichlet(t1$A, t1$b, max.iters=10)
 x1 = r$x
 x1 = x1 / apply(x1, 1, sum)
+}
 

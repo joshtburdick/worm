@@ -59,7 +59,7 @@ unmix.dirichlet = function(A, b) {
 #    print(x)
   }
 
-  list(m = m, x = x + 1, mean= (x+1)/sum(x+1))
+  list(m = m, x = x + 1, mean = (x+1) / sum(x+1))
 }
 
 
