@@ -45,36 +45,38 @@ gamma.n2mv = function(a) gamma.s2mv(gamma.n2s(a))
 # Finds the marginal distributions of independant gamma variables,
 # conditional on their sum adding up to exactly one.
 # (Analogous to lin.constraint() in the EP code.)
-# ??? is this correct?
+# ??? is this correct? Presumably their sum should be
+# just the sum of the expected values?
+# Currently only handles a single constraint.
 # Args:
 #   x - natural parameters of gamma distributions
+#   (should be an array with three dimensions,
+#   first being "e1" and "e2")
 # Returns: x, conditional on the x's summing to 1
 gamma.conditional.1 = function(x) {
 
-  # first, moment-match these as beta distributions
-  xb = beta.mv2n(gamma.n2mv(x))
-print(round(xb,3))
+  # first, compute sum of all x's (by scaling them
+  # all "blurred" together) ??? is this correct?
+#  s = gamma.n2mv(as.matrix(apply(x, 1, sum)))
+# * c(ncol(x), ncol(x)^2)
+# print(s)
+  # compute mean
+#  m = s["m",1] * ncol(x)
 
-  # then, compute one minus each of these
-  # (this is the same as switching the a and b parameters)
-  xb1 = rbind(e1 = xb["e2",], e2 = xb["e1",])
-print(round(xb1,3))
+  x.mv = gamma.n2mv(x)
 
-  # compute average of all but one of these
-print(ncol(x))
-  r = (apply(xb1, 1, sum) - xb1) / (ncol(x)-1)
-print(round(r, 3))
+  # compute mean of each
+  m = apply(x.mv["m",,], 1, sum)
+print(m)
 
-  # re-swap
-  r1 = rbind(e1 = r["e2",], e2 = r["e1",])
-print(round(r1, 3))
+  # scale by that mean
+  m1 = rbind(m, m*m)
+  r = sweep(x.mv, c(1,3), as.vector(m1), "/")
 
-  # average this with original marginal
-  p = (r1 + xb) / 2
-print(round(p, 3))
-
-  # return that, moment-matched as gamma, and rescaled
-  gamma.mv2n(beta.n2mv(p))
+  r = gamma.n2mv(x) / c(m, m*m)
+print(r)
+  # return that, moment-matched as gamma
+  gamma.mv2n(r)
 }
 
 # As above, but allows arbitrary linear constraints.
@@ -107,8 +109,37 @@ gamma.conditional = function(x, A, b) {
   x.c
 }
 
-x1.mv = beta.s2mv(rbind(a=c(1,1,1), b=c(1,1,1)))
+# Another attempt at the gamma conditional thing,
+# in this case for just two gamma variables.
+# Returns: mean and variance of first variable, conditional
+# on them summing to 1.
+gamma.conditional.2var.numerical = function(p) {
+
+  # the presumed density function
+  f = function(x)
+    dgamma(x, shape=p["a",1], rate=p["b",1]) *
+    dgamma((1-x), shape=p["a",2], rate=p["b",2])
+
+  # compute they moments
+  # XXX assuming successful integration
+  x0 = integrate(f, 0, 1)$value
+  x1 = integrate(function(x) x * f(x), 0, 1)$value
+  x2 = integrate(function(x) x * x * f(x), 0, 1)$value
+
+  list(m = x1 / x0, v = x2/x0 - (x1/x0)^2)
+}
+
+# various tests for gamma.conditional
+x1.mv = beta.s2mv(rbind(a=c(1,1,1), b=c(1,2,3)))
 x1 = gamma.mv2n(x1.mv)
 
-x2 = gamma.mv2n(rbind(m=c(0.5,0.5), v=c(0.1,0.1)))
+x2 = gamma.mv2n(rbind(m=c(0.4,0.2,0.3), v=c(0.08,0.02,0.08)))
+
+x3.mv = array(c(1,2, 2,1, 2,2,
+    3,3, 3,1, 1,1,
+    1,1, 1,1, 1,1),
+  dim=c(2,3,3),
+  dimnames=list(c("m","v"), c("x1","x2","x3"), c("a","b","c")))
+x3 = gamma.mv2n(x3.mv)
+
 
