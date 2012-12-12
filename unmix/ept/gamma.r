@@ -109,24 +109,27 @@ gamma.conditional = function(x, A, b) {
   x.c
 }
 
-# Another attempt at the gamma conditional thing,
-# in this case for just two gamma variables.
+# Another attempt at the gamma conditional thing.
 # Returns: mean and variance of first variable, conditional
-# on them summing to 1.
-gamma.conditional.2var.numerical = function(p) {
+# on all of them summing to 1.
+gamma.conditional.numerical = function(p) {
 
-  # the presumed density function
-  f = function(x)
-    dgamma(x, shape=p["a",1], rate=p["b",1]) *
-    dgamma((1-x), shape=p["a",2], rate=p["b",2])
+  # the density function (presumably)
+  f = function(x) {
+    r = dgamma(x, shape=p["a",1], rate=p["b",1])
+    for(i in 2:ncol(p)) {
+      r = r * dgamma((1-x), shape=p["a",i], rate=p["b",i])
+    }
+    r
+  }
 
-  # compute they moments
+  # compute the moments
   # XXX assuming successful integration
   x0 = integrate(f, 0, 1)$value
   x1 = integrate(function(x) x * f(x), 0, 1)$value
   x2 = integrate(function(x) x * x * f(x), 0, 1)$value
 
-  list(m = x1 / x0, v = x2/x0 - (x1/x0)^2)
+  rbind(m = x1 / x0, v = x2/x0 - (x1/x0)^2)
 }
 
 # various tests for gamma.conditional
@@ -135,7 +138,7 @@ x1 = gamma.mv2n(x1.mv)
 
 x2 = gamma.mv2n(rbind(m=c(0.4,0.2,0.3), v=c(0.08,0.02,0.08)))
 
-x3.mv = array(c(1,2, 2,1, 2,2,
+x3.mv = array(c(2,1, 2,1, 2,2,
     3,3, 3,1, 1,1,
     1,1, 1,1, 1,1),
   dim=c(2,3,3),
