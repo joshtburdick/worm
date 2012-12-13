@@ -79,6 +79,70 @@ print(r)
   gamma.mv2n(r)
 }
 
+# Finds the marginal distributions of independant gamma variables,
+# conditional on their sum adding up to exactly one.
+# (Analogous to lin.constraint() in the EP code.)
+# ??? is this correct?
+# Args:
+#   x - natural parameters of gamma distributions
+# Returns: x, conditional on the x's summing to 1
+gamma.conditional.beta.1 = function(x) {
+
+  # first, moment-match these as beta distributions
+  xb = beta.mv2n(gamma.n2mv(x))
+print(round(xb,3))
+
+  # then, compute one minus each of these
+  # (this is the same as switching the a and b parameters)
+  xb1 = rbind(e1 = xb["e2",], e2 = xb["e1",])
+print(round(xb1,3))
+
+  # compute average of all but one of these
+print(ncol(x))
+  r = (apply(xb1, 1, sum) - xb1) # / (ncol(x)-1)
+print(round(r, 3))
+
+  # re-swap
+#  r1 = rbind(e1 = r["e2",], e2 = r["e1",])
+#print(round(r1, 3))
+
+  # average this with original marginal
+  p = (r + xb)   # / 2
+print(round(p, 3))
+
+  # return that, moment-matched as gamma, and rescaled
+  gamma.mv2n(beta.n2mv(p))
+}
+
+# Variation of this which breaks the product into an
+# exponential distribution times a beta, moment-matches
+# the beta as a gamma, then multiplies by the
+# exponential distribution.
+# Args:
+#   x - gamma distributions (as natural parameters)
+# Returns: same, conditional on them summing to 1
+gamma.conditional.beta.2 = function(x) {
+
+  xa = gamma.n2s(x)
+
+  # compute product of all but one of these
+  xb = gamma.n2s( apply(x, 1, sum) - x )
+
+  # if we pretend that xa and xb have the same rate,
+  # then xa and xb now define a beta distribution (with
+  # parameters given by their shapes); moment-match
+  # this as a gamma
+  b = rbind(a=xa["a",], b=xb["a",])
+  mm = gamma.mv2s(beta.s2mv(b))
+
+  # lastly, xa and xb, in general, will have different
+  # rates; correct for this difference (essentially
+  # multiplying by an exponential distribution)
+  mm["b",] = mm["b",] + xa["b",] - xb["b",]
+
+  gamma.s2n(mm)
+}
+
 # As above, but allows arbitrary linear constraints.
 # Args:
 #   x - natural parameters of gamma distributions
@@ -109,19 +173,20 @@ gamma.conditional = function(x, A, b) {
   x.c
 }
 
+# The density function for the gamma, conditional on vars summing to 1.
+gamma.conditional.density = function(p) function(x) {
+  r = dgamma(x, shape=p["a",1], rate=p["b",1])
+  for(i in 2:ncol(p)) {
+    r = r * dgamma((1-x), shape=p["a",i], rate=p["b",i])
+  }
+  r
+}
+
 # Another attempt at the gamma conditional thing.
 # Returns: mean and variance of first variable, conditional
 # on all of them summing to 1.
 gamma.conditional.numerical = function(p) {
-
-  # the density function (presumably)
-  f = function(x) {
-    r = dgamma(x, shape=p["a",1], rate=p["b",1])
-    for(i in 2:ncol(p)) {
-      r = r * dgamma((1-x), shape=p["a",i], rate=p["b",i])
-    }
-    r
-  }
+  f = gamma.conditional.density(p)
 
   # compute the moments
   # XXX assuming successful integration
