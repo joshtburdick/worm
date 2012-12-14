@@ -45,7 +45,7 @@ gamma.n2mv = function(a) gamma.s2mv(gamma.n2s(a))
 # Finds the marginal distributions of independant gamma variables,
 # conditional on their sum adding up to exactly one.
 # (Analogous to lin.constraint() in the EP code.)
-# ??? is this correct?
+# ??? is this correct? (ETA: it appears not...)
 # Args:
 #   x - natural parameters of gamma distributions
 # Returns: x, conditional on the x's summing to 1
@@ -108,6 +108,7 @@ gamma.conditional.approx.1 = function(x) {
 }
 
 # The density function for the gamma, conditional on vars summing to 1.
+# XXX this appears incorrect.
 gamma.conditional.density = function(p) function(x) {
   r = dgamma(x, shape=p["a",1], rate=p["b",1])
   for(i in 2:ncol(p)) {

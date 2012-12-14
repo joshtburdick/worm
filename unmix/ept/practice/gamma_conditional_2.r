@@ -1,3 +1,5 @@
+# Attempt at plotting this density function.
+# XXX deprecated -- this doesn't seem correct.
 
 source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/beta.r")
@@ -8,7 +10,8 @@ x0 = c(0:500) / 100
 # starting with examples which actually are Dirichlet on the marginal
 # two distributions, as gamma parameters
 # g1 = rbind(a=c(4,1), b=c(12,3))
-g1 = rbind(a=c(2,3), b=c(10,10))
+# g1 = rbind(a=c(2,3), b=c(10,10))
+g1 = rbind(a=c(2,3), b=c(11,13))
 g1.n = gamma.s2n(g1)
 
 # ... moment-matched as beta

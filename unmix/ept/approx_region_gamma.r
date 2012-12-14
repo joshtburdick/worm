@@ -53,7 +53,7 @@ colnames(A) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
 A0 = t(rep(1,5))
 x0 = array(gamma.s2n(rbind(a=rep(1,5), b=rep(1,5))), dim=c(2,5,1))
 dimnames(x0)[[1]] = c("e1", "e2")
-r = gamma.conditional(x0, A0, 1)
+# r = gamma.conditional(x0, A0, 1)
 
 
 
