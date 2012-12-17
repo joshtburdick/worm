@@ -1,8 +1,20 @@
 # Approximates a region using gamma distributions.
 
+source("git/unmix/ept/beta.r")
 source("git/unmix/ept/gamma.r")
 
-# Does unmixing.
+# Finds the m'th moment of a gamma truncated to
+# some interval. Possibly not used.
+# Args:
+#   m - the moment to find
+#   x - where to truncate the distribution (should be >= 0)
+#   a, b - parameters of gammas
+# Returns: the m'th moment
+trunc.gamma.moment = function(m, x, a, b)
+  exp( lgamma(a+m) - lgamma(a) - m*log(b) ) * pgamma(x, a+m, b)
+
+
+# Approximates a region subject to Ax = b, x >= 0.
 #   A, b - these define an exact constraint.
 # Returns: list with components
 #   x - prediction mean and variance

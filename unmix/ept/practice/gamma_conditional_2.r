@@ -118,5 +118,22 @@ plot.approximations = function() {
   dev.off()
 }
 
+# Plots an approximation of an exponential with a beta.
+# Args:
+#   b - the scale of the gamma (the shape is 1)
+plot.exp.beta.comparison = function(b) {
+  x = c(0:1000) / 1000
+  y = dgamma(x, shape=1, rate=b)
+  ylim = c(0, max(y))
+  plot(x, y, ylim=ylim, type="l", lwd=3, col="#50505080")
+
+  p = beta.mv2s(rbind(
+    m=trunc.gamma.moment(1, 1, 1, b) / trunc.gamma.moment(0,1,1,b),
+    v=trunc.gamma.moment(2, 1, 1, b) / trunc.gamma.moment(0,1,1,b)))
+print(p)
+  par(new=TRUE)
+  plot(x, dbeta(x, p["a",], p["b",]), ylim=ylim, type="l", lwd=3, col="#f0000080")
+}
+
 plot.approximations()
 

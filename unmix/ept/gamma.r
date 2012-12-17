@@ -77,10 +77,11 @@ print(round(p, 3))
   gamma.mv2n(beta.n2mv(p))
 }
 
-# Variation of this which breaks the product into an
-# exponential distribution times a beta, moment-matches
-# the beta as a gamma, then multiplies by the
-# exponential distribution.
+#   Estimates marginals of independent gamma variates,
+# conditional on them summing to 1.
+#   This is an approximation; but if the gammas all have
+# the same scale, then it amounts to moment-matching
+# a Dirichlet with a gamma (which should often be good.)
 # Args:
 #   x - gamma distributions (as natural parameters)
 # Returns: same, conditional on them summing to 1
@@ -88,9 +89,11 @@ gamma.conditional.approx.1 = function(x) {
 
   xa = gamma.n2s(x)
 
-  # compute product of all but one of these
-  x[ is.nan(x) ] = 0    # ignore NaN and NA
-  xb = gamma.n2s( apply(x, 1, sum) - x )
+  # compute sum of all but one of these
+  x.mv = gamma.n2mv(x)
+#  x.mv[ is.nan(x.mv) ] = 0    # ignore NaN and NA
+  xb = gamma.mv2s( apply(x.mv, 1, sum) - x.mv )
+#  xb[ is.nan(xb) ] = 0    # ignore NaN and NA
 
   # if we pretend that xa and xb have the same rate,
   # then xa and xb now define a beta distribution (with
@@ -107,42 +110,13 @@ gamma.conditional.approx.1 = function(x) {
   gamma.s2n(mm)
 }
 
-# The density function for the gamma, conditional on vars summing to 1.
-# XXX this appears incorrect.
-gamma.conditional.density = function(p) function(x) {
-  r = dgamma(x, shape=p["a",1], rate=p["b",1])
-  for(i in 2:ncol(p)) {
-    r = r * dgamma((1-x), shape=p["a",i], rate=p["b",i])
-  }
-  r
-}
-
-# Another attempt at the gamma conditional thing.
-# Returns: mean and variance of first variable, conditional
-# on all of them summing to 1.
-gamma.conditional.numerical.1 = function(p) {
-  f = gamma.conditional.density(p)
-
-  # compute the moments
-  # XXX assuming successful integration
-  x0 = integrate(f, 0, 1)$value
-  x1 = integrate(function(x) x * f(x), 0, 1)$value
-  x2 = integrate(function(x) x * x * f(x), 0, 1)$value
-
-  rbind(m = x1 / x0, v = x2/x0 - (x1/x0)^2)
-}
-
-# (Hopefully) convenient interface for the above.
-gamma.conditional.numerical = function(a)
-  gamma.mv2n(gamma.conditional.numerical.1(gamma.n2s(a)))
-
-# As above, but allows (exact) linear constraints.
+# Approximates marginals of gamma-distributed variables,
+# given constraints on their expected sums.
 # Args:
 #   x - natural parameters of gamma distributions
-#   A, b - the constraint that Ax = b.
-#     A and b must be non-negative.
-# Returns: parameters x, conditional on constraint.
-gamma.conditional = function(x, A, b) {
+#   A, b - these give the constraint that A * x = b
+# Returns: x, but conditional on the constraint
+gamma.conditional.approx = function(x, A, b) {
 
   # determine how much to scale each
   s1 = b / A
@@ -170,6 +144,38 @@ print(xsc)
 
   xc
 }
+
+
+# The density function for the gamma, conditional on vars summing to 1.
+# XXX not sure this is right.
+# ETA: I think it's correct for two variables, but not otherwise.
+gamma.conditional.density = function(p) function(x) {
+  r = dgamma(x, shape=p["a",1], rate=p["b",1])
+  for(i in 2:ncol(p)) {
+    r = r * dgamma((1-x), shape=p["a",i], rate=p["b",i])
+  }
+  r
+}
+
+# Another attempt at the gamma conditional thing.
+# Returns: mean and variance of first variable, conditional
+# on all of them summing to 1.
+gamma.conditional.numerical.1 = function(p) {
+  f = gamma.conditional.density(p)
+
+  # compute the moments
+  # XXX assuming successful integration
+  x0 = integrate(f, 0, 1)$value
+  x1 = integrate(function(x) x * f(x), 0, 1)$value
+  x2 = integrate(function(x) x * x * f(x), 0, 1)$value
+
+  rbind(m = x1 / x0, v = x2/x0 - (x1/x0)^2)
+}
+
+# (Hopefully) convenient interface for the above.
+gamma.conditional.numerical = function(a)
+  gamma.mv2n(gamma.conditional.numerical.1(gamma.n2s(a)))
+
 
 
 
