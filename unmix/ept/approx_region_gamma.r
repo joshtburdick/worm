@@ -26,9 +26,14 @@ approx.region.gamma = function(A, b, max.iters=100) {
   x = gamma.mv2n(x1)
   colnames(x) = colnames(A)
 
-  # the messages from each factor (initially flat)
+  # the approximating terms
   m = array(0, dim=c(2, ncol(A), nrow(A)),
     dimnames = list(c("e1", "e2"), colnames(A), rownames(A)))
+  m["e1",,] = 0
+  m["e2",,] = -1
+
+  # posterior is the sum of terms
+  x = apply(m, c(1,2), sum)
 
   for (iter in 1:max.iters) {
 
@@ -37,7 +42,7 @@ approx.region.gamma = function(A, b, max.iters=100) {
 print(gamma.n2mv(m.to))
 
     # messages from each factor, conditional on constraint
-    m.from = gamma.conditional(m.to, A, b)
+    m.from = gamma.conditional.approx(m.to, A, b)
 
     # difference between those messages, and current posterior
     m.change = sweep(m.from, c(1,2), x, "-")

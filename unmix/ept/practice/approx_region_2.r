@@ -227,14 +227,14 @@ cat("\n")
   # prior (for now, restricted to be diagonal)
 #  prior = gamma.mv2n(cbind(m=rep(sqrt(prior.var),n), v=rep(prior.var,n)))
 #  prior = gamma.s2n(cbind(a=rep(1,n), b=rep(1,n)))
-  prior = 0 * cbind(e1=rep(1e-3, n), e2=rep(1e-3, n))
+  prior = 0 * rbind(e1=rep(1e-3, n), e2=rep(1e-3, n))
 
   # the term approximations (initially flat?)
 #  terms = 0 * prior
 #  terms = gamma.mv2n(cbind(m=rep(1,n), v=rep(1,n)))
-  m.init = as.vector( b %*% pseudoinverse(t(A)) )
-  m.init[ m.init <= 1e-4 ] = 1e-4
-  terms = prior + gamma.s2n(cbind(a=rep(2,n), b=2/m.init))
+#  m.init = as.vector( b %*% pseudoinverse(t(A)) )
+#  m.init[ m.init <= 1e-4 ] = 1e-4
+#  terms = prior + gamma.s2n(rbind(a=rep(2,n), b=2/m.init))
 
   # the (soft) linear constraint
 #  lin.constraint = lin.constraint.gamma.pos(A, b, b.var)
@@ -242,7 +242,8 @@ cat("\n")
   # the posterior
 #  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
 #  q = lin.constraint( prior + terms )
-  q = lin.constraint.gamma(A, b, b.var)(prior + terms)
+#  q = lin.constraint.gamma(A, b, b.var)(prior + terms)
+  q = gamma.s2n(rbind(a=rep(1,n), b=rep(1,n)))
 
 #print(gamma.n2mv(q))
   # convergence statistics
@@ -252,7 +253,7 @@ cat("\n")
 # print(gamma.n2mv(terms))
 
     terms.old = terms
-#    terms.1 = q - terms
+    terms.1 = q - terms
 
 #    mm = positive.moment.match.canonical.gamma(q - terms)
 
@@ -262,7 +263,7 @@ cat("\n")
     # update terms
     terms = (mm - q) + terms
 
-    # update posterior: terms, witha the Ax ~ N(-,-) constraint
+    # update posterior: terms, with the Ax ~ N(-,-) constraint
     q = lin.constraint.gamma(A, b, b.var)( prior + terms )
 
     # ??? show change in mean and variance separately?
@@ -286,5 +287,4 @@ cat("\n")
 
 
 # r = approx.region.gamma.2(t(rep(1,1000)), c(1), c(0), prior.var=Inf)
-
 

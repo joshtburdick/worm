@@ -120,18 +120,24 @@ gamma.conditional.approx = function(x, A, b) {
 
   # determine how much to scale each
   s1 = b / A
-print(s1)
+  s1[A==0] = 0
+ print(s1)
 
   # scale these
   xs = x
   xs["e2",,] = xs["e2",,] * t(s1)
-print(xs["e2",,])
-print(gamma.n2mv(xs))
+
+  # zero out cases in which A = 0
+  xs["e1",,][ t(A==0) ] = 0
+  xs["e2",,][ t(A==0) ] = -Inf
+
+# print(xs["e2",,])
+# print(gamma.n2mv(xs))
 
   # condition on the scaled distribution summing to 1
   xsc = array(apply(xs, c(3), gamma.conditional.approx.1),
     dim=dim(xs), dimnames=dimnames(x))
-print(xsc)
+# print(xsc)
   dimnames(xsc) = dimnames(x)
 
   # undo the scaling
@@ -139,8 +145,8 @@ print(xsc)
   xc["e2",,] = xsc["e2",,] / t(s1)
 
   # cases in which A = 0 aren't affected by the constraint
-  xc["e1",,][ A == 0 ] = x["e1",,][A == 0]
-  xc["e2",,][ A == 0 ] = x["e2",,][A == 0]
+  xc["e1",,][ t(A==0) ] = x["e1",,][ t(A==0) ]
+  xc["e2",,][ t(A==0) ] = x["e2",,][ t(A==0) ]
 
   xc
 }

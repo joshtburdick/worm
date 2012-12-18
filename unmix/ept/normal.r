@@ -13,8 +13,9 @@ norm.var = function(n) {
 # Converts from mean and variance to canonical parameters.
 mean.and.variance.to.canonical = function(a) {
   r = cbind(e1 = a[,"m"] / a[,"v"], e2 = -0.5 / a[,"v"])
-  # deal with special case when m = v = 0. XXX doesn't help.
-#  r[ (a[,"m"]==0 & a[,"v"]==0), "e1" ] = 0
+  # deal with special case when m = v = 0.
+  r[ (a[,"m"]==0 & a[,"v"]==0), "e1" ] = 0
+  r[ (a[,"m"]==0 & a[,"v"]==0), "e2" ] = -Inf
   r
 }
 

@@ -18,10 +18,11 @@ positive.moment.match = function(m, v) {
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
+#  a = ifelse(z<= -30, -z, dnorm(z)/pnorm(z))
 
   # hack to deal with when z is very negative
-  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
-    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
+  r = cbind(m = ifelse(z < -30, 1e-4, - (m1 - s * a)),
+    v = ifelse(z < -30, 1e-10, v * (1 - z*a - a^2)))
 #  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
@@ -142,6 +143,7 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   update.stats = NULL
 
   for(iter in 1:max.iters) {
+    q.old = q
     terms.old = terms
 
     terms.1 = q - terms
@@ -157,8 +159,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 # print(as.vector(mm))
     # update terms.
     # one way to add damping. XXX not sure this is right.
-#    terms = 0.1 * (mm - q) + 0.9 * terms
-    terms = (mm - q) + terms
+    terms = 0.03 * (mm - q) + terms
+#    terms = (mm - q) + terms
 
     if (!is.null(debug.dir)) {
       system(paste("mkdir -p", debug.dir))
@@ -173,15 +175,15 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 
     # constraints on posterior
 if (FALSE) {
-print(sum(is.na(q)))
+# print(sum(is.na(q)))
     q1 = canonical.to.mean.and.variance(q)
     q1[ q1[,"m"] < 0 , "m" ] = 0
     q1[ q1[,"v"] < 1e-10, "v" ] = 1e-10
     q = mean.and.variance.to.canonical(q1)
-print(sum(is.na(q)))
+# print(sum(is.na(q)))
 }
     # ??? show change in mean and variance separately?
-    diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
+    diff = apply(abs(canonical.to.mean.and.variance(q) - canonical.to.mean.and.variance(q.old)), 2, max)
 cat(backspace, signif(diff, 2), " ")
     update.stats = rbind(update.stats, diff)
 
