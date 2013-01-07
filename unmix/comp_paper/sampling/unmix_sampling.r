@@ -18,9 +18,9 @@ source("unmix_test.r")
 source("pseudoinverse/unmix.r")
 setwd(wd)
 
+source("multiple_starting_points.r")
+
 num.cells = apply(cell.lineage.matrix, 1, sum)
-
-
 
 # Runs xsample() with sensible-seeming parameters.
 # This only includes the cells for which lsei() indicates the 
@@ -47,6 +47,8 @@ cat("after lsei\n")
   # estimate other cells
   r = xsample1(E=m[,cl], F=x.fraction, G=diag(length(cl)), H=rep(0, length(cl)),
     tol=1e-4, type="rda",
+    x0 = overdispersed.start.1(m[,cl], x.fraction, 0),  # 0.9),
+#    jmp=1 * max(x.fraction) / (sum(cl)),   # was 10 * that
     burninlength=burninlength, iter=iter, test=FALSE)
 
   # add zero cells back in
@@ -59,7 +61,7 @@ cat("after lsei\n")
 # Summarizes samples.
 # Args:
 #   x - matrix of samples
-# Returns: matrix 
+# Returns: matrix of summary statistics
 summarize.samples = function(x) {
   r = rbind(apply(x, 2, mean),
     apply(x, 2, var),
@@ -70,11 +72,38 @@ summarize.samples = function(x) {
   r
 }
 
-unmix.xsample = function(m, x.fraction) {
-  X = run.xsample(m, x.fraction, 5000, 50000)
-  x.summary = summarize.samples(X)
+# Summarizes samples at several windows.
+summarize.samples.1 = function(x, window.size) {
+  n = floor( nrow(x) / window.size )
+  r = array(dim=c(n, 5, ncol(x)),
+    dimnames=list(window=c(1:n), stat=NULL, cell=NULL))
 
-  list(x = x.summary["mean",], x.summary = x.summary)
+  for(i in 1:n) {
+    i1 = (i-1) * window.size + 1
+    i2 = i * window.size
+cat(i1,i2)
+    s = summarize.samples(x[c(i1:i2),])
+    r[i,,] = s
+    dimnames(r)[[2]] = rownames(s)
+    dimnames(r)[[3]] = colnames(s)
+  }
+
+  r
+}
+
+# now includes several restarts
+unmix.xsample = function(m, x.fraction) {
+  x.summary = NULL
+  X1 = NULL
+  for(iter in 1:3) {
+    X = run.xsample(m, x.fraction, 5000, 50000)
+    x.summary[[iter]] = summarize.samples.1(X, 5000)
+    X1[[iter]] = X
+#    x.summary[[iter]] <- summarize.samples(X)
+  }
+
+  list(x = as.vector(apply(x.summary[[1]][,"mean",], 2, mean)),
+    x.summary = x.summary, X = X1)
 }
 
 # Does unmixing of one gene using sampling.
@@ -96,17 +125,27 @@ unmix.xsample.old = function(m, x.fraction) {
   list(x = x, sampling.x = r$X)
 }
 
-unmix.xsample.1 = function(gene) {
+unmix.xsample.1 = function(gene, f) {
+cat("file = ", f, "\n")
   unmix.result = NULL
   st = system.time( unmix.result <-
     run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell, unmix.xsample, reporters$picked, 30) )
   unmix.result$system.time = st
 
-  save(unmix.result, file=paste(gene, ".sampling.Rdata", sep=""))
+  save(unmix.result, file=f)
+}
+
+# Runs unmix.xsample.1, several times.
+unmix.xsample.2 = function(gene) {
+  outdir = "multiple_restart_pseudoinverse_start"
+  system(paste("mkdir -p ", outdir))
+
+  unmix.xsample.1(gene, paste(outdir, "/", gene, ".sampling.Rdata",
+    sep="", collapse=""))
 }
 
 a = commandArgs(trailingOnly=TRUE)[-1]
-gene = sub(".sampling.Rdata", "", a[1])
+gene = sub(".sampling", "", a[1])
 
-unmix.xsample.1(gene)
+unmix.xsample.2(gene)
 
