@@ -24,7 +24,7 @@ num.cells = apply(cell.lineage.matrix, 1, sum)
 
 # Runs xsample() with sensible-seeming parameters.
 # This only includes the cells for which lsei() indicates the 
-# "most likely estimate" isn't zero
+# "most likely estimate" isn't zero.
 # Args:
 #   m - the matrix defining reporter fractions
 #   x.fraction - amount in each reporter
@@ -72,7 +72,7 @@ summarize.samples = function(x) {
   r
 }
 
-# Summarizes samples at several windows.
+# Summarizes samples at several windows. Deprecated.
 summarize.samples.1 = function(x, window.size) {
   n = floor( nrow(x) / window.size )
   r = array(dim=c(n, 5, ncol(x)),
@@ -91,8 +91,74 @@ cat(i1,i2)
   r
 }
 
-# now includes several restarts
-unmix.xsample = function(m, x.fraction) {
+# Does unmixing. Keeps track of statistics in an efficient way,
+# allowing doing very long runs with less memory.
+# Args:
+#   iters - number of samples
+#   window.size - number of samples to group together
+#     (to reduce size of output statistics)
+#   burnin.windows - number of initial windows to discard
+#     (thus, number of burn-in samples is this * window.size)
+#   m - the matrix defining reporter fractions
+#   x.fraction - amount in each reporter
+# Returns: list with elements
+#   x - the estimate (average of all samples after burn-in)
+#   x.summary - array containing summary statistics
+#   x.last - the last sample obtained
+run.xsample.lowmem = function(iters, window.size, burnin.windows=0)
+    function(m, x.fraction) {
+  num.cells = dim(m)[2]
+
+  # find initial estimate
+  x.fraction.orig = x.fraction
+  x.fraction = x.fraction
+cat("about to call lsei\n")
+  x0 = lsei(A=diag(num.cells), B=rep(0, num.cells),
+    E=m, F=x.fraction, G=diag(num.cells), H=rep(0, num.cells),
+    tol=1e-4)$X
+cat("after lsei\n")
+
+  # find cells estimated to be zero
+  cl = which(abs(x0) >= 1e-30)
+  cat(length(cl), "were non-zero\n")
+
+  # x0 is the non-zero entries of that estimate
+  x0 = x0[cl]
+
+  # allocate array for summary stats of samples
+  num.windows = trunc( iters / window.size )
+  stopifnot(burnin.windows < num.windows)
+  iters.per.window = iters / num.windows
+  x.summary = array(0, dim=c(num.windows, 5, num.cells),
+    dimnames=list(window=NULL,
+      stat=c("mean", "var", "median", "min", "max"),
+      cell=NULL))
+
+  # do sampling
+  for(i in 1:num.windows) {
+cat("window =", i, "\n")
+    r = xsample1(E=m[,cl], F=x.fraction, G=diag(length(cl)), H=rep(0, length(cl)),
+      tol=1e-4, type="rda", x0 = x0,
+      burninlength=1, iter=iters.per.window, test=FALSE)
+    x.summary[i,,cl] = summarize.samples(r$X)
+# print(x.summary[i,"mean",cl[1:5]])
+    x0 = r$X[ nrow(r$X) , ]
+# print(x0[1:5])
+  }
+
+  # compute average (possibly discarding burn-in)
+  x = if (burnin.windows == 0)
+    as.vector(apply(x.summary[,"mean",], 2, mean))
+  else
+    as.vector(apply(x.summary[-c(1:burnin.windows),"mean",], 2, mean))
+  names(x) = colnames(m)
+  dimnames(x.summary)[[3]] = colnames(m)
+
+  list(x = x, burnin.windows = burnin.windows, x.summary = x.summary )
+}
+
+# Does sampling, including several restarts.
+unmix.xsample.multiple.restarts = function(m, x.fraction) {
   x.summary = NULL
   X1 = NULL
   for(iter in 1:3) {
@@ -106,7 +172,7 @@ unmix.xsample = function(m, x.fraction) {
     x.summary = x.summary, X = X1)
 }
 
-# Does unmixing of one gene using sampling.
+# Does unmixing of one gene using sampling. Deprecated.
 # Args:
 #   m - sort matrix
 #   x.fraction - amounts of expression in each fraction
@@ -125,11 +191,12 @@ unmix.xsample.old = function(m, x.fraction) {
   list(x = x, sampling.x = r$X)
 }
 
+
 unmix.xsample.1 = function(gene, f) {
 cat("file = ", f, "\n")
   unmix.result = NULL
   st = system.time( unmix.result <-
-    run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell, unmix.xsample, reporters$picked, 30) )
+    run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell, run.xsample.lowmem(1e6, 1e3, 0), reporters$picked, 30) )
   unmix.result$system.time = st
 
   save(unmix.result, file=f)
@@ -137,7 +204,7 @@ cat("file = ", f, "\n")
 
 # Runs unmix.xsample.1, several times.
 unmix.xsample.2 = function(gene) {
-  outdir = "multiple_restart_pseudoinverse_start"
+  outdir = "sampling_lowmem"
   system(paste("mkdir -p ", outdir))
 
   unmix.xsample.1(gene, paste(outdir, "/", gene, ".sampling.Rdata",
