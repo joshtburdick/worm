@@ -138,7 +138,7 @@ cat("after lsei\n")
   for(i in 1:num.windows) {
 cat("window =", i, "\n")
     r = xsample1(E=m[,cl], F=x.fraction, G=diag(length(cl)), H=rep(0, length(cl)),
-      tol=1e-4, type="rda", x0 = x0,
+      tol=1e-4, type="cda", x0 = x0,
       burninlength=1, iter=iters.per.window, test=FALSE)
     x.summary[i,,cl] = summarize.samples(r$X)
 # print(x.summary[i,"mean",cl[1:5]])
@@ -183,7 +183,7 @@ unmix.xsample.old = function(m, x.fraction) {
 
   r = xsample1(E=m, F=as.vector(x.fraction),
     G=diag(num.cells), H=rep(0, num.cells),
-    tol=1e-3, type="rda",
+    tol=1e-3, type="cda",
     burninlength=100, iter=100, test=FALSE)
 
   x = as.vector(apply(r$X, 2, mean))
@@ -204,7 +204,7 @@ cat("file = ", f, "\n")
 
 # Runs unmix.xsample.1, several times.
 unmix.xsample.2 = function(gene) {
-  outdir = "sampling_lowmem"
+  outdir = "sampling_cda"
   system(paste("mkdir -p ", outdir))
 
   unmix.xsample.1(gene, paste(outdir, "/", gene, ".sampling.Rdata",

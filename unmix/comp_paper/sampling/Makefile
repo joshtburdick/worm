@@ -1,11 +1,11 @@
 # practice using gmake
 
-%.sampling.Rdata :
+%.sampling :
 	Rscript unmix_sampling.r --args $@
 
 genes = $(shell cut -f1 ~/data/image/exprCell.tsv  | tail --lines=+2 | tr -d ['\"'])
 
-s = $(genes:%=%.sampling.Rdata)
+s = $(genes:%=%.sampling)
 
 all : $(s)
 
