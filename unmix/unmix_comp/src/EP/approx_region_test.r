@@ -30,6 +30,7 @@ ep.xsample.comparison = function(m, n) {
 plot.mv.comparisons = function() {
   system.time(r <- ep.xsample.comparison(20,100)) 
 
+  par(mfrow=c(1,2))
   plot(r$xsample.r$m, r$ep.r$m)
   plot(sqrt(r$xsample.r$v), sqrt(r$ep.r$v))
 }
