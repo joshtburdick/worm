@@ -2,10 +2,7 @@
 
 source("unmix_test.r")
 
-cwd = getwd()
-setwd("/home/jburdick/gcb")
-source("git/unmix/comp_paper/sampling/cdaCpp.r")
-setwd(cwd)
+source("sampling/cdaCpp")
 
 # Does unmixing of one gene.
 # Args:
