@@ -20,11 +20,9 @@ unmix.lsei = function(si) {
     r = lsei(A=A, B=rep(0, num.cells), E=m, F=x.fraction, G=G, H=H, type=1)
     x = as.vector(r$X)
     names(x) = colnames(m)
-    x
+    list(x = x)
   }
 }
 
-
-run.unmix.all.data(unmix.lsei(diag(ncol(expr.cell))),
-  "trunc.pseudoinverse/")
+# run.unmix(unmix.lsei(diag(ncol(expr.cell))), "trunc.pseudoinverse/")
 
