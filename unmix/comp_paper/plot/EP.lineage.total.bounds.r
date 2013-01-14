@@ -44,14 +44,14 @@ plot.expression.bounds = function(lineages, name) {
 if(TRUE) {
   x = 1341 * lineage.totals.unscaled[,lineages,"lineage.mean"]
   y = 1341 * sqrt(clip.pos(lineage.totals.unscaled[,lineages,"lineage.var"]))
-  xylim = c(0, max(x, y))
-  par(mar=c(5.5,4.5,4,2) + 0.1)
+  xylim = c(0,88)     #  c(0, max(x, y))
+  par(mar=c(5.5,4.5,4.5,2) + 2)
   plot(x, y,
     main=name, xlab="mean of predicted relative expression",
       ylab="SD of predicted relative expression",
     xlim=xylim, ylim=xylim,
     type="p", pch=20, col="#00000080", cex=2,
-    cex.axis = 2, cex.lab=2, cex.main=2)
+    cex.axis = 2.1, cex.lab=2.8, cex.main=3)
 }
 
   mean.over.sd = lineage.totals[,lineages,"lineage.mean"] /
@@ -67,7 +67,7 @@ if(TRUE) {
   z[ z > zmax ] = zmax
   hist(z, main=name, xlab="z", xlim=c(-zmax,zmax),
     breaks=50, col="grey",
-    cex.axis = 1.8, cex.lab=1.9, cex.main=1.9)
+    cex.axis = 2.1, cex.lab=2.8, cex.main=3)
 }
 
 plot.it = function() {
@@ -77,18 +77,19 @@ plot.it = function() {
 #  png("R/unmix/comp_paper/EP/lineage.total.bounds.png", height=1000, width=600)
 #  par(mfrow=c(5,2))
 
-  png("git/unmix/comp_paper/plot/lineage.total.bounds.horiz.png", height=900, width=2000)
-  par(mfcol=c(2,5))
+#  pdf("git/unmix/comp_paper/plot/lineage.total.bounds.horiz.pdf", width=9, height=6)
+  png("git/unmix/comp_paper/plot/lineage.total.bounds.horiz.png", width=1800, height=1200)
+  par(mfcol=c(2,3))
 
   plot.expression.bounds(lin.12.cell, "twelve lineages")
-  plot.expression.bounds(names(num.cells[num.cells >= 50]),
-    "> 50 cells")
+#  plot.expression.bounds(names(num.cells[num.cells >= 50]),
+#    ">= 50 cells")
   plot.expression.bounds(names(num.cells[num.cells >= 10 & num.cells < 50]),
     "10 - 50 cells")
-  plot.expression.bounds(names(num.cells[num.cells >= 5 & num.cells < 10]),
-    "5 - 9 cells")
-  plot.expression.bounds(names(num.cells[num.cells < 5]),
-    "< 5 cells")
+#  plot.expression.bounds(names(num.cells[num.cells >= 5 & num.cells < 10]),
+#    "5 - 9 cells")
+  plot.expression.bounds(names(num.cells[num.cells < 10]),
+    "< 10 cells")
   dev.off()
 }
 
