@@ -18,9 +18,8 @@ Rcpp
 It has mostly been tested using R 2.15.1 running
 on x86 64-bit Linux (with those package versions),
 but should run with other versions of these.
-(Rcpp is arguably the most complex of these dependencies,
+(Rcpp is probably the most complex of these dependencies,
 but is only used for the sampling.)
-
 
 To run the tests, start R in the "src/" directory, and at
 the prompt, type
