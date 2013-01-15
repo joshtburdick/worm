@@ -7,10 +7,12 @@ library("limSolve")
 wd = getwd()
 setwd("~/gcb/")
 source("~/gcb/R/unmix/eval.r")
-source("R/unmix/comp_paper/sampling/xsample1.r")
+# source("R/unmix/comp_paper/sampling/xsample1.r")
+setwd("~/gcb/git/unmix/unmix_comp/src/")
+source("sampling/cdaCpp.r")
+setwd(wd)
 
 load("~/gcb/git/unmix/unmix_comp/data/tree_utils.Rdata")
-setwd(wd)
 
 wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
@@ -109,6 +111,9 @@ run.xsample.lowmem = function(iters, window.size, burnin.windows=0)
     function(m, x.fraction) {
   num.cells = dim(m)[2]
 
+  # XXX hard-coded for now
+  thinning = 1000
+
   # find initial estimate
   x.fraction.orig = x.fraction
   x.fraction = x.fraction
@@ -137,13 +142,19 @@ cat("after lsei\n")
   # do sampling
   for(i in 1:num.windows) {
 cat("window =", i, "\n")
-    r = xsample1(E=m[,cl], F=x.fraction, G=diag(length(cl)), H=rep(0, length(cl)),
-      tol=1e-4, type="cda", x0 = x0,
-      burninlength=1, iter=iters.per.window, test=FALSE)
-    x.summary[i,,cl] = summarize.samples(r$X)
-# print(x.summary[i,"mean",cl[1:5]])
-    x0 = r$X[ nrow(r$X) , ]
-# print(x0[1:5])
+#    r = xsample1(E=m[,cl], F=x.fraction,
+#      G=diag(length(cl)), H=rep(0, length(cl)),
+#      tol=1e-4, type="cda", x0 = x0,
+#      burninlength=1, iter=iters.per.window, test=FALSE)
+#    x.summary[i,,cl] = summarize.samples(r$X)
+
+    X = sample.cda(m[,cl], x.fraction, x0,
+      iters.per.window, thinning)
+print(dim(X))
+print(X[1:4,1:4])
+    x.summary[i,,cl] = summarize.samples(X)
+
+    x0 = as.vector(X[ nrow(X) , ])
   }
 
   # compute average (possibly discarding burn-in)
@@ -172,31 +183,14 @@ unmix.xsample.multiple.restarts = function(m, x.fraction) {
     x.summary = x.summary, X = X1)
 }
 
-# Does unmixing of one gene using sampling. Deprecated.
-# Args:
-#   m - sort matrix
-#   x.fraction - amounts of expression in each fraction
-# Returns: function which, given a sort matrix and
-#   expression in each fraction, returns unmixed expression.
-unmix.xsample.old = function(m, x.fraction) {
-  num.cells = dim(m)[2]
-
-  r = xsample1(E=m, F=as.vector(x.fraction),
-    G=diag(num.cells), H=rep(0, num.cells),
-    tol=1e-3, type="cda",
-    burninlength=100, iter=100, test=FALSE)
-
-  x = as.vector(apply(r$X, 2, mean))
-  names(x) = colnames(m)
-  list(x = x, sampling.x = r$X)
-}
-
-
+# Does unmixing for one gene
 unmix.xsample.1 = function(gene, f) {
-cat("file = ", f, "\n")
+# cat("file = ", f, "\n")
   unmix.result = NULL
   st = system.time( unmix.result <-
-    run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell, run.xsample.lowmem(1e6, 1e3, 0), reporters$picked, 30) )
+    run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell,
+      run.xsample.lowmem(2e5, 1e4, 0),
+      reporters$picked, 30) )
   unmix.result$system.time = st
 
   save(unmix.result, file=f)
