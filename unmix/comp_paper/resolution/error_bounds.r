@@ -4,6 +4,7 @@ library("corpcor")
 
 source("R/unmix/comp_paper/plot/load.unmixed.results.2.r")
 source("git/plot/plot_expr.r")
+source("git/plot/label_panel.r")
 
 wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
@@ -66,21 +67,29 @@ system(paste("mkdir -p", output.path))
     gene = rownames(x.actual)[i]
 
 cat(rownames(x.actual)[i], "")
-    png(paste(output.path, "/", rownames(x.actual)[i], ".png", sep=""),
-      width=1200, height=900)
+#    png(paste(output.path, "/", rownames(x.actual)[i], ".png", sep=""),
+#      width=1200, height=1000)
+    pdf(paste(output.path, "/", rownames(x.actual)[i], ".pdf", sep=""),
+      width=10, height=8)
+
     par(mfrow=c(4,1))
-    par(mar=c(3,2,2,1)+0.1)
+
+#    par(mar=c(3,2,2,1)+0.1)
+    par(mar=c(1,4,2,1)+0.1)
     c1 = rgb(scale.to.unit(x.actual[i,]), 0, 0)
     names(c1) = colnames(x.actual)
-    plot.segments.per.cell(c1, paste(gene, "measured expression"))
+    plot.segments.per.cell(c1, paste(gene, "measured expression"), time=c(-30, 300), lwd=1.1)  # was 1.5
+    label.panel("a)")
 
     c1 = rgb(scale.to.unit(x.predicted[i,]), 0, 0)
     names(c1) = colnames(x.actual)
-    plot.segments.per.cell(c1, paste(gene, "prediction"))
+    plot.segments.per.cell(c1, paste(gene, "prediction"), time=c(-30, 300), lwd=1.1)    # was 1.5
+    label.panel("b)")
 
     plot(0, 0, xlim=c(0,1), ylim=c(0,1), type="n",
       xaxt="n", yaxt="n", xlab="", ylab="",
       main = "Resolution matrix, weighted by expression")
+    label.panel("c)")
     x.p = x.predicted[i,]
     b = 1.5 * (x.p %o% x.p) * res.matrix
     b = b / (1 * sd(as.vector(b)))
@@ -91,6 +100,7 @@ cat(rownames(x.actual)[i], "")
 
     plot(0, 0, xlim=c(0,1), ylim=c(0,1), type="n",
       xaxt="n", yaxt="n", xlab="", ylab="", main="Resolution matrix")
+    label.panel("d)")
     a = 0.5 * res.matrix / sd(as.vector(res.matrix))
     a[a<0] = 0
     a[a>1] = 1

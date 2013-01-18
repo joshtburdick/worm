@@ -7,7 +7,8 @@ expr.cell = as.matrix(read.table(
     "~/gcb/git/unmix/unmix_comp/data/exprCell.tsv",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE))
 
-colors1 = hsv(0:4/5, 1, 0.5, alpha=0.6)
+colors1 = hsv(0:3/5, 1, 0.7, alpha=0.8)
+int.n.small = setdiff(int.n, c("Ea", "Ep", "Da", "Dp", "MSpa", "MSpp"))
 
 # Reads in one set of "overdispersed" results, and
 # summarizes it.
@@ -77,7 +78,8 @@ combined.var.test = function() {
 aggregate.sampling.stats.1 = function(r, window.size) {
   rbind(
     mean = apply(r[,"mean",], 2, mean),
-    var = as.vector(combined.var(r[,"mean",], r[,"var",], window.size)),
+    var = as.vector(combined.var(
+      r[,"mean",], r[,"var",], window.size)),
     median = apply(r[,"median",], 2, median),
     min = apply(r[,"min",], 2, min),
     max = apply(r[,"max",], 2, max))
@@ -104,7 +106,7 @@ aggregate.sampling.stats = function(r, window.size, w) {
 print(dim(a))
 print(dim(r[[1]]))
   for(i in 1:length(r)) {
-    r1 = r[[i]][c((w+1):(2*w)),,]
+    r1 = r[[i]][c((w):(2*w)),,,drop=FALSE]
     a[i,,] = aggregate.sampling.stats.1(r1, window.size)
   }
 
@@ -137,11 +139,14 @@ plot.overdispersed = function(output.dir, r, g) {
       ymax <- m
   }
 
-  pdf(paste(output.dir, "/", g, "_multiple_starts.pdf", sep="", collapse=""), width=7.5, height=10)   # width=1920, height=1200)
+  pdf(paste(output.dir, "/", g, "_multiple_starts.pdf", sep="", collapse=""), width=7.5, height=10)
   par(mfrow=c(4,1))
   par(mar=c(4,2,1,0.1)+0.1)
   xlim=c(1,1341)
   ylim=c(0,ymax)
+
+  R.hat = matrix(nrow=length(num.iters), ncol=1341)
+  rownames(R.hat) = num.iters    # XXX hack
 
   # plot groups at various times
   for(i in num.iters) {
@@ -152,17 +157,23 @@ plot.overdispersed = function(output.dir, r, g) {
     axis(1, at=cell.to.column[int.n.small],
       labels=int.n.small,
       las=2, cex.axis=0.6)
-    mtext("expression", side=2, cex=0.65)
+    mtext("expression", line = 1, side=2, cex=0.75)
+
+    s = aggregate.sampling.stats(r, 2e6, i)
+    R.hat[as.character(i),] = scale.reduction(s[,"mean",],
+      s[,"var",], 2e6)$R.hat
 
     for(j in 1:num.starts) {
-      y1 = r[[j]][c(i:(2*i)),,,drop=FALSE]
-      y = aggregate.sampling.stats.1(y1, 1e6)
+#      y1 = r[[j]][c((i):(2*i)),,,drop=FALSE]
+#      y = aggregate.sampling.stats.1(y1, 2e6)
+#      y.sd = sqrt(y["var",])
+#      y.lo = y["mean",] - 2 * y.sd
+#      y.hi = y["mean",] + 2 * y.sd
 
-      y.sd = sqrt(y["var",])
-      y.lo = y["mean",] - 2 * y.sd
-      y.hi = y["mean",] + 2 * y.sd
-#      segments(1:1341, pmax(0, y.lo), 1:1341, y.hi, col=colors1[j], xlim=xlim, ylim=ylim,
-#        main="", xlab="", ylab="", xaxt="n", yaxt="n")
+      y.sd = sqrt(s[j,"var",])
+      y.lo = s[j,"mean",] - 2 * y.sd
+      y.hi = s[j,"mean",] + 2 * y.sd
+
       par(new=TRUE)
       plot(1:1341, pmax(0, y.lo), cex=0.4, pch=20, col="#ff000080",
         xlim=xlim, ylim=ylim, main="",
@@ -171,6 +182,15 @@ plot.overdispersed = function(output.dir, r, g) {
       plot(1:1341, pmax(0, y.hi), cex=0.4, pch=20, col="#0000ff80",
         xlim=xlim, ylim=ylim, main="",
         xlab="", ylab="", xaxt="n", yaxt="n")
+
+      if (i == 1) {
+        legend("topleft",
+          legend=c("measured expression",
+            "prediction mean + 2 s.d.",
+            "prediction mean - 2 s.d."),
+            col=c("#000000a0", "#0000ff80", "#ff000080"),
+          seg.len=0.1, lwd=4, cex=0.85)
+      }
     }
 
     # plot actual expression
@@ -179,16 +199,39 @@ plot.overdispersed = function(output.dir, r, g) {
       xlim=xlim, ylim=ylim, main="",
       xlab="", ylab="", xaxt="n", yaxt="n")
   }
+  dev.off()
 
+  # plot R.hat
+  pdf(paste(output.dir, "/", g, "_Rhat.pdf", sep="", collapse=""), width=7.5, height=2.5)
+  par(mar=c(4,4,1,0.5)+0.1)
 
+  ylim=c(1, max(R.hat, na.rm=TRUE))
+  plot(1,1, type="n", main=paste(g, "potential scale reduction"),
+    xlab="", ylab="",
+    xaxt="n", cex.main=0.9,
+    cex.axis=0.75, cex.lab=0.9,
+    xlim=c(1,1341), ylim=ylim)
+  mtext(expression(italic(hat(R))), 2, cex=0.9, line = 2)
+  axis(1, at=cell.to.column[int.n.small],
+    labels=int.n.small,
+    las=2, cex.axis=0.5)
+  for(j in 1:length(num.iters)) {
+    par(new=TRUE)
+    plot(1:1341, R.hat[as.character(num.iters[j]),],
+      cex=0.6, pch=20, col=colors1[j],
+      ylim=ylim, main="", xlab="", ylab="", xaxt="n", yaxt="n")
+  }
+  legend("topleft",
+    legend=paste(2*num.iters, "million samples"), col=colors1,
+    seg.len=0.1, lwd=4, cex=0.7)
   dev.off()
 }
 
 r = read.overdispersed("alr-1")
 
-if (FALSE) {
+if (TRUE) {
 output.dir = "git/unmix/comp_paper/sampling/multiple_start_plots/"
-for(g in c("alr-1")) {    # dimnames(expr.cell)[[1]]) {
+for(g in dimnames(expr.cell)[[1]]) {
   cat(g, "")
   r = read.overdispersed(g)
   if (!is.null(r)) {
@@ -197,6 +240,6 @@ for(g in c("alr-1")) {    # dimnames(expr.cell)[[1]]) {
 }
 }
 
-s = aggregate.sampling.stats(r, 2e6, 25) 
-foo = scale.reduction(s[,"mean",], s[,"var",], 2e6)
+# s = aggregate.sampling.stats(r, 2e6, 1) 
+# foo = scale.reduction(s[,"mean",], s[,"var",], 2e6)
 

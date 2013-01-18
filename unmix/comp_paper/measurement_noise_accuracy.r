@@ -10,6 +10,7 @@ wd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
 source("pseudoinverse/unmix.r")
+source("trunc.pseudoinverse/unmix.r")
 source("EP/unmix.r")
 setwd(wd)
 
@@ -71,12 +72,17 @@ write.accuracy.table = function() {
   accuracy.with.noise = NULL
   for(iter in 1:3) {
     accuracy.with.noise = rbind(accuracy.with.noise,
-      t( sapply(c(0:20)/20,
+      t( sapply(c(0,20)/20,
         compute.accuracy.with.noise(unmix.pseudoinverse, "naive pseudoinverse"))))
     accuracy.with.noise = rbind(accuracy.with.noise,
-      t( sapply(c(0:20)/20,
+      t( sapply(c(0,20)/20,
+        compute.accuracy.with.noise(unmix.lsei(diag(1341)), "truncated pseudoinverse"))))
+    accuracy.with.noise = rbind(accuracy.with.noise,
+      t( sapply(c(0,20)/20,
         compute.accuracy.with.noise(unmix.ep, "EP"))))
   }
+
+
   write.table(accuracy.with.noise,
     file="git/unmix/comp_paper/measurement_noise_accuracy.tsv",
     col.names=NA, sep="\t")
@@ -119,6 +125,6 @@ plot.it = function() {
   dev.off()
 }
 
-# write.accuracy.table()
-plot.it()
+write.accuracy.table()
+# plot.it()
 

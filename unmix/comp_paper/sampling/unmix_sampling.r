@@ -5,11 +5,14 @@ library("corpcor")
 library("limSolve")
 
 wd = getwd()
+
 setwd("~/gcb/")
-source("~/gcb/R/unmix/eval.r")
+source("R/unmix/eval.r")
+
 # source("R/unmix/comp_paper/sampling/xsample1.r")
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("sampling/cdaCpp.r")
+
 setwd(wd)
 
 load("~/gcb/git/unmix/unmix_comp/data/tree_utils.Rdata")
@@ -74,25 +77,6 @@ summarize.samples = function(x) {
   r
 }
 
-# Summarizes samples at several windows. Deprecated.
-summarize.samples.1 = function(x, window.size) {
-  n = floor( nrow(x) / window.size )
-  r = array(dim=c(n, 5, ncol(x)),
-    dimnames=list(window=c(1:n), stat=NULL, cell=NULL))
-
-  for(i in 1:n) {
-    i1 = (i-1) * window.size + 1
-    i2 = i * window.size
-cat(i1,i2)
-    s = summarize.samples(x[c(i1:i2),])
-    r[i,,] = s
-    dimnames(r)[[2]] = rownames(s)
-    dimnames(r)[[3]] = colnames(s)
-  }
-
-  r
-}
-
 # Does unmixing. Keeps track of statistics in an efficient way,
 # allowing doing very long runs with less memory.
 # Args:
@@ -109,10 +93,12 @@ cat(i1,i2)
 #   x.last - the last sample obtained
 run.xsample.lowmem = function(iters, window.size, burnin.windows=0)
     function(m, x.fraction) {
+  overdisperse.alpha = 0.9
+
   num.cells = dim(m)[2]
 
   # XXX hard-coded for now
-  thinning = 1000
+  thinning = 2000
 
   # find initial estimate
   x.fraction.orig = x.fraction
@@ -120,7 +106,7 @@ run.xsample.lowmem = function(iters, window.size, burnin.windows=0)
 cat("about to call lsei\n")
   x0 = lsei(A=diag(num.cells), B=rep(0, num.cells),
     E=m, F=x.fraction, G=diag(num.cells), H=rep(0, num.cells),
-    tol=1e-4)$X
+    tol=1e-4, type=2)$X
 cat("after lsei\n")
 
   # find cells estimated to be zero
@@ -129,6 +115,11 @@ cat("after lsei\n")
 
   # x0 is the non-zero entries of that estimate
   x0 = x0[cl]
+
+  # possibly use an "overdispersed" starting point
+#  if (!is.null(overdisperse.alpha)) {
+#    x0 = overdispersed.start.1(m[,cl], x.fraction, overdisperse.alpha)
+#  }
 
   # allocate array for summary stats of samples
   num.windows = trunc( iters / window.size )
@@ -142,16 +133,10 @@ cat("after lsei\n")
   # do sampling
   for(i in 1:num.windows) {
 cat("window =", i, "\n")
-#    r = xsample1(E=m[,cl], F=x.fraction,
-#      G=diag(length(cl)), H=rep(0, length(cl)),
-#      tol=1e-4, type="cda", x0 = x0,
-#      burninlength=1, iter=iters.per.window, test=FALSE)
-#    x.summary[i,,cl] = summarize.samples(r$X)
-
     X = sample.cda(m[,cl], x.fraction, x0,
       iters.per.window, thinning)
-print(dim(X))
-print(X[1:4,1:4])
+# print(dim(X))
+# print(X[1:4,1:4])
     x.summary[i,,cl] = summarize.samples(X)
 
     x0 = as.vector(X[ nrow(X) , ])
@@ -169,18 +154,16 @@ print(X[1:4,1:4])
 }
 
 # Does sampling, including several restarts.
-unmix.xsample.multiple.restarts = function(m, x.fraction) {
-  x.summary = NULL
-  X1 = NULL
-  for(iter in 1:3) {
-    X = run.xsample(m, x.fraction, 5000, 50000)
-    x.summary[[iter]] = summarize.samples.1(X, 5000)
-    X1[[iter]] = X
-#    x.summary[[iter]] <- summarize.samples(X)
+unmix.multiple.restarts =
+  function(iters, window.size, burnin.windows=0, num.restarts=10)
+    function(m, x.fraction) {
+  r = list()
+
+  for(iter in 1:num.restarts) {
+    r[[iter]] = run.xsample.lowmem(iters, window.size, burnin.windows=0)(m, x.fraction)
   }
 
-  list(x = as.vector(apply(x.summary[[1]][,"mean",], 2, mean)),
-    x.summary = x.summary, X = X1)
+  list(x = r[[1]][["x"]], r = r)
 }
 
 # Does unmixing for one gene
@@ -189,7 +172,8 @@ unmix.xsample.1 = function(gene, f) {
   unmix.result = NULL
   st = system.time( unmix.result <-
     run.unmix.1(expr.cell[gene,,drop=FALSE], m.cell,
-      run.xsample.lowmem(2e5, 1e4, 0),
+#      run.xsample.lowmem(10, 5, 0),
+      unmix.multiple.restarts(50000, 1000, 0, 5),
       reporters$picked, 30) )
   unmix.result$system.time = st
 
@@ -198,10 +182,10 @@ unmix.xsample.1 = function(gene, f) {
 
 # Runs unmix.xsample.1, several times.
 unmix.xsample.2 = function(gene) {
-  outdir = "sampling_cda"
+  outdir = "multiple_restart"
   system(paste("mkdir -p ", outdir))
 
-  unmix.xsample.1(gene, paste(outdir, "/", gene, ".sampling.Rdata",
+  unmix.xsample.1(gene, paste(outdir, "/", gene, ".Rdata",
     sep="", collapse=""))
 }
 

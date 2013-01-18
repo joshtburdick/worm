@@ -15,15 +15,13 @@ using namespace Rcpp;
   Returns: a random scalar r, such that all elements
     of x + ra >= 0. (Note that r can be negative.) */
 double jumpDist(NumericVector x, NumericVector dir) {
-  double lo = -1, hi = 1;
+  double lo = -INFINITY, hi = INFINITY;
 
   // loop through the elements
   for(int i=0; i<x.size(); i++) {
-
     double d = dir[i];
-    // if this entry of the direction is nonzero...
-    if (1) {
-      double r = x[i] / dir[i];
+    if (fabs(d)>0) {
+      double r = x[i] / d;
       if (r > 0 && -r >= lo)
         lo = -r;
       if (r < 0 && -r <= hi)
@@ -45,7 +43,7 @@ double jumpDist(NumericVector x, NumericVector dir) {
     (used to reduce autocorrelation. FIXME currently does nothing)
     Returns: numSamples samples. */
 // [[Rcpp::export]]
-NumericMatrix cdaCpp(NumericMatrix A,
+NumericMatrix cdaCppCore(NumericMatrix A,
 		     NumericVector b,
 		     NumericVector x0,
 		     NumericMatrix Z,
@@ -59,9 +57,11 @@ NumericMatrix cdaCpp(NumericMatrix A,
     dir(n),           // direction of jump
     g(Z.nrow());       // accumulated jumps in nullspace
   x = x0;
-  NumericMatrix samples(numSamples, n);
 
-  for(int iter = 0; iter < numSamples; iter++) {
+  NumericMatrix samples(numSamples, n);
+  int sampleNumber = 0;
+
+  for(int iter = 0; sampleNumber < numSamples; iter++) {
 
     // which random direction in which to jump
     int z = random() % Z.nrow();
@@ -76,8 +76,9 @@ NumericMatrix cdaCpp(NumericMatrix A,
 
     // FIXME: renormalize, to avoid rounding error?
 
-
-    samples(iter, _) = x;
+    // store thinned samples
+    if (iter % thinning == 0)
+      samples(sampleNumber++, _) = x;
   }
 
   return wrap(samples);
