@@ -1,6 +1,8 @@
 
 source("git/plot/plot_expr.r")
 
+source("git/unmix/comp_paper/sampling/convergenceStats.r")
+
 expr.cell = as.matrix(read.table(
     "~/gcb/git/unmix/unmix_comp/data/exprCell.tsv",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE))
@@ -26,8 +28,8 @@ read.overdispersed = function(g) {
 
 # Computes variance of combined variables.
 # Args:
-#   means, vars - statistics about
-#     groups of numbers
+#   means, vars - stats about groups of numbers, with
+#     one row per group, and one column per estimand
 #   window.size - size of the groups of numbers
 # Returns: variance of all the numbers.
 #   This isn't quite accurate, but seems fairly close;
@@ -42,23 +44,6 @@ combined.var = function(means, vars, window.size) {
   x2 = v1 + means^2
 
   as.vector(apply( x2 - means^2 , 2, mean) * (n1 / (n1 - 1)))
-}
-
-# Given an array of statistics about windows of sampling,
-# computes the combined statistics about all of them.
-# Args:
-#   a - array of sampling statistics
-#   window.size - number of samples aggregated in each window
-# Returns: array of statistics. Note that the
-#   median is not the actual median, but rather
-#   a Tukey-style median-of-medians estimate.
-aggregate.sampling.stats.1 = function(r, window.size) {
-  rbind(
-    mean = apply(r[,"mean",], 2, mean),
-    var = as.vector(combined.var(r[,"mean",], r[,"var",], window.size)),
-    median = apply(r[,"median",], 2, median),
-    min = apply(r[,"min",], 2, min),
-    max = apply(r[,"max",], 2, max))
 }
 
 # Test of combined.var .
@@ -81,6 +66,51 @@ combined.var.test = function() {
     actual.var = apply(x, 2, var))
 }
 
+# Given an array of statistics about windows of sampling,
+# computes the combined statistics about all of them.
+# Args:
+#   a - array of sampling statistics
+#   window.size - number of samples aggregated in each window
+# Returns: array of statistics. Note that the
+#   median is not the actual median, but rather
+#   a Tukey-style median-of-medians estimate.
+aggregate.sampling.stats.1 = function(r, window.size) {
+  rbind(
+    mean = apply(r[,"mean",], 2, mean),
+    var = as.vector(combined.var(r[,"mean",], r[,"var",], window.size)),
+    median = apply(r[,"median",], 2, median),
+    min = apply(r[,"min",], 2, min),
+    max = apply(r[,"max",], 2, max))
+}
+
+# Given several runs, computes statistics on a portion of them.
+# Args:
+#   r - list of arrays of sampling results
+#   window.size - number of samples aggregated in each window
+#   w - number of windows to include (note that 
+#     equally many burn-in iterations will be skipped, and so
+#     the array should have at least twice this many windows.
+# Returns: array with dimensions:
+#   run - which run this was
+#   stat - which statistic (see aggregate.sampling.stats.1())
+#   estimand - which thing being estimated (in this case, cell)
+aggregate.sampling.stats = function(r, window.size, w) {
+  n = length(r)
+
+  a = array(dim=c(n, 5, dim(r[[1]])[3]),
+    dimnames=list(run=c(1:n),
+      stat=dimnames(r[[1]])[[2]],
+      cell=dimnames(r[[1]])[[3]]))
+print(dim(a))
+print(dim(r[[1]]))
+  for(i in 1:length(r)) {
+    r1 = r[[i]][c((w+1):(2*w)),,]
+    a[i,,] = aggregate.sampling.stats.1(r1, window.size)
+  }
+
+  a
+}
+
 # Plots results from overdispersed starting points.
 # Args:
 #   output.dir - where to write the output to
@@ -88,8 +118,8 @@ combined.var.test = function() {
 #   g - the name of the gene
 # Side effects: writes out the file
 plot.overdispersed = function(output.dir, r, g) {
-  # this is millions of iterations (following an equal
-  # number of burn-in iterations)
+  # this is groups of 2 million iterations (following
+  # an equal number of burn-in iterations)
   num.iters = c(1,5,10,25)
 
   system(paste("mkdir -p", output.dir))
@@ -143,20 +173,22 @@ plot.overdispersed = function(output.dir, r, g) {
         xlab="", ylab="", xaxt="n", yaxt="n")
     }
 
-    # lastly, plot actual expression
+    # plot actual expression
     par(new=TRUE)
     plot(1:1341, pmax(0, expr.cell[g,]), cex=0.4, pch=20, col="#000000a0",
       xlim=xlim, ylim=ylim, main="",
       xlab="", ylab="", xaxt="n", yaxt="n")
   }
+
+
   dev.off()
 }
 
 r = read.overdispersed("alr-1")
 
-if (TRUE) {
+if (FALSE) {
 output.dir = "git/unmix/comp_paper/sampling/multiple_start_plots/"
-for(g in dimnames(expr.cell)[[1]]) {
+for(g in c("alr-1")) {    # dimnames(expr.cell)[[1]]) {
   cat(g, "")
   r = read.overdispersed(g)
   if (!is.null(r)) {
@@ -164,4 +196,7 @@ for(g in dimnames(expr.cell)[[1]]) {
   }
 }
 }
+
+s = aggregate.sampling.stats(r, 2e6, 25) 
+foo = scale.reduction(s[,"mean",], s[,"var",], 2e6)
 
