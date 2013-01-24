@@ -16,12 +16,13 @@ die if not defined $output_dir;
 # The iGenome build (with colorspace index.)
 # my $bwt_index = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/Sequence/ColorspaceBowtieIndex/genome";
 # my $gene_gtf = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/Annotation/Genes/genes.gtf";
-my $bwt_index = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/Sequence/ColorspaceBowtieIndex/genome";
+my $bwt_index = "~/data/seq/Caenorhabditis_elegans/Ensembl/WS220/Sequence/ColorspaceBowtieIndex/genome";
+my $gene_gtf = "/home/jburdick/data/expression/WS220_genes.gff";
 
 my $bin_dir = "/murrlab/software/bin";
 
 # this index of the transcriptome should get reused across runs
-# my $transcriptome_index = "/var/tmp/Caenorhabditis_elegans_ce6_genes";
+my $transcriptome_index = "/var/tmp/Caenorhabditis_elegans_genes_index";
 # my $transcriptome_index = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/TranscriptomeColorspaceBowtieIndex/genes";
 
 # extract the reads into a temporary directory
@@ -90,7 +91,7 @@ sub run_tophat2 {
   system("mkdir -p $output_dir");
 
 system(<<END);
-$bin_dir/tophat2 --library-type fr-secondstrand --mate-inner-dist 200 --mate-std-dev 200 --color --integer-quals --bowtie1 --num-threads 6 --output-dir $output_dir $bwt_index $reads_dir/F3.csfasta $reads_dir/F5-RNA.csfasta $reads_dir/F3.qual $reads_dir/F5-RNA.qual
+$bin_dir/tophat2 -G $gene_gtf --transcriptome-index $transcriptome_index --library-type fr-secondstrand --mate-inner-dist 200 --mate-std-dev 200 --color --integer-quals --bowtie1 --num-threads 5 --output-dir $output_dir $bwt_index $reads_dir/F3.csfasta $reads_dir/F5-RNA.csfasta $reads_dir/F3.qual $reads_dir/F5-RNA.qual
 END
 ;
 

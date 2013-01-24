@@ -1,7 +1,16 @@
 #!/usr/bin/perl -w
-# Given SoLID paired-end reads, flips strand of second read.
+# Given SOLiD paired-end reads, flips strand of second read.
 
 use strict;
+
+# this should be a glob which expands to all the Tophat
+# output directories to be included.
+my $dir_paths = $ARGV[0];
+my $out_dir = $ARGV[1];
+my $flip_direction = $ARGV[2];
+
+die if not ($flip_direction eq "last" || $flip_direction eq "first");
+
 
 # for samtools conversion -> BAM
 my $genome_fa = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/Sequence/WholeGenomeFasta/genome.fa";
@@ -19,7 +28,13 @@ sub flip_file {
     my $flags = ($a[1] / 0x10) & 0x0f;
 
     # if this is the "last segment in the template"...
-    if ($a[1] & 0x80) {
+    if (($flip_direction eq "last") && ($a[1] & 0x80)) {
+      # flip its strand
+      $a[1] ^= 0x30;
+    }
+
+    # ... or if it's the first
+    if (($flip_direction eq "first") && (!($a[1] & 0x80))) {
       # flip its strand
       $a[1] ^= 0x30;
     }
@@ -36,23 +51,24 @@ sub flip_file {
 #flip_file("/murrlab/seq/tophat2/Murray050912/ce6_genes/Murray050912_Pool1Pool2_01_F21D5.9/accepted_hits.bam",
 #  "/murrlab/seq/tophat2/Murray050912/strand_flip/01_F21D5.9.bam");
 
-flip_file("/murrlab/seq/tophat2/Murray_52831_092812/lane1/Murray_52831_092812_01_ceh26n/accepted_hits.bam", "~/ceh26n.bam");
+#  my $dir_paths = "/murrlab/seq/tophat2/Murray050912/ce6_genes/Murray050912_Pool1Pool2_0"
+#    . $lane . "_*";
+#  my $dir_paths = "/murrlab/seq/tophat2/Murray_52831_092812/lane$lane/Murray_52831_092812_*";
 
-if (undef) {
-foreach my $lane (2..6) {
-  my $dir_paths = "/murrlab/seq/tophat2/Murray050912/ce6_genes/Murray050912_Pool1Pool2_0"
-    . $lane . "_*";
-  foreach my $dir (glob $dir_paths) {
-    chomp $dir;
-    print "$dir\n";
+foreach my $dir (glob $dir_paths) {
+  chomp $dir;
+#  print "$dir\n";
 
-    die if not ($dir =~ /_(0[1-6]_.*)$/);
-    my $id = $1;
+#  die if not ($dir =~ /_(0[1-6]_.*)$/);
+  die if not ($dir =~ /\/([^\/]+)$/);
+  my $id = $1;
 
-    my $out_file = "/murrlab/seq/tophat2/Murray050912/strand_flip/$id.bam";
+#    my $out_file = "/murrlab/seq/tophat2/Murray050912/strand_flip/$id.bam";
+#  my $out_file = "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip/$id.bam";
+  my $out_file = "$out_dir/$id.bam";
+
+print("$dir/accepted_hits.bam $id $out_file\n");
     flip_file("$dir/accepted_hits.bam", $out_file);
     system("samtools index $out_file");
-  }
-}
 }
 
