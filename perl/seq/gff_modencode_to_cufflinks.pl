@@ -16,9 +16,10 @@ unlink("tmp.ce6.gff");
 
 system(
   "cat $outfile " .
-  "~/gcb/data/expression/lincRNA/ancRNAs_W3PSeq3_ce6.gtf " .
-  "~/gcb/data/expression/lincRNA/lincRNAs_W3PSeq3_ce6.gtf " .
-  "  > ~/data/expression/WS190_genes.gff");
+  "~/gcb/data/expression/lincRNA/ancRNAs_cuff_ce6.gff " .
+  "~/gcb/data/expression/lincRNA/lincRNAs_cuff_ce6.gff " .
+  "| grep -v \"^\#\" " .
+  " > ~/data/expression/WS190_genes.gff");
 
 # Parses a line of attributes.
 sub parse_attr {
@@ -77,7 +78,7 @@ sub get_minimal_gff {
     my($chr, $source, $type, $start, $end, $score,
       $strand, $phase, $attr) = split /\t/;
     next if not ($type =~ /^(transcript|exon|CDS)$/);
-    $chr =~ s/^chr//;
+#    $chr =~ s/^chr//;     # for now, including this
     my %a = parse_attr($attr);
 
     if ($type eq "transcript") {
