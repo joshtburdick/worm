@@ -3,30 +3,31 @@
 
 # confusingly, "geneBounds_flip.tsv" is the "sense" strand quantification
 
-if (undef) {
+if (1) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/20110922/",
-  "20110922");
+  "rawCoverage/20110922");
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/20110922/",
-  "20110922_as");
+  "rawCoverage/20110922_as");
 }
 
-if (undef) {
+if (1) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/Murray050912/strand_flip",
-  "Murray_050912");
+  "rawCoverage/Murray_050912");
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/Murray050912/strand_flip",
-  "Murray_050912_as");
+  "rawCoverage/Murray_050912_as");
 }
+
 if (1) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
-  "Murray_52831_092812");
+  "rawCoverage/Murray_52831_092812");
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
-  "Murray_52831_092812_as");
+  "rawCoverage/Murray_52831_092812_as");
 }
 
 sub compute_coverage {
