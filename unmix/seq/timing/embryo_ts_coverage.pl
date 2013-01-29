@@ -4,8 +4,8 @@
 use strict;
 
 my $gene_bed_file = "../quant/geneBounds.tsv";
-my $bw_dir = "/murrlab/seq/igv/expression/embryo_ts/";
-my $output_dir = "embryo_ts_coverage";
+# my $bw_dir = "/murrlab/seq/igv/expression/embryo_ts/";
+# my $output_dir = "embryo_ts_coverage";
 
 system("mkdir -p $output_dir");
 

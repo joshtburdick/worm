@@ -19,6 +19,6 @@ p = pvclust(log(1+r), method.dist="uncentered")
 
 pdf("git/unmix/seq/cluster/pvclust.pdf",
   title="clustering of samples", width=10, height=7)
-plot(p, cex.pv = 0.8)
+plot(p, cex.pv = 0.8, main=NULL, col.pv = c("red", "white", "white"))
 dev.off()
 

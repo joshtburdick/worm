@@ -1,5 +1,8 @@
 # Total coverage for each sample.
 
+coverage.path = "git/unmix/seq/quant/rawCoverage/"
+output.path = "git/unmix/seq/quant/readsPerMillion/"
+
 # Adds up coverage for each sample, across lanes.
 # Uses column names, with the first three characters
 # stripped off, as the sample name.
@@ -30,6 +33,10 @@ reads.per.million = function(coverage) {
 
 # Writes reads per million for some sample.
 write.reads.per.million = function(coverage.file, output.file) {
+
+  coverage.file = paste(coverage.path, coverage.file, sep="/")
+  output.file = paste(output.path, output.file, sep="/")
+
   cat(coverage.file, "", output.file, "\n")
   r = read.table(coverage.file, sep="\t", header=TRUE,
     row.names=1, check.names=FALSE)
@@ -38,26 +45,26 @@ write.reads.per.million = function(coverage.file, output.file) {
     row.names=TRUE, col.names=NA, quote=FALSE)
 }
 
-write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_20110922.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_20110922.tsv")
-write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_20110922_as.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_20110922_as.tsv")
-
-if (FALSE) {
-write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_Murray_050912.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_Murray_050912.tsv")
-write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_Murray_050912_as.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_Murray_050912_as.tsv")
+system(paste("mkdir -p", output.path))
 
 write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_Murray_52831_092812.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_092812.tsv")
+  "rawCoverage_20110922.tsv.gz",
+  "readsPerMillion_20110922.tsv")
 write.reads.per.million(
-  "git/unmix/seq/quant/rawCoverage_Murray_52831_092812_as.tsv.gz",
-  "git/unmix/seq/quant/readsPerMillion_092812_as.tsv")
-}
+  "rawCoverage_20110922_as.tsv.gz",
+  "readsPerMillion_20110922_as.tsv")
+
+write.reads.per.million(
+  "rawCoverage_Murray_050912.tsv.gz",
+  "readsPerMillion_Murray_050912.tsv")
+write.reads.per.million(
+  "rawCoverage_Murray_050912_as.tsv.gz",
+  "readsPerMillion_Murray_050912_as.tsv")
+
+write.reads.per.million(
+  "rawCoverage_Murray_52831_092812.tsv.gz",
+  "readsPerMillion_092812.tsv")
+write.reads.per.million(
+  "rawCoverage_Murray_52831_092812_as.tsv.gz",
+  "readsPerMillion_092812_as.tsv")
 

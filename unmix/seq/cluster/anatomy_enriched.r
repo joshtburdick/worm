@@ -80,8 +80,9 @@ enriched.t.test = function(expr.1, expr.2) {
     # XXX unsure about "equal variances" assumption here
     test = t.test(expr.1[g], expr.2[g], paired=TRUE, var.equal=TRUE)
 #    test = wilcox.test(expr.1[g], expr.2[g], paired=TRUE)
+    num.enriched = sum(abs(expr.1[g] - expr.2[g]) >= 2)
     data.frame(name = anatomy.term.to.name[at],
-      statistic = test$statistic, n = length(g),
+      statistic = test$statistic, num.enriched = num.enriched,
       p = test$p.value)    # formerly had "parameter = test$parameter"
   }
 
@@ -140,8 +141,8 @@ compute.anatomy.enriched.negatives = function() {
   compute.anatomy.enriched.1("pha-4p9_1", "pha-4m")
   compute.anatomy.enriched.1("pha-4p12_9", "pha-4m")
 
-  compute.anatomy.enriched("cnd-1_ungated", "pha-4_ungated")
-  compute.anatomy.enriched("cnd-1_singlets", "pha-4_singlets")
+  compute.anatomy.enriched.1("cnd-1_ungated", "pha-4_ungated")
+  compute.anatomy.enriched.1("cnd-1_singlets", "pha-4_singlets")
 }
 
 # adapt anatomy ontology to be what hyperg.test.groups expects

@@ -1,7 +1,6 @@
 # Clusters using the WGCNA methodology.
 
 library(WGCNA)
-# library(moduleColor)  # FIXME this should be a dependency
 
 options(stringsAsFactors = FALSE)
 
