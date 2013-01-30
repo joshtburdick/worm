@@ -1,6 +1,7 @@
 # Plots dendrograms from WGCNA analysis.
+# FIXME: combine these into one picture somehow?
 
-load("git/unmix/seq/cluster/WGCNA/wnet.Rdata")
+load("git/unmix/seq/cluster/WGCNA/wnet/wnet.Rdata")
 
 moduleColors = labels2colors(wnet$colors)
 
