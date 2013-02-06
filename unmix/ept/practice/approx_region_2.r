@@ -231,7 +231,7 @@ cat("\n")
 
   # the term approximations (initially flat?)
 #  terms = 0 * prior
-#  terms = gamma.mv2n(cbind(m=rep(1,n), v=rep(1,n)))
+  terms = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 #  m.init = as.vector( b %*% pseudoinverse(t(A)) )
 #  m.init[ m.init <= 1e-4 ] = 1e-4
 #  terms = prior + gamma.s2n(rbind(a=rep(2,n), b=2/m.init))
@@ -242,10 +242,10 @@ cat("\n")
   # the posterior
 #  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
 #  q = lin.constraint( prior + terms )
-#  q = lin.constraint.gamma(A, b, b.var)(prior + terms)
+  q = lin.constraint.gamma(A, b, b.var)(prior + terms)
   q = gamma.s2n(rbind(a=rep(1,n), b=rep(1,n)))
 
-#print(gamma.n2mv(q))
+print(gamma.n2mv(q))
   # convergence statistics
   update.stats = NULL
 
@@ -264,7 +264,7 @@ cat("\n")
     terms = (mm - q) + terms
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    q = lin.constraint.gamma(A, b, b.var)( prior + terms )
+    q = lin.constraint.gamma(A, b, b.var)( terms )
 
     # ??? show change in mean and variance separately?
     diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
@@ -286,5 +286,5 @@ cat("\n")
 }
 
 
-# r = approx.region.gamma.2(t(rep(1,1000)), c(1), c(0), prior.var=Inf)
+# r = approx.region.gamma.2(t(rep(1,3)), c(1), c(0), prior.var=Inf)
 
