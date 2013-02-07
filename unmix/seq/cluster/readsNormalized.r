@@ -51,13 +51,8 @@ get.pos.neg.expression = function() {
 }
 
 # Gets the ratios for genes which lack a matched control.
-get.pos.singlet.expression = function() {
+get.pos.singlet.expression = function(genes) {
   r = NULL
-  genes = c("hlh-16 (+)", "irx-1 (+)",
-    "ceh-6 (-) hlh-16 (-)",
-    "ceh-6 (-) hlh-16 (+)",
-    "ceh-6 (+) hlh-16 (-)",
-    "ceh-6 (+) hlh-16 (+)")
   for(g in genes) {
     x = get.average(g) - r.control[,"singlets"]
     r = cbind(r, g = x)
@@ -66,12 +61,38 @@ get.pos.singlet.expression = function() {
   r
 }
 
+
+
+# Gets heat-shock compared to time-matched controls.
+get.hs = function(g) {
+  name.1hr = paste("HS", g, "1hr")
+  name.6hr = paste("HS", g, "6hr")
+
+  r = cbind(get.average(name.1hr) - get.average("HS N2 1hr"),
+    get.average(name.6hr) - get.average("HS N2 6hr"))
+
+  colnames(r) = c(name.1hr, name.6hr)
+  r
+}
+
 r.pos.neg = get.pos.neg.expression()
-r.pos.singlet = get.pos.singlet.expression()
+r.pos.singlet = get.pos.singlet.expression(
+  c("hlh-16 (+)", "irx-1 (+)",
+    "ceh-6 (-) hlh-16 (-)",
+    "ceh-6 (-) hlh-16 (+)",
+    "ceh-6 (+) hlh-16 (-)",
+    "ceh-6 (+) hlh-16 (+)"))
+r.rnai = get.pos.singlet.expression(
+  c("RNAi ges-1", "RNAi lit-1", "RNAi pop-1"))
+r.hs = cbind(get.hs("ceh-32"),
+  get.hs("ceh-36"),
+  get.hs("elt-1"),
+  get.hs("pes-1"),
+  get.hs("pha-4"))
 
+r.normalized = cbind(r.pos.neg, r.pos.singlet, r.rnai, r.hs, r.control)
 
-
-write.table(round(r.pos.neg, 3),
+write.table(round(r.normalized, 3),
   file="git/unmix/seq/cluster/readsNormalized.tsv",
   sep="\t", row.names=TRUE, col.names=NA)
 
