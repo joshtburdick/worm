@@ -40,8 +40,9 @@ r.control = cbind(
 get.pos.neg.expression = function() {
   r = NULL
   pos.neg.genes = c("ceh-26", "ceh-27", "ceh-36", "ceh-6",
-    "cnd-1", "F21D5.9", "mir-57", "mls-2", "pal-1",
-    "pha-4", "ttx-3", "unc-130")
+    "cnd-1 8/19", "cnd-1 12/14", "cnd-1 1/4",
+    "F21D5.9", "mir-57", "mls-2", "pal-1",
+    "pha-4 9/1", "pha-4 12/9", "ttx-3", "unc-130")
   for(g in pos.neg.genes) {
     x = get.average(paste(g, "(+)")) - get.average(paste(g, "(-)"))
     r = cbind(r, g = x)
@@ -61,8 +62,6 @@ get.pos.singlet.expression = function(genes) {
   r
 }
 
-
-
 # Gets heat-shock compared to time-matched controls.
 get.hs = function(g) {
   name.1hr = paste("HS", g, "1hr")
@@ -75,22 +74,50 @@ get.hs = function(g) {
   r
 }
 
+
 r.pos.neg = get.pos.neg.expression()
+
+if (FALSE) {
 r.pos.singlet = get.pos.singlet.expression(
   c("hlh-16 (+)", "irx-1 (+)",
     "ceh-6 (-) hlh-16 (-)",
     "ceh-6 (-) hlh-16 (+)",
     "ceh-6 (+) hlh-16 (-)",
     "ceh-6 (+) hlh-16 (+)"))
-r.rnai = get.pos.singlet.expression(
-  c("RNAi ges-1", "RNAi lit-1", "RNAi pop-1"))
+}
+
+singlet.average =
+  (get.average("cnd-1 singlets") + get.average("pha-4 singlets")) / 2
+
+# Cases in which it's not obvious what to use as the "negative" sort.
+r.no.neg = cbind(
+  "hlh-16" = get.average("hlh-16 (+)") -
+    get.average("ceh-6 (-) hlh-16 (-)"),
+  "irx-1" = get.average("irx-1 (+)") - singlet.average,
+  "ceh-6 (+) hlh-16 (+)" = get.average("ceh-6 (+) hlh-16 (+)") -
+    get.average("ceh-6 (-) hlh-16 (-)"),
+  "ceh-6 (+) hlh-16 (-)" = get.average("ceh-6 (+) hlh-16 (-)") -
+    get.average("ceh-6 (-) hlh-16 (-)"),
+  "ceh-6 (-) hlh-16 (+)" = get.average("ceh-6 (-) hlh-16 (+)") -
+    get.average("ceh-6 (-) hlh-16 (-)"),
+  "cnd-1 singlets" = get.average("cnd-1 singlets")
+    - get.average("cnd-1 ungated"),
+  "pha-4 singlets" = get.average("pha-4 singlets")
+    - get.average("pha-4 ungated"))
+
+r.rnai = cbind(
+  "RNAi lit-1" = get.average("RNAi lit-1") -
+    get.average("RNAi ges-1"),
+  "RNAi pop-1" = get.average("RNAi pop-1") -
+    get.average("RNAi ges-1"))
+
 r.hs = cbind(get.hs("ceh-32"),
   get.hs("ceh-36"),
   get.hs("elt-1"),
   get.hs("pes-1"),
   get.hs("pha-4"))
 
-r.normalized = cbind(r.pos.neg, r.pos.singlet, r.rnai, r.hs, r.control)
+r.normalized = cbind(r.pos.neg, r.no.neg, r.rnai, r.hs)
 
 write.table(round(r.normalized, 3),
   file="git/unmix/seq/cluster/readsNormalized.tsv",
