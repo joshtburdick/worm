@@ -19,6 +19,12 @@ r2 = as.matrix(
   read.table(paste(count.path, "readsPerMillion_092812.tsv", sep="/"),
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
+embryo.timeseries = as.matrix(read.table(
+  "git/unmix/seq/timing/embryo.timeseries.tsv.gz",
+  sep="\t", header=TRUE, row.names=1, as.is=TRUE))
+embryo.timeseries =
+  t( t(embryo.timeseries) / (apply(embryo.timeseries, 2, sum) / 1e6) )
+
 r = log2(0.1 + cbind(r1, r2))      # ??? add something smaller than 1 here?
 r = r[ , order(colnames(r)) ]
 
@@ -117,7 +123,11 @@ r.hs = cbind(get.hs("ceh-32"),
   get.hs("pes-1"),
   get.hs("pha-4"))
 
-r.normalized = cbind(r.pos.neg, r.no.neg, r.rnai, r.hs)
+r.embryo = t( scale( t(log2(0.1 + embryo.timeseries)), center=TRUE, scale=FALSE) )
+r.embryo = rbind(r.embryo, "Y74C9A.3"=NA)   # XXX hack
+
+r.normalized = cbind(r.pos.neg, r.no.neg, r.rnai, r.hs, r.embryo[rownames(r.pos.neg),])
+r.normalized[ is.na(r.normalized) ] = 0
 
 write.table(round(r.normalized, 3),
   file="git/unmix/seq/cluster/readsNormalized.tsv",
