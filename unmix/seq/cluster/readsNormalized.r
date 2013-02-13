@@ -4,6 +4,8 @@
 # - similarly for RNAi: RNAi - singlets
 # - for HS: compared to time-matched control
 
+source("git/unmix/seq/timing/timeAdjust/regress.residuals.r")
+
 options(stringsAsFactors = FALSE)
 
 experimentNames = read.table("git/unmix/seq/quant/experimentNames.tsv",
@@ -19,19 +21,28 @@ r2 = as.matrix(
   read.table(paste(count.path, "readsPerMillion_092812.tsv", sep="/"),
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
+r3 = as.matrix(
+  read.table(paste(count.path, "readsPerMillion_20110922.tsv", sep="/"),
+  header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
+
 embryo.timeseries = as.matrix(read.table(
   "git/unmix/seq/timing/embryo.timeseries.tsv.gz",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE))
 embryo.timeseries =
   t( t(embryo.timeseries) / (apply(embryo.timeseries, 2, sum) / 1e6) )
 
-r = log2(0.1 + cbind(r1, r2))      # ??? add something smaller than 1 here?
+r.embryo = t( scale( t(log2(1 + embryo.timeseries)), center=TRUE, scale=FALSE) )
+r.embryo = rbind(r.embryo, "Y74C9A.3"=NA)   # XXX hack
+r.embryo[ is.na(r.embryo) ] = 0
+
+r = log2(1 + cbind(r1, r2, r3))    # ??? add something smaller than 1 here?
 r = r[ , order(colnames(r)) ]
 
 # Gets the average for everything some name.
 # Args: name - name of an experiment
 # Returns: average of all samples with that "name" entry
 #   in the experimentNames table.
+# XXX no longer used much
 get.average = function(name) {
   s = rownames(experimentNames[experimentNames$name==name,])
   apply(r[,s,drop=FALSE], 1, mean)
@@ -48,7 +59,7 @@ get.pos.neg.expression = function() {
   pos.neg.genes = c("ceh-26", "ceh-27", "ceh-36", "ceh-6",
     "cnd-1 8/19", "cnd-1 12/14", "cnd-1 1/4",
     "F21D5.9", "mir-57", "mls-2", "pal-1",
-    "pha-4 9/1", "pha-4 12/9", "ttx-3", "unc-130")
+    "pha-4 5/9", "pha-4 9/1", "pha-4 12/9", "ttx-3", "unc-130")
   for(g in pos.neg.genes) {
     x = get.average(paste(g, "(+)")) - get.average(paste(g, "(-)"))
     r = cbind(r, g = x)
@@ -69,17 +80,24 @@ get.pos.singlet.expression = function(genes) {
 }
 
 # Gets heat-shock compared to time-matched controls.
-get.hs = function(g) {
-  name.1hr = paste("HS", g, "1hr")
-  name.6hr = paste("HS", g, "6hr")
+get.hs = function(genes) {
+  a = NULL
 
-  r = cbind(get.average(name.1hr) - get.average("HS N2 1hr"),
-    get.average(name.6hr) - get.average("HS N2 6hr"))
+  for(g in genes) {
+    a = cbind(a,
+      get.average(paste("HS", g, "1hr")) - get.average("HS N2 1hr"))
+    colnames(a)[ncol(a)] = paste("HS", g, "1hr")
+    a = cbind(a,
+      get.average(paste("HS", g, "6hr")) - get.average("HS N2 6hr"))
+    colnames(a)[ncol(a)] = paste("HS", g, "6hr")
+  }
 
-  colnames(r) = c(name.1hr, name.6hr)
-  r
+  a = timeseries.regress(r.embryo, a)$residuals
+
+  cbind("N2 1hr diff" = r[,"N2_317_1hr"] - r[,"N2_229_1hr"],
+    "N2 6hr diff" = r[,"N2_317_6hr"] - r[,"N2_229_6hr"],
+    a)
 }
-
 
 r.pos.neg = get.pos.neg.expression()
 
@@ -106,6 +124,7 @@ r.no.neg = cbind(
     get.average("ceh-6 (-) hlh-16 (-)"),
   "ceh-6 (-) hlh-16 (+)" = get.average("ceh-6 (-) hlh-16 (+)") -
     get.average("ceh-6 (-) hlh-16 (-)"),
+  "low input" = get.average("lowInput") - get.average("normalInput"),
   "cnd-1 singlets" = get.average("cnd-1 singlets")
     - get.average("cnd-1 ungated"),
   "pha-4 singlets" = get.average("pha-4 singlets")
@@ -117,16 +136,11 @@ r.rnai = cbind(
   "RNAi pop-1" = get.average("RNAi pop-1") -
     get.average("RNAi ges-1"))
 
-r.hs = cbind(get.hs("ceh-32"),
-  get.hs("ceh-36"),
-  get.hs("elt-1"),
-  get.hs("pes-1"),
-  get.hs("pha-4"))
+r.hs = get.hs(c("ceh-32", "ceh-36", "elt-1", "pes-1", "pha-4"))
 
-r.embryo = t( scale( t(log2(0.1 + embryo.timeseries)), center=TRUE, scale=FALSE) )
-r.embryo = rbind(r.embryo, "Y74C9A.3"=NA)   # XXX hack
 
-r.normalized = cbind(r.pos.neg, r.no.neg, r.rnai, r.hs, r.embryo[rownames(r.pos.neg),])
+r.normalized =
+  cbind(r.pos.neg, r.no.neg, r.rnai, r.hs, r.embryo[rownames(r.pos.neg),])
 r.normalized[ is.na(r.normalized) ] = 0
 
 write.table(round(r.normalized, 3),
