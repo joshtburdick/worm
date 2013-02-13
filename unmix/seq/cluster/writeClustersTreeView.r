@@ -54,10 +54,14 @@ write.treeview = function(x, wx, clusters, col, basefile) {
     file=paste(basefile, ".gtr", sep=""))
 
   # cluster arrays, and write this out
+  # XXX for now, not sorting by this
   hc <- hcluster(t(x), method = "correlation", nbproc=4)
+  hc$order = sort(hc$order)
   r2atr(hc, file = paste(basefile, ".atr", sep = ""))
 
+  # XXX without this, gene names are missing; I don't know why
   options(stringsAsFactors = TRUE)
+
   # cluster each cluster of genes
   for(i in 1:num.clusters) {
 
