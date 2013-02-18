@@ -21,6 +21,7 @@ if (FALSE) {
 t.test.clusters = function(path, x, output.name) {
   cl = read.table(paste(path, "/clusters.tsv", sep=""),
     sep="\t", header=TRUE, row.names=1, stringsAsFactors=TRUE)
+  rownames(cl) = cl$gene
 
   g = intersect(rownames(cl), rownames(x))
   x = x[g,]
@@ -28,8 +29,8 @@ t.test.clusters = function(path, x, output.name) {
 
   r = t.test.all.clusters(cl$cluster, x)
   r$p.bh = p.adjust(r$p, method="hochberg")
-#  r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
-  r = r[ r$p <= 0.01 & r$t > 0 , ]
+  r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
+#  r = r[ r$p <= 0.01 & r$t > 0 , ]
   r = r[ order(r$p.bh) , ]
 
   write.table(r,
@@ -121,15 +122,14 @@ write.table(motifClusterEnrichment, sep="\t", col.names=NA,
   file="git/unmix/seq/cluster/motifClusterEnrichment.tsv")
 }
 
-t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
-  motif, "motifEnrichment_5kb")
-t.test.clusters("git/unmix/seq/cluster/hierarchical/hier.ts",
-  motif, "motifEnrichment_5kb")
+# t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
+#  motif, "motifEnrichment_5kb")
+# t.test.clusters("git/unmix/seq/cluster/hierarchical/hier.ts",
+#   motif, "motifEnrichment_5kb")
 
-
-t.test.clusters("git/unmix/seq/cluster/wgcna/wnet",
+t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet",
   motif, "motifEnrichment_5kb")
-t.test.clusters("git/unmix/seq/cluster/wgcna/wnet.ts",
+t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet.ts",
   motif, "motifEnrichment_5kb")
 
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
