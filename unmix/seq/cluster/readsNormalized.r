@@ -101,15 +101,6 @@ get.hs = function(genes) {
 
 r.pos.neg = get.pos.neg.expression()
 
-if (FALSE) {
-r.pos.singlet = get.pos.singlet.expression(
-  c("hlh-16 (+)", "irx-1 (+)",
-    "ceh-6 (-) hlh-16 (-)",
-    "ceh-6 (-) hlh-16 (+)",
-    "ceh-6 (+) hlh-16 (-)",
-    "ceh-6 (+) hlh-16 (+)"))
-}
-
 singlet.average =
   (get.average("cnd-1 singlets") + get.average("pha-4 singlets")) / 2
 
