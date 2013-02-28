@@ -10,6 +10,8 @@ if (FALSE) {
 
   source("git/tf/motif/motifCount/motif.counts.r")
 
+  chip = read.table(gzfile("git/tf/chip/TF_chip_5kbUp.tsv.gz"),
+    sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
 }
 
 # Looks for enriched motifs, and writes them in a file.
@@ -89,7 +91,7 @@ t.test.many = function(a, b) {
 # Computes t-tests for all the clusters.
 # Args:
 #   cluster - which cluster each gene is in
-#   motif - the motifs
+#   motif - the motifs or other predictors.
 # Returns: data frame of results.
 t.test.all.clusters = function(cluster, motif) {
   r = NULL
@@ -109,28 +111,51 @@ cat(cl, "")
   r
 }
 
-if (FALSE) {
-motifClusterEnrichment = {
-  r = t.test.all.clusters(clustering$cluster, motifs)
-  r$p.bh = p.adjust(r$p, method="hochberg")
-  r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
-  r = r[ order(r$p.bh) , ]
-  r
-}
+# Does the above test, for all clusters.
+# Args:
+#   motif - a set of predictors
+#   output.name - name of output file
+t.test.all.clusters.1 = function(motif, output.name) {
 
-write.table(motifClusterEnrichment, sep="\t", col.names=NA,
-  file="git/unmix/seq/cluster/motifClusterEnrichment.tsv")
-}
+  for(cluster.dir in c(
+    "git/unmix/seq/cluster/hierarchical/hier",
+    "git/unmix/seq/cluster/hierarchical/hier.ts",
+    "git/unmix/seq/cluster/WGCNA/wnet",
+    "git/unmix/seq/cluster/WGCNA/wnet.ts")) {
 
-# t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
+    t.test.clusters(cluster.dir, motif, output.name)
+  }
+#t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
+# motif, "motifEnrichment_5kb")
+#t.test.clusters("git/unmix/seq/cluster/hierarchical/hier.ts",
 #  motif, "motifEnrichment_5kb")
-# t.test.clusters("git/unmix/seq/cluster/hierarchical/hier.ts",
-#   motif, "motifEnrichment_5kb")
+#t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet",
+#  motif, "motifEnrichment_5kb")
+#t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet.ts",
+#  motif, "motifEnrichment_5kb")
 
-t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet",
-  motif, "motifEnrichment_5kb")
-t.test.clusters("git/unmix/seq/cluster/WGCNA/wnet.ts",
-  motif, "motifEnrichment_5kb")
+}
+
+# Computes statistics about some clustering.
+compute.interaction.stats = function(f) {
+  r = read.table(f, sep="\t", header=TRUE,
+    row.names=1, stringsAsFactors=FALSE)
+
+  c(num = nrow(r),
+    num.predictors = length(unique(r$name)),
+    num.clusters = length(unique(r$cluster)))
+}
+
+# t.test.all.clusters.1(motif, "motifEnrichment_5kb")
+# t.test.all.clusters.1(chip, "chipEnrichment_5kb")
 
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
+
+
+
+
+
+
+a = compute.interaction.stats("git/unmix/seq/cluster/hierarchical/hier/motifEnrichment_5kb.tsv")
+print(a)
 
