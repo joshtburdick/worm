@@ -3,35 +3,44 @@
 
 # confusingly, "geneBounds_flip.tsv" is the "sense" strand quantification
 
-if (1) {
+if (undef) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/20110922/",
-  "rawCoverage/20110922");
+  "rawCoverage/20110922", 1);
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/20110922/",
-  "rawCoverage/20110922_as");
+  "rawCoverage/20110922_as", 1);
 }
 
-if (1) {
+if (undef) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/Murray050912/strand_flip",
-  "rawCoverage/Murray_050912");
+  "rawCoverage/Murray_050912", 1);
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/Murray050912/strand_flip",
-  "rawCoverage/Murray_050912_as");
+  "rawCoverage/Murray_050912_as", 1);
 }
 
-if (1) {
+if (undef) {
 compute_coverage("geneBounds_flip.tsv",
   "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
-  "rawCoverage/Murray_52831_092812");
+  "rawCoverage/Murray_52831_092812", 1);
 compute_coverage("geneBounds.tsv",
   "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip",
-  "rawCoverage/Murray_52831_092812_as");
+  "rawCoverage/Murray_52831_092812_as", 1);
+}
+
+# timeseries; this shouldn't be stranded
+if (1) {
+  compute_coverage("geneBounds_WS220.tsv",
+    "/media/disk2/jburdick/embryo_timeseries",
+    "rawCoverage/embryo_ts", undef);
+
 }
 
 sub compute_coverage {
-  my($bed_file, $bam_dir, $out_dir) = @_;
+  my($bed_file, $bam_dir, $out_dir, $stranded) = @_;
+  my $str = $stranded ? " -s " : "";
 
   system("mkdir -p $out_dir");
 
@@ -52,7 +61,7 @@ print "$file\n";
     #  system ("coverageBed -abam $file -b $bed_file > $output_file");
     # for now, only including uniquely-mapping reads
     #  system ("samtools view -q 255 -b $file | coverageBed -s -split -abam stdin -b $bed_file | gzip -c > $output_file");
-    system ("samtools view -q 1 -b $file | coverageBed -s -split -abam stdin -b $bed_file | gzip -c > $output_file");
+    system ("samtools view -q 1 -b $file | coverageBed $str -split -abam stdin -b $bed_file | gzip -c > $output_file");
     my $read_count = `samtools view -q 1 -c $file`;
     print COUNTS "$sample_name\t$read_count";
   }
