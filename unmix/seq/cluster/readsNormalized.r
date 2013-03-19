@@ -38,7 +38,7 @@ r.embryo[ is.na(r.embryo) ] = 0
 r = log2(1 + cbind(r1, r2, r3))    # ??? add something smaller than 1 here?
 r = r[ , order(colnames(r)) ]
 
-# Gets the average for everything some name.
+# Gets the average for everything with some name.
 # Args: name - name of an experiment
 # Returns: average of all samples with that "name" entry
 #   in the experimentNames table.
@@ -104,17 +104,28 @@ r.pos.neg = get.pos.neg.expression()
 singlet.average =
   (get.average("cnd-1 singlets") + get.average("pha-4 singlets")) / 2
 
+# average of ceh-6 and hlh-16 genes
+ceh.6.hlh.16.avg = 
+  (get.average("ceh-6 (+) hlh-16 (+)") +
+  get.average("ceh-6 (+) hlh-16 (-)") +
+  get.average("ceh-6 (-) hlh-16 (+)") +
+  get.average("ceh-6 (-) hlh-16 (-)")) / 4
+
 # Cases in which it's not obvious what to use as the "negative" sort.
 r.no.neg = cbind(
   "hlh-16" = get.average("hlh-16 (+)") -
     get.average("ceh-6 (-) hlh-16 (-)"),
   "irx-1" = get.average("irx-1 (+)") - singlet.average,
-  "ceh-6 (+) hlh-16 (+)" = get.average("ceh-6 (+) hlh-16 (+)") -
-    get.average("ceh-6 (-) hlh-16 (-)"),
-  "ceh-6 (+) hlh-16 (-)" = get.average("ceh-6 (+) hlh-16 (-)") -
-    get.average("ceh-6 (-) hlh-16 (-)"),
-  "ceh-6 (-) hlh-16 (+)" = get.average("ceh-6 (-) hlh-16 (+)") -
-    get.average("ceh-6 (-) hlh-16 (-)"),
+  "ceh-6 (+) hlh-16 (+)" =
+    get.average("ceh-6 (+) hlh-16 (+)") - ceh.6.hlh.16.avg,
+  "ceh-6 (+) hlh-16 (-)" =
+    get.average("ceh-6 (+) hlh-16 (-)") - ceh.6.hlh.16.avg,
+  "ceh-6 (-) hlh-16 (+)" =
+    get.average("ceh-6 (-) hlh-16 (+)") - ceh.6.hlh.16.avg,
+  "ceh-6 (-) hlh-16 (-)" =
+    get.average("ceh-6 (-) hlh-16 (-)") - ceh.6.hlh.16.avg,
+  "ceh-6 (+) hlh-16 (+) vs. --" =
+    get.average("ceh-6 (+) hlh-16 (+)") - get.average("ceh-6 (-) hlh-16 (-)"),
   "low input" = get.average("lowInput") - get.average("normalInput"),
   "cnd-1 singlets" = get.average("cnd-1 singlets")
     - get.average("cnd-1 ungated"),
@@ -128,7 +139,6 @@ r.rnai = cbind(
     get.average("RNAi ges-1"))
 
 r.hs = get.hs(c("ceh-32", "ceh-36", "elt-1", "pes-1", "pha-4"))
-
 
 r.normalized =
   cbind(r.pos.neg, r.no.neg, r.rnai, r.hs, r.embryo[rownames(r.pos.neg),])
