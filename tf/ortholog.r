@@ -50,15 +50,29 @@ gene.id.to.entrez =
 #     and "homolog_gene"
 # Returns: that data frame, with added column:
 #   has_motif - 1 iff there is a correspondingly-named motif
+#   motif - one of the motif names, chosen arbitrarily
+#     (FIXME possibly this should include all of them)
 check.for.motif = function(r) {
   r$has_motif = ""
-  
+  r$motif = ""
+
   r[ r$homolog_species == "Homo sapiens" &
     r$homolog_gene %in% meme.tf[ meme.tf$organism=="Hs" , "gene" ], "has_motif"] = 1
   r[ r$homolog_species == "Mus musculus" &
     r$homolog_gene %in% meme.tf[ meme.tf$organism=="Mm" , "gene" ], "has_motif"] = 1
   r[ r$homolog_species == "Drosophila melanogaster" &
     r$homolog_gene %in% meme.tf[ meme.tf$organism=="Dm" , "gene" ], "has_motif"] = 1
+
+  # tack on id of one of the motifs
+  m = meme.tf[ meme.tf$organism == "Hs" , ]
+  r[ r$homolog_species == "Homo sapiens", "motif" ] =
+    m[ match(r[ r$homolog_species == "Homo sapiens", "homolog_gene" ], m$gene) , "id" ]
+  m = meme.tf[ meme.tf$organism == "Mm" , ]
+  r[ r$homolog_species == "Mus musculus", "motif" ] =
+    m[ match(r[ r$homolog_species == "Mus musculus", "homolog_gene" ], m$gene) , "id" ]
+  m = meme.tf[ meme.tf$organism == "Dm" , ]
+  r[ r$homolog_species == "Drosophila melanogaster", "motif" ] =
+    m[ match(r[ r$homolog_species == "Drosophila melanogaster", "homolog_gene" ], m$gene) , "id" ]
 
   r
 }
