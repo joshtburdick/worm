@@ -41,9 +41,9 @@ tf.cor = cor(t(x), t(x[tfs,]))
 
 # also omit cases in which expression is missing (presumably
 # because of a naming issue)
-# ortho = ortho[ ortho$public_name %in% colnames(tf.cor) , ]
+ortho = ortho[ ortho$public_name %in% colnames(tf.cor) , ]
 
-foo = cor( tf.cor[,ortho$public_name], motif[,ortho$motif] )
+cor.and.motif = cor( tf.cor[,ortho$public_name], motif[,ortho$motif] )
 
 
 plot.it.1 = function(i) {
@@ -53,14 +53,14 @@ plot.it.1 = function(i) {
 
 
 
-plot.it.2 = function(i, n) {
+plot.it.2 = function(gene.name, motif.name, n) {
 
   # which genes have high and low correlation, respectively
-  hi = order(tf.cor[,ortho[i,"public_name"] ], decreasing=TRUE)[1:n]
-  lo = order(abs(tf.cor[,ortho[i,"public_name"] ]), decreasing=FALSE)[1:n]
-
-  hi.motif.count = motif[hi,ortho[i,"motif"] ]
-  lo.motif.count = motif[lo,ortho[i,"motif"] ]
+  hi = order(tf.cor[,gene.name ], decreasing=TRUE)[1:n]
+  lo = order(abs(tf.cor[,gene.name ]), decreasing=FALSE)[1:n]
+#  lo = setdiff(c(1:nrow(tf.cor)), hi)
+  hi.motif.count = sqrt(motif[hi,motif.name ])
+  lo.motif.count = sqrt(motif[lo,motif.name ])
   xlim = c(0, max(lo.motif.count, hi.motif.count))
 
   par(mfrow=c(2,1))
@@ -71,5 +71,7 @@ plot.it.2 = function(i, n) {
 }
 
 
-
+plot.it.2("daf-19", "RFX2_DBD", 1000)
+plot.it.2("ceh-36", "OTX1_DBD", 1000)
+plot.it.2("pha-4", "MA0148.1", 1000)
 
