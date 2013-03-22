@@ -6,7 +6,7 @@ library(rpart)   # deprecated
 #  gzfile("git/tf/motif/motifCount/motifs_1kbUpstream.tsv.gz"),
 #  sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
 
-if (FALSE) {
+if (TRUE) {
 
   source("git/tf/motif/motifCount/motif.counts.r")
 
@@ -88,6 +88,45 @@ t.test.many = function(a, b) {
     df = as.integer(r[,"df"]))
 }
 
+# Tests for motifs enriched in particular sorted fractions.
+enriched.in.fraction.1 = function(log.enrich, motif) {
+  cutoff = log2(3)
+
+  g1 = intersect(rownames(log.enrich), rownames(motif))
+  log.enrich = log.enrich[g1,]
+  motif = motif[g1,]
+  a = NULL
+  for(s in colnames(log.enrich)) {
+    cat(s, "")
+    r = t.test.many(motif[ log.enrich[,s] >= cutoff , ],
+      motif[ log.enrich[,s] <= -cutoff , ])
+    r$p.bh = p.adjust(r$p, method="hochberg")
+    r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
+    r = r[ order(r$p.bh) , ]
+    if (nrow(r) > 0)
+      r = data.frame(sample=s, r)
+    a = rbind(a, r)
+  }
+
+  a
+}
+
+# Does that test for all sorted fractions.
+enriched.in.fraction = function() {
+  output.path = "git/unmix/seq/cluster/fraction_enrich"
+  system(paste("mkdir -p", output.path))
+
+  r = as.matrix(read.table("git/unmix/seq/cluster/readsNormalized.tsv",
+    header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
+
+  write.table(enriched.in.fraction.1(r[,c(1:25)], motif),
+    file=paste(output.path, "/motif_5kb.tsv", sep=""),
+    sep="\t", row.names=TRUE, col.names=NA)
+  write.table(enriched.in.fraction.1(r[,c(1:25)], chip),
+    file=paste(output.path, "/chip_5kb.tsv", sep=""),
+    sep="\t", row.names=TRUE, col.names=NA)
+}
+
 # Computes t-tests for all the clusters.
 # Args:
 #   cluster - which cluster each gene is in
@@ -137,9 +176,10 @@ t.test.all.clusters.1 = function(motif, output.name) {
 }
 
 # Computes statistics about some clustering.
-compute.interaction.stats = function(f) {
+compute.interaction.stats = function(f, bh.cutoff = 0.5) {
   r = read.table(f, sep="\t", header=TRUE,
     row.names=1, stringsAsFactors=FALSE)
+  r = r[ r[,"p.bh"] <= bh.cutoff , ]
 
   c(num = nrow(r),
     num.predictors = length(unique(r$name)),
@@ -152,10 +192,9 @@ compute.interaction.stats = function(f) {
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
 
 
+# a = compute.interaction.stats("git/unmix/seq/cluster/hierarchical/hier/motifEnrichment_5kb.tsv")
+# print(a)
 
+# enriched.in.fraction()
 
-
-
-a = compute.interaction.stats("git/unmix/seq/cluster/hierarchical/hier/motifEnrichment_5kb.tsv")
-print(a)
 
