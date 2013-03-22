@@ -7,13 +7,16 @@ wb.anatomy = read.table(
 anatomy.term.to.name = by(wb.anatomy$Anatomy.Term, wb.anatomy$Anatomy.Term.ID,
   function(x) as.vector(x)[1])
 
-r = as.matrix(read.table("git/unmix/seq/quant/readsPerMillion.tsv",
+# r = as.matrix(read.table("git/unmix/seq/quant/readsPerMillion.tsv",
+#   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
+r = as.matrix(read.table("git/unmix/seq/cluster/readsNormalized.tsv",
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
-lr = log2(1 + r)
+# lr = log2(1 + r)
 # control = (lr[,"cnd-1_ungated"] + lr[,"pha-4_ungated"]) / 2
-control = (lr[,"cnd-1_singlets"] + lr[,"pha-4_singlets"]) / 2
-le = lr - control
+# control = (lr[,"cnd-1_singlets"] + lr[,"pha-4_singlets"]) / 2
+# le = lr - control
+le = r[,1:25]
 
 # Hypergeometric test for enrichment.
 # Args:
@@ -30,9 +33,12 @@ hyperg.test.enrichment = function(g, group, num.genes) {
   # count genes in group
   num.in.group = length(intersect(g, group))
 
-  phyper(length(g) - num.in.group,
+  p = phyper(length(g) - num.in.group,
     num.genes - length(group), length(group), length(g),
     lower.tail=TRUE)
+  list(p = p, num.intersect = length(intersect(g, group)),
+    num.in.group = length(group),
+    genes = if (length(intersect(g, group)) > 0) paste(intersect(g,group), collapse=" ") else "")
 }
 
 # Tests for enrichment of a list of genes.
@@ -49,56 +55,13 @@ hyperg.test.groups = function(groups, gene.list, num.genes) {
 # cat(gr, "")
     g1 = groups[ groups$group==gr, ]
     p = hyperg.test.enrichment(gene.list, g1$gene, num.genes)
-    r = rbind(r, data.frame(group=gr, group.name=g1$group.name[1], p=p))
+    r = rbind(r, data.frame(group=gr, group.name=g1$group.name[1],
+      p = p$p, num.intersect = p$num.intersect,
+      num.in.group = p$num.in.group, genes = p$genes))
   }
 
   r$p.corr = p.adjust(r$p, method="BH")
   r
-}
-
-# Tests for enriched tissues, using a paired t-test.
-# Deprecated.
-enriched.t.test = function(expr.1, expr.2) {
-
-  # restrict anatomy table to just genes we know
-  genes = intersect(names(expr.1), names(expr.2))
-#  print(genes[1:10])
-  a = wb.anatomy[ wb.anatomy$Gene.Public.Name %in% genes , ]
-#  print(dim(a))
-
-  # Tests one anatomy term.
-  t.test.1 = function(at) {
-    g = a[ a$Anatomy.Term.ID == at , "Gene.Public.Name" ]
- 
-    x1 = expr.1[g]
-    x2 = expr.2[g]
-
-    # make sure enough data is present, and has some variance
-    if (length(g) < 2 || (var(expr.1[g]) + var(expr.2[g]) <= 1e-3))
-      return(NULL)
-
-    # XXX unsure about "equal variances" assumption here
-    test = t.test(expr.1[g], expr.2[g], paired=TRUE, var.equal=TRUE)
-#    test = wilcox.test(expr.1[g], expr.2[g], paired=TRUE)
-    num.enriched = sum(abs(expr.1[g] - expr.2[g]) >= 2)
-    data.frame(name = anatomy.term.to.name[at],
-      statistic = test$statistic, num.enriched = num.enriched,
-      p = test$p.value)    # formerly had "parameter = test$parameter"
-  }
-
-  r = NULL
-  for(at in unique(wb.anatomy$Anatomy.Term.ID)) {
-#    cat(at, "")
-    test = t.test.1(at)
-    if (!is.null(test)) {
-      r = rbind(r, t.test.1(at))
-    }
-  }
-#  cat("\n")
-  r$p.corr = p.adjust(r$p, method="BH")
-
-#  r[ order(r$statistic), ]
-  r[ order(r$p.corr) , ]
 }
 
 # computes anatomy terms enriched in each fraction
@@ -153,17 +116,24 @@ num.genes = dim(r)[1]
 
 compute.anatomy.enriched.hypergeometric = function() {
   system("mkdir -p git/unmix/seq/cluster/anatomy_enriched_hyperg/")
-  for(fr in c("ceh-26", "ceh-27", "ceh-36", "ceh-6", "cnd-1",
-    "F21D5.9", "hlh-16", "irx-1", "mir-57", "mls-2", "pal-1",
-    "pha-4", "ttx-3", "unc-130")) {
+#  for(fr in c("ceh-26", "ceh-27", "ceh-36", "ceh-6", "cnd-1",
+#    "F21D5.9", "hlh-16", "irx-1", "mir-57", "mls-2", "pal-1",
+#    "pha-4", "ttx-3", "unc-130")) {
+  files = list.files("git/unmix/seq/cluster/enriched_genes/", pattern=".tsv")
+  samples = sub(".tsv", "", files)
+
+  for(fr in samples) {
+cat(fr, "")
+    try({
     g = read.table(
       paste("git/unmix/seq/cluster/enriched_genes/", fr, ".tsv", sep=""),
-      as.is=TRUE)[,1]
+      as.is=TRUE, header=FALSE)[,1]
     a = hyperg.test.groups(ao, g, num.genes)
     a = a[a$p < 0.05,]
     a = a[order(a$p),]
     write.table(a, sep="\t", col.names=NA,
       file=paste("git/unmix/seq/cluster/anatomy_enriched_hyperg/", fr, ".tsv", sep=""))
+    })
   }
 }
 
@@ -171,5 +141,5 @@ compute.anatomy.enriched.hypergeometric = function() {
 # compute.anatomy.enriched()
 # compute.anatomy.enriched.negatives()
 
-# compute.anatomy.enriched.hypergeometric()
+compute.anatomy.enriched.hypergeometric()
 
