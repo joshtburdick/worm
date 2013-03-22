@@ -52,24 +52,18 @@ r.facs = get.pos.neg.expression()
 r.facs = cbind(r.facs,
   "hlh-16" = r[,"hlh-16 (+)"] - singlet.average,
   "irx-1" = r[,"irx-1 (+)"] - singlet.average,
+  "ceh-6 (+) hlh-16 (+)" =
+    r[,"ceh-6 (+) hlh-16 (+)"] - r[,"ceh-6 (-) hlh-16 (-)"],
+  "ceh-6 (+) hlh-16 (-)" =
+    r[,"ceh-6 (+) hlh-16 (-)"] - r[,"ceh-6 (-) hlh-16 (-)"],
+  "ceh-6 (-) hlh-16 (+)" =
+    r[,"ceh-6 (-) hlh-16 (+)"] - r[,"ceh-6 (-) hlh-16 (-)"],
   "cnd-1 singlets" = r[,"cnd-1 singlets"] - r[,"cnd-1 ungated"],
   "pha-4 singlets" = r[,"pha-4 singlets"] - r[,"pha-4 ungated"])
-
-# for now, not including this data
-if (FALSE) {
-  r.facs = cbind(r.facs,
-    "ceh-6 (+) hlh-16 (+)" =
-      r[,"ceh-6 (+) hlh-16 (+)"] - r[,"ceh-6 (-) hlh-16 (-)"],
-    "ceh-6 (+) hlh-16 (-)" =
-      r[,"ceh-6 (+) hlh-16 (-)"] - r[,"ceh-6 (-) hlh-16 (-)"],
-    "ceh-6 (-) hlh-16 (+)" =
-      r[,"ceh-6 (-) hlh-16 (+)"] - r[,"ceh-6 (-) hlh-16 (-)"])
-}
 
 # timeseries
 r.ts = read.tsv("git/unmix/seq/timing/deconvolved_embryo_ts.tsv")
 r.ts.scaled = t( scale( t(log2(1 + r.ts)), center=TRUE, scale=FALSE) )
-
 
 # more row name munging
 gene.names.1 =
@@ -86,5 +80,4 @@ g = intersect(rownames(r.facs), rownames(r.ts.scaled))
 r.ft = cbind(r.facs[g,], r.ts.scaled[g,])
 
 write.tsv(round(r.ft,4), "git/unmix/seq/cluster/readsFACSandTS.tsv")
-
 
