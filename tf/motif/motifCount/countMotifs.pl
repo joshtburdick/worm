@@ -1,11 +1,19 @@
 #!/usr/bin/perl -w
 # Counts the motifs near genes.
+# (Also counts averages of other things.)
 
 use strict;
 
-count_motifs("/murrlab/seq/igv/motif/meme/",
-  "regions/WS220_5000_bp_upstream.bed",
-  "./motifs_5kbUpstream.tsv", 3);
+#write_motif_counts("/murrlab/seq/igv/motif/meme/",
+#  "regions/WS220_5000_bp_upstream.bed",
+#  "./motifs_5kbUpstream.tsv", 3);
+
+# count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
+# count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
+
+# count_motifs_chip("/murrlab/seq/igv/chip.TF/", "TF");
+count_motifs_chip("/murrlab/seq/igv/histone.chip/", "histone.chip");
+
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
 # count_motifs("/murrlab/seq/igv/histone.chip/Late-Embryos/", "histone_LE_1kbUp.tsv", 5);
 #count_motifs("/murrlab/seq/igv/chip.TF/Early-Embryos/", "chip.TF_EE_1kbUp.tsv", 5);
@@ -13,6 +21,19 @@ count_motifs("/murrlab/seq/igv/motif/meme/",
 #count_motifs("/murrlab/seq/igv/chip.TF/Fed-L1-stage-larvae/", "chip.TF_FedL1.tsv", 5);
 
 # count_motifs("/murrlab/seq/igv/chip.TF/Fed-L1-stage-larvae/", "chip.TF_FedL1.tsv", 5);
+
+sub count_motifs_chip {
+  my($base_dir, $name) = @_;
+  my @stages = `ls $base_dir/`;
+
+  foreach my $stage (@stages) {
+    chomp $stage;
+    print "stage $stage\n";
+    count_motifs("$base_dir/$stage/",
+      "regions/WS220_5000_bp_upstream.bed",
+      $name . "_" . $stage . "_5kbUp.tsv", 5);
+  }
+}
 
 sub count_motifs {
   my($bw_dir, $regions_bed, $output_file, $column) = @_;
@@ -32,23 +53,29 @@ sub count_motifs {
 
   # read in data
   my @names = ();
-  foreach my $bw_file (<$bw_dir/*>) {
+
+  open LOG, ">log.txt" || die;
+
+  foreach my $bw_file (<$bw_dir/*.bw>) {
     die if not ($bw_file =~ /\/?([^\/]+)\.bw$/);
     my $base_name = $1;
-    print "$base_name ";
+    print LOG "$bw_file $base_name\n";
+    print "$bw_file    $base_name\n";
     push @names, $base_name;
 
-    system "bigWigAverageOverBed $bw_file $bed_file $tmp_dir/$base_name.tsv";
+    system("touch tmp.tsv");
+    system "bigWigAverageOverBed $bw_file $bed_file tmp.tsv";
 
     # read in just one column
-    open IN, "cut -f$column $tmp_dir/$base_name.tsv |" || die;
+    open IN, "cut -f$column tmp.tsv |" || die;
     foreach my $i (0..(@r-1)) {
       $_ = <IN>;
+      die if not defined $_;
       chomp;
       push @{$r[$i]}, $_;
     }
     close IN;
-    system "unlink $tmp_dir/$base_name.tsv";
+    system "unlink tmp.tsv";
   }
 
   # write output
@@ -60,6 +87,51 @@ sub count_motifs {
     print OUT (join "\t", @$_);
     print OUT "\n";
   }
+  close OUT;
+}
+
+# Counts motifs, and writes out results as it goes
+# (with one line per motif, "horizontally", for
+# lower memory usage.)
+sub write_motif_counts {
+  my($bw_dir, $regions_bed, $output_file, $column) = @_;
+
+  open OUT, ">$output_file" || die;
+
+  # write out names from BED file
+  my @genes = ();
+  open IN, "cut -f4 $regions_bed |" || die;
+  while (<IN>) {
+    chomp;
+    push @genes, $_;
+    print OUT "\t$_";
+  }
+  print OUT "\n";
+  close IN;
+
+  # write out each motif
+  foreach my $bw_file (<$bw_dir/*.bw>) {
+    die if not ($bw_file =~ /\/?([^\/]+)\.bw$/);
+    my $base_name = $1;
+
+    # count motifs
+    system("touch tmp.tsv");
+    system "bigWigAverageOverBed $bw_file $regions_bed tmp.tsv";
+
+    # read in just one column
+    # XXX note that this assumes the average ou
+    print OUT $base_name;
+    open IN, "cut -f$column tmp.tsv |" || die;
+    while (<IN>) {
+      die if not defined $_;
+      chomp;
+      print OUT "\t$_";
+    }
+    print OUT "\n";
+    close IN;
+    system "unlink tmp.tsv";
+  }
+
   close OUT;
 }
 

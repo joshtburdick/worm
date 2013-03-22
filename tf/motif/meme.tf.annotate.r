@@ -10,6 +10,27 @@ r$gene = ""
 # a crude test for whether a gene symbol looks like a mouse gene
 is.mouse.gene = function(x) grepl("^[A-Z][a-z]", x)
 
+# first, include any motifs that had exactly the same
+# name as an ortholog.
+wb.ortholog = read.table("git/tf/wb.ortholog.tsv",
+  sep="\t", header=TRUE, as.is=TRUE)
+
+i = r$name %in% wb.ortholog[
+    wb.ortholog$homolog_species=="Homo sapiens", "homolog_gene" ]
+r[ i, "gene" ] = r[ i, "name" ]
+r[ i, "organism" ] = "Hs"
+
+i = r$name %in% wb.ortholog[
+    wb.ortholog$homolog_species=="Mus musculus", "homolog_gene" ]
+r[ i, "gene" ] = r[ i, "name" ]
+r[ i, "organism" ] = "Mm"
+
+i = r$name %in% wb.ortholog[
+    wb.ortholog$homolog_species=="Drosophila melanogaster", "homolog_gene" ]
+r[ i, "gene" ] = r[ i, "name" ]
+r[ i, "organism" ] = "Dm"
+
+
 r[ r$database %in% c("chen2008", "wei2010_human_mws") ,
   "organism" ] = "Hs"
 i = r$database == "chen2008"
@@ -44,6 +65,7 @@ r[ i, "gene" ] = r[ i, "name" ]
 i = r$database == "jolma2013"
 r[ i, "gene" ] = sub("_.*", "", r[ i, "id" ])
 r[ i, "organism" ] = ifelse(is.mouse.gene(r[ i, "gene" ]), "Mm", "Hs")
+
 
 r = r[ r$organism != "" & r$gene != "" , ]
 

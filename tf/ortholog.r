@@ -54,7 +54,7 @@ gene.id.to.entrez =
 #     (FIXME possibly this should include all of them)
 check.for.motif = function(r) {
   r$has_motif = ""
-  r$motif = ""
+  r$motif = NA
 
   r[ r$homolog_species == "Homo sapiens" &
     r$homolog_gene %in% meme.tf[ meme.tf$organism=="Hs" , "gene" ], "has_motif"] = 1
@@ -73,6 +73,8 @@ check.for.motif = function(r) {
   m = meme.tf[ meme.tf$organism == "Dm" , ]
   r[ r$homolog_species == "Drosophila melanogaster", "motif" ] =
     m[ match(r[ r$homolog_species == "Drosophila melanogaster", "homolog_gene" ], m$gene) , "id" ]
+
+  r[ is.na(r$motif), "motif" ] = ""
 
   r
 }
