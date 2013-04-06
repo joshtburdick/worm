@@ -32,9 +32,9 @@ positive.moment.match = function(m, v) {
 # Messages constraining a variable to be positive
 # (but using canonical parameterization.)
 positive.moment.match.canonical.gamma = function(x) {
-  mv = gamma.n2mv(x)
-  mm = positive.moment.match(mv[,"m"], mv[,"v"])
-  gamma.mv2n(mm)
+  mv = gamma.n2mv(t(x))
+  mm = positive.moment.match(mv["m",], mv["v",])
+  t(gamma.mv2n(t(mm)))
 }
 
 # Original, slower, version of this.
@@ -102,21 +102,21 @@ if (FALSE) {  M.qr = qr(M)
 # Linear constraint, with conversions to/from gamma params
 # (but no moment matching.)
 lin.constraint.gamma = function(A, b, b.var) function(x) {
-  mv = gamma.n2mv(x)
+  mv = gamma.n2mv(t(x))
+# print(mv)
 #  r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
-  r = lin.constraint.1(mv[,"m"], mv[,"v"], A, b, b.var)
+  r = lin.constraint.1(mv["m",], mv["v",], A, b, b.var)
 #  print("r =")
 #  print(r)
-  gamma.mv2n(r)
+  t(gamma.mv2n(t(r)))
 }
 
 # Linear constraint, with conversions to/from gamma params,
 # and moment matching to the positive region.
 lin.constraint.gamma.pos = function(A, b, b.var) function(x) {
   mv = gamma.n2mv(x)
-  r = lin.constraint.1(mv[,"m"], mv[,"v"], A, b, b.var)
+  r = lin.constraint.1(mv["m",], mv["v",], A, b, b.var)
 #  print("r =")
-#  print(r)
 
   mm = positive.moment.match(r[,"m"], r[,"v"])
   gamma.mv2n(mm)
@@ -141,12 +141,11 @@ approx.region.gamma = function(A, b, b.var, prior.var=Inf,
   debug.dir = NULL
 
   # prior (for now, restricted to be diagonal)
-  prior = gamma.mv2n(cbind(m=rep(prior.var,n), v=rep(prior.var,n)))
+  prior = 0 * t(gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n))))
 
   # the term approximations (initially flat?)
 #  terms = 0 * prior
-  terms = gamma.mv2n(cbind(m=rep(1,n), v=rep(1,n)))
-print(gamma.n2mv(terms))
+  terms = t(gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n))))
 
   # the (soft) linear constraint
   lin.constraint = lin.constraint.gamma(A, b, b.var)
@@ -160,14 +159,15 @@ print(gamma.n2mv(terms))
   update.stats = NULL
 
   for(iter in 1:max.iters) {
-print(gamma.n2mv(q))
+# print(iter)
+# print(t(gamma.n2mv(t(q))))
 
     terms.old = terms
 
     terms.1 = q - terms
-
+# print("terms.1")
+# print(terms.1)
     mm = positive.moment.match.canonical.gamma(terms.1)
-
 #    mm = positive.moment.match.canonical.gamma(q) - terms
 #    mm = terms.1
 
@@ -179,6 +179,8 @@ print(gamma.n2mv(q))
     # one way to add damping. XXX not sure this is right.
 #    terms = 0.5 * (mm - q) + 0.5 * terms
     terms = (mm - q) + terms
+# print("terms")
+# print(terms)
 
     if (!is.null(debug.dir)) {
       system(paste("mkdir -p", debug.dir))
@@ -190,6 +192,8 @@ print(gamma.n2mv(q))
 
     # add in Ax ~ N(-,-) constraint
     q = positive.moment.match.canonical.gamma( lin.constraint( prior + terms ))
+#    q = lin.constraint(prior+terms)
+#    q = prior+terms
 
     # constraints on posterior
 if (FALSE) {
@@ -210,12 +214,14 @@ cat(backspace, signif(diff, 2), " ")
       break
   }
 
-  mv = gamma.n2mv(q)
+#  mv = t(gamma.n2mv(t(q)))
+# ???
+  mv = t(gamma.n2mv( t(lin.constraint.gamma(A, b, b.var)(q) )))
+
   list(m = mv[,"m"], v = mv[,"v"],
-    t = gamma.n2mv( prior + terms ),
+    t = gamma.n2mv( t(prior + terms) ),
     update.stats = update.stats)
 }
-
 
 # Another take at the same thing.
 approx.region.gamma.2 = function(A, b, b.var, prior.var=100,
@@ -280,11 +286,13 @@ cat(backspace, signif(diff, 2), " ")
 cat("\n")
 
   mv = gamma.n2mv(q)
+
   list(m = mv[,"m"], v = mv[,"v"],
     t = gamma.n2mv( terms ),
     update.stats = update.stats)
 }
 
 
-# r = approx.region.gamma.2(t(rep(1,3)), c(1), c(0), prior.var=Inf)
+# r = approx.region.gamma(t(rep(1,3)), c(1), c(0), prior.var=Inf)
+
 
