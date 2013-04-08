@@ -11,7 +11,7 @@ my $fasta = Bio::DB::Fasta->new(
 
 # the upstream region for each gene
 my $upstream_region_bed_file =
-  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed";
+  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_1kb.bed";
 
 # background (for now, the entire genome)
 my $bg_markov_model = "~/gcb/git/tf/motif/Ce_WS220.order1markov.txt";
