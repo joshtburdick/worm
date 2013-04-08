@@ -19,7 +19,7 @@ my $bg_markov_model = "~/gcb/git/tf/motif/Ce_WS220.order1markov.txt";
 # path to MEME binaries
 my $meme_path = "/home/jburdick/meme/";
 
-find_motifs_in_cluster("hierarchical/hier.50clusters");
+write_cluster_gene_fa("hierarchical/hier.50clusters");
 
 # Reads in the clustering, as a hash.
 sub get_clustering {
@@ -76,7 +76,7 @@ sub write_cluster_upstream_regions {
   close OUT;
 }
 
-# Looks for motifs in one clustering.
+# Writes out file of upstream sequence for one cluster.
 # Args:
 #   dir - directory which contains a tab-separated file "clusters.tsv",
 #     which has three columns:
@@ -85,31 +85,26 @@ sub write_cluster_upstream_regions {
 #       cluster - number indicating which cluster that gene is in
 # Side effects: creates a directory in that directory, called "meme",
 #   containing result of running meme on genes in each cluster.
-sub find_motifs_in_cluster {
+sub write_cluster_gene_fa {
   my($dir) = @_;
-  system("mkdir -p $dir/meme");
+  my $output_dir = "$dir/upstreamFa/";
+  system("mkdir -p $output_dir");
 
   my %clustering = get_clustering("$dir/clusters.tsv");
-
   my @clusters = sort(uniq(values %clustering));
 
+  $| = 1;   # for printing progress
   foreach my $c (@clusters) {
-    print "[running meme on cluster $c]\n";
+    print "\b" x 80;
+    print "[writing .fa upstream of genes in cluster $c]";
 
-    my $upstream_fa = "$dir/meme/$c.fa";
-
-    my $output_dir = "$dir/meme/$c";
+    my $upstream_fa = "$output_dir/$c.fa";
 
     # write file of sequences upstream of genes in cluster
     write_cluster_upstream_regions(\%clustering, $c, $upstream_fa);
-
-    # run meme
-    system("\\rm -rf $output_dir");
-    system("$meme_path/bin/meme $upstream_fa -o $output_dir " .
-      " -bfile $bg_markov_model -maxsize 100000000 -maxw 15 " .
-      " -dna -revcomp -nmotifs 3");
-
-    # unlink($upstream_fa);
   }
+
+  $| = 0;
+  print "\n";
 }
 
