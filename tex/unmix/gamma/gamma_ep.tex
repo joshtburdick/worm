@@ -1,0 +1,153 @@
+\documentclass[12]{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+
+\title{Questions about unmixing using EP}
+\author{Josh Burdick}
+\maketitle
+
+I've been modelling unmixing as assuming ${\bf x}$ is chosen uniformly, subject
+to the constraints
+
+\[
+{\bf Ax} = {\bf b}, {\bf x} \ge {\bf 0}
+\]
+
+Initially, I was adapting the ``Bayes point machine''
+from \cite{minka_expectation_2001-1}; I then started using the method in
+\cite{cseke_approximate_2011}. These model the posterior (and thus the
+posterior marginals) as a multivariate normal
+distribution.
+\footnote{The posterior has zero variance perpendicular to the
+${\bf Ax} = {\bf b}$ constraint, and the covariance matrix is singular,
+so it's a degenerate multivariate normal distribution.}
+
+One point which reviewers brought up is that the marginals of this don't
+seem like they're fit by a normal distribution well, at all. In the toy case
+of $n$ positive real numbers $x_i$ adding up to 1, the marginal for each
+$x_i$ is exactly $\mathrm{Beta}(1,n-1)$. And, indeed, looking at some random
+marginals from sampling, they look like gamma, or scaled beta,
+distributions (or very often exponential, for that matter.)
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.7]{alr-1.pdf}
+\caption{
+Marginal distribution of expression in nine cells for
+{\em alr-1}, from 20 million samples,
+thinned by only plotting every thousandth sample. (Prediction was using thirty
+sorted fractions.)
+}
+\label{fig:alr1}
+\end{figure}
+
+Besides reducing accuracy, this mismatch between the actual posterior and the approximation
+may prevent convergence \cite{minka_expectation_2001-1}.
+
+One of the approaches in \cite{cseke_approximate_2011} might be helpful; one
+of their toy examples (figure 3 in that paper) includes
+a constraint of the form ${\bf x} \ge {\bf 0}$. However, that toy example only
+had three variables; therefore, it's not obvious that it would fix problems with
+lack of convergence.
+
+\section*{Using gamma distributions for the marginals}
+
+The fact that the marginals look somewhat like gamma distributions suggests
+modelling the marginals as gamma distributed, rather than normal. This has
+several complications, which I'll try to describe.
+
+\subsection*{Distribution of gamma variables, conditional on their sum}
+
+At one point in the EP method,
+we have a variable ${\bf x}$ which we assume has a normal
+distribution $\mathcal{N}({\bf m},{\bf V})$.
+We then needed to find the distribution of ${\bf x}$, conditional
+on a linear constraint ${\bf Ax = b}$.
+
+\cite{cseke_approximate_2011} give the formula for doing this:
+
+\[
+{\bf x}|{\bf Ax = b} \hspace{3mm} \sim \hspace{3mm} \mathcal{N}({\bf m - VA}^T ({\bf AVA}^T)^{-1} ({\bf Am - b}), {\bf V - VA}^T ({\bf AVA}^T )^{-1}{\bf AV})
+\]
+
+In this case, the covariance matrix ${\bf V}$ is diagonal, and we only use the diagonal
+elements of the distribution conditional on ${\bf Ax} = {\bf b}$.
+
+How do we do something analogous, if we're using gamma distributions instead of
+normal? Suppose ${\bf x}$ is a vector, each of whose components has an independant
+gamma distribution. What will the marginals look like, conditional on ${\bf Ax} = {\bf b}$?
+
+To simplify things, suppose we just have two gamma-distributed variables. 
+
+\begin{eqnarray*}
+x_1 & \sim & {\rm Gamma}(\alpha_1, \beta_1) \\
+x_2 & \sim & {\rm Gamma}(\alpha_2, \beta_2) \\
+\end{eqnarray*}
+
+If they have the same rate (and so $\beta_1 = \beta_2$), and also assume that they
+add up to 1, then each marginal is a beta distribution.
+
+\begin{eqnarray*}
+x_1 | x_1 + x_2 = 1 & \sim & {\rm Beta}(\alpha_1, \alpha_2)
+\end{eqnarray*}
+
+We can moment-match this beta with a gamma distribution; sometimes this looks like
+a good approximation, and sometimes not.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=1\textwidth]{betaGamma.pdf}
+\caption{
+Comparison of moment-matching several beta distributions (solid line) with
+gamma distributions (grey lines.)
+}
+\label{fig:betaGamma}
+\end{figure}
+
+If they don't have the same rate, then I can break down the second distribution into
+the product of a Gamma(1, \_) distribution (in other words,
+an exponential distribution), times a
+gamma distribution with the same rate $\beta_1$, and then apply the same
+moment-matching approximation:
+
+\[
+{\rm Gamma}(\alpha_2, \beta_2) = {\rm Gamma}(1, \beta_2 - \beta_1){\rm Gamma}(\alpha_2, \beta_1)
+\]
+
+By rescaling things, I think that I can use this for a single constraint of the
+form $\sum_i \alpha_i x_i = b$. I'm not sure how to do this in the case of
+multiple constraints, though.
+
+My question: is this a reasonable way of approximating this?
+
+\subsection*{Can the EP method be adapted to use gamma distributions?}
+
+When looking at the iterations from the multivariate normal EP implementation,
+it looked like sometimes one of the terms would dip
+slightly below zero, and then many of the terms would become undefined.
+A nice feature of using gamma distributions is that when you multiply them
+or divide them, they don't become negative.
+
+However, in the multivariate normal EP method, one of the steps was 
+truncating a normal distribution at $x > 0$, computing the moments of
+the positive portion, and matching these moments with another normal
+distribution. The effect of this is that if a term's mean goes near zero, the
+term is pulled positive.
+
+But if a term has a gamma distribution, then this doesn't do anything! The gamma
+distribution is already truncated to be positive. So I'm puzzled what this step
+of the EP method would become.
+
+\bibliographystyle{plain}
+\bibliography{../../refs_from_zotero.bib}
+
+\end{document}
+
