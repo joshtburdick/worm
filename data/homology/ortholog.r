@@ -106,18 +106,20 @@ r.o = rbind(r.o, data.frame(gene=ortho.mcl[i,"ce.gene"],
   gene.score=NA, related.gene.score=NA, ortho.cluster=NA, type=NA))
 
 # Gets data from previous WormBase query.
-wb = read.table("git/tf/wb.ortholog.tsv",
+wb = read.table("git/data/homology/wormbase.tf.ortholog.tsv",
   sep="\t", header=TRUE)
-r.w = data.frame(gene=wb$public_name, method="WormBase",
-  species=
+r.w = data.frame(gene = wb$public_name, method = "WormBase",
+  species = wb$homolog_species, related.gene = wb$homolog_gene,
+  gene.score = NA, related.gene.score = -log10(wb$homolog_blastp_evalue),
+  ortho.cluster = NA, type = wb$type)
 
-ortho.four.methods = rbind(r.e, r.h, r.i, r.o)
+ortho.five.methods = rbind(r.e, r.h, r.i, r.o, r.w)
 
-ortho.four.methods = ortho.four.methods[
-  !is.na(ortho.four.methods$gene) & !is.na(ortho.four.methods$related.gene) , ]
-ortho.four.methods = unique(ortho.four.methods)
+ortho.five.methods = ortho.five.methods[
+  !is.na(ortho.five.methods$gene) & !is.na(ortho.five.methods$related.gene) , ]
+ortho.five.methods = unique(ortho.five.methods)
 
-write.table(ortho.four.methods,
-  file=gzfile("git/data/homology/ortho.four.methods.tsv.gz"),
+write.table(ortho.five.methods,
+  file=gzfile("git/data/homology/ortho.five.methods.tsv.gz"),
   sep="\t", na="", row.names=FALSE, col.names=TRUE, quote=FALSE)
 
