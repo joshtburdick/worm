@@ -17,7 +17,7 @@ backspace = paste(rep("\b", 70), collapse="")
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
-# v[v<0] = 1e10   # XXX hack
+ v[v<0] = 1e10   # XXX hack
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
@@ -30,11 +30,17 @@ positive.moment.match = function(m, v) {
 }
 
 # Messages constraining a variable to be positive
-# (but using canonical parameterization.)
+# (but using canonical gamma parameterization.)
 positive.moment.match.canonical.gamma = function(x) {
   mv = gamma.n2mv(t(x))
   mm = positive.moment.match(mv["m",], mv["v",])
-  t(gamma.mv2n(t(mm)))
+#print(mm)
+#  i = is.na(mm[,"v"])
+  r = t(gamma.mv2n(t(mm)))
+#  r[i,"e1"] = -1
+#  r[i,"e2"] = 0
+#print(r)
+  r
 }
 
 # Original, slower, version of this.
@@ -168,6 +174,9 @@ approx.region.gamma = function(A, b, b.var, prior.var=Inf,
 # print("terms.1")
 # print(terms.1)
     mm = positive.moment.match.canonical.gamma(terms.1)
+  mm[is.na(mm)] = 0
+print("mm")
+print(mm)
 #    mm = positive.moment.match.canonical.gamma(q) - terms
 #    mm = terms.1
 
@@ -179,8 +188,8 @@ approx.region.gamma = function(A, b, b.var, prior.var=Inf,
     # one way to add damping. XXX not sure this is right.
 #    terms = 0.5 * (mm - q) + 0.5 * terms
     terms = (mm - q) + terms
-# print("terms")
-# print(terms)
+ print("terms")
+ print(terms)
 
     if (!is.null(debug.dir)) {
       system(paste("mkdir -p", debug.dir))
