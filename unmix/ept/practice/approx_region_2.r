@@ -108,23 +108,24 @@ if (FALSE) {  M.qr = qr(M)
 # Linear constraint, with conversions to/from gamma params
 # (but no moment matching.)
 lin.constraint.gamma = function(A, b, b.var) function(x) {
-  mv = gamma.n2mv(t(x))
+  mv = gamma.n2mv(x)
 # print(mv)
 #  r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
   r = lin.constraint.1(mv["m",], mv["v",], A, b, b.var)
 #  print("r =")
 #  print(r)
-  t(gamma.mv2n(t(r)))
+  gamma.mv2n(t(r))
 }
 
 # Linear constraint, with conversions to/from gamma params,
 # and moment matching to the positive region.
 lin.constraint.gamma.pos = function(A, b, b.var) function(x) {
   mv = gamma.n2mv(x)
-  r = lin.constraint.1(mv["m",], mv["v",], A, b, b.var)
-#  print("r =")
-
-  mm = positive.moment.match(r[,"m"], r[,"v"])
+  r = t(lin.constraint.1(mv["m",], mv["v",], A, b, b.var))
+  print("r =")
+print(r)
+  mm = t(positive.moment.match(r["m",], r["v",]))
+print(mm)
   gamma.mv2n(mm)
 }
 
@@ -232,76 +233,72 @@ cat(backspace, signif(diff, 2), " ")
     update.stats = update.stats)
 }
 
+# XXX hack
+pmm = function(x) t(positive.moment.match.canonical.gamma(t(x)))
+
 # Another take at the same thing.
-approx.region.gamma.2 = function(A, b, b.var, prior.var=100,
+approx.region.gamma.2 = function(A, b, b.var,
     converge.tolerance=1e-9, max.iters=100) {
   n = ncol(A)
 
-cat("\n")
+  # the "marginal" terms
+  t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
-  # prior (for now, restricted to be diagonal)
-#  prior = gamma.mv2n(cbind(m=rep(sqrt(prior.var),n), v=rep(prior.var,n)))
-#  prior = gamma.s2n(cbind(a=rep(1,n), b=rep(1,n)))
-  prior = 0 * rbind(e1=rep(1e-3, n), e2=rep(1e-3, n))
+  # the "constraint" term
+  t.c = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
-  # the term approximations (initially flat?)
-#  terms = 0 * prior
-  terms = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
-#  m.init = as.vector( b %*% pseudoinverse(t(A)) )
-#  m.init[ m.init <= 1e-4 ] = 1e-4
-#  terms = prior + gamma.s2n(rbind(a=rep(2,n), b=2/m.init))
-
-  # the (soft) linear constraint
-#  lin.constraint = lin.constraint.gamma.pos(A, b, b.var)
+  # the linear constraints
+  lc = lin.constraint.gamma(A, b, b.var)
+  lcp = lin.constraint.gamma.pos(A, b, b.var)
 
   # the posterior
-#  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
-#  q = lin.constraint( prior + terms )
-  q = lin.constraint.gamma(A, b, b.var)(prior + terms)
-  q = gamma.s2n(rbind(a=rep(1,n), b=rep(1,n)))
+  q = t.m + t.c
 
-print(gamma.n2mv(q))
   # convergence statistics
   update.stats = NULL
 
   for(iter in 1:max.iters) {
-# print(gamma.n2mv(terms))
+#  print(gamma.n2mv(terms))
 
-    terms.old = terms
-    terms.1 = q - terms
-
-#    mm = positive.moment.match.canonical.gamma(q - terms)
-
-#    mm = positive.moment.match.canonical.gamma(q) - terms
-    mm = lin.constraint.gamma.pos(A, b, b.var)(q) - terms
-
-    # update terms
-    terms = (mm - q) + terms
+    t.m = q - t.c
+    t.c = q - lc(t.m)
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    q = lin.constraint.gamma(A, b, b.var)( terms )
+    q.new = t.m + t.c
+# print(q.new)
 
-    # ??? show change in mean and variance separately?
-    diff = apply(abs(canonical.to.mean.and.variance(terms.old) - canonical.to.mean.and.variance(terms)), 2, max)
+    # FIXME this should be based on change in the terms, properly
+    diff = apply(abs(gamma.n2mv(q.new) - gamma.n2mv(q)), 1, max)
 cat(backspace, signif(diff, 2), " ")
-    update.stats = rbind(update.stats, diff)
+    update.stats = rbind(update.stats, diff) 
 
     # possibly stop early
     if (max(diff, na.rm=TRUE) <= converge.tolerance)
       break
 
+    q = q.new
 # print(gamma.n2mv(q))
   }
 cat("\n")
 
-  mv = gamma.n2mv(q)
+  mv = gamma.n2mv(lc(q))
 
-  list(m = mv[,"m"], v = mv[,"v"],
-    t = gamma.n2mv( terms ),
+  list(m = mv["m",], v = mv["v",],
+    t = gamma.n2mv( t.m ),
     update.stats = update.stats)
 }
 
 
-# r = approx.region.gamma(t(rep(1,3)), c(1), c(0), prior.var=Inf)
+# XXX for practice
+n = 3
+A = t(rep(1,n))
+t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
+
+lc = lin.constraint.gamma(A, 1, 0)
+
+r = approx.region.gamma.2(t(rep(1,3)), c(1), c(0))
+
+#A1 = matrix(c(1,0,0,1,1,1), nrow=2)
+#r1 = approx.region.gamma.2(A1, c(1,1), c(0,0))
 
 
