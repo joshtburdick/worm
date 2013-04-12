@@ -14,15 +14,14 @@ backspace = paste(rep("\b", 70), collapse="")
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
-  v[v<0] = 1e10    # XXX hack
+#  v[v<0] = 1e10    # XXX hack
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
-#  a = ifelse(z<= -30, -z, dnorm(z)/pnorm(z))
 
   # hack to deal with when z is very negative
-  r = cbind(m = ifelse(z < -30, 0, - (m1 - s * a)),
-    v = ifelse(z < -30, 0, v * (1 - z*a - a^2)))
+  r = cbind(m = ifelse(z < -30, 1e-4, - (m1 - s * a)),
+    v = ifelse(z < -30, 1e-10, v * (1 - z*a - a^2)))
 #  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
@@ -122,8 +121,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   converge.tolerance = 1e-9, max.iters=100) {
   n = ncol(A)
 
-  debug.dir = "~/tmp/approx.region.debug"
-#  debug.dir = NULL
+#  debug.dir = "~/tmp/approx.region.debug"
+  debug.dir = NULL
 
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
@@ -138,7 +137,6 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
 #  q = lin.constraint( prior + terms )
 #  q = prior
-
   # convergence statistics
   update.stats = NULL
 
@@ -159,9 +157,8 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 # print(as.vector(mm))
     # update terms.
     # one way to add damping. XXX not sure this is right.
-    terms = 0.03 * (mm - q) + terms
-#    terms = (mm - q) + terms
-
+#    terms = 0.03 * (mm - q) + terms
+    terms = (mm - q) + terms
     if (!is.null(debug.dir)) {
       system(paste("mkdir -p", debug.dir))
       ep.trace = list(terms=terms, terms.1=terms.1, q=q, mm=mm)
@@ -184,7 +181,7 @@ if (FALSE) {
 }
     # ??? show change in mean and variance separately?
     diff = apply(abs(canonical.to.mean.and.variance(q) - canonical.to.mean.and.variance(q.old)), 2, max)
-cat(backspace, damping, signif(diff, 2), " ")
+ cat(backspace, signif(diff, 2), " ")
     update.stats = rbind(update.stats, diff)
 
     # possibly stop early
@@ -206,6 +203,7 @@ cat(" \n")
 #     Ax = b, x >= 0
 #   converge.tolerance - determines when to stop
 #   max.iters - maximum number of iterations
+#   prior.var - the prior variance (presumed diagonal)
 #   damping - initial damping factor (no damping = 1)
 #   damping.adjust - amount to multiply damping by,
 #     if an update leads to NaN / Inf
@@ -214,8 +212,11 @@ cat(" \n")
 #   t - the prior times the terms (without the linear constraint)
 #   update.stats - matrix with mean and variance of update sizes
 approx.region.damping = function(A, b, converge.tolerance = 1e-9,
-    max.iters=100, damping=1, damping.adjust=0.5) {
+    max.iters=100, prior.var=Inf, damping=1, damping.adjust=0.5) {
   n = ncol(A)
+
+  # prior (for now, restricted to be diagonal)
+  prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
 
   # the term approximations (initially flat)
   terms = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(Inf,n)))
@@ -225,6 +226,7 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
 
   # the posterior (??? initialize with pseudoinverse?)
   q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
+#  q = lin.constraint( prior + terms )
 
   # convergence statistics
   update.stats = NULL
@@ -248,7 +250,7 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
       terms.new = damping * (mm - q) + terms
 
       # add in Ax ~ N(-,-) constraint
-      q.new = lin.constraint( terms.new )
+      q.new = lin.constraint( prior + terms.new )
 
       # how much the posterior changed
       update.diff <- apply(abs(canonical.to.mean.and.variance(q.new) -
@@ -259,8 +261,8 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
 #    print(update.diff)
 #    print(class(update.diff))
 #    print(length(update.diff))
-#    cat("m:::::", update.diff["m"], update.stats[nrow(update.stats),"m"], "\n")
-#    cat("v=====", update.diff["v"], update.stats[nrow(update.stats),"v"], "\n")
+#    cat("m:", update.diff["m"], update.stats[nrow(update.stats),"m"], "\n")
+#    cat("v:", update.diff["v"], update.stats[nrow(update.stats),"v"], "\n")
 
     # if that seemed to work, make the update
     if ((!error.flag) && num.defined(terms.new) && num.defined(q.new) &&
@@ -285,7 +287,7 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
   }
 cat(" \n")
 
-print(update.stats)
+# print(update.stats)
 
   mv = canonical.to.mean.and.variance(q)
   list(m = mv[,"m"], v = mv[,"v"],
