@@ -3,6 +3,7 @@
 library(Matrix)
 library(corpcor)
 
+source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/normal.r")
 # source("git/unmix/ept/matrix_inv_lemma.r")   XXX um, don't think I need this
 
@@ -14,14 +15,15 @@ backspace = paste(rep("\b", 70), collapse="")
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
-#  v[v<0] = 1e10    # XXX hack
+  v[v<0] = 0      # XXX hack (was 1e10)
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
 
   # hack to deal with when z is very negative
-  r = cbind(m = ifelse(z < -30, 1e-4, - (m1 - s * a)),
-    v = ifelse(z < -30, 1e-10, v * (1 - z*a - a^2)))
+  # (was N(1e-4, 1e-10))
+  r = cbind(m = ifelse(z < -30, 1e-6, - (m1 - s * a)),
+    v = ifelse(z < -30, 1e-14, v * (1 - z*a - a^2)))
 #  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
@@ -196,10 +198,37 @@ cat(" \n")
     update.stats = update.stats)
 }
 
+# Alternative version of moment-matching.
+# Args:
+#   a, b - normal distributions (in canonical terms)
+# Returns: normal distribution (in canonical terms)
+# matching moments of the positibe portion of a / b.
+# XXX this doesn't seem to be working.
+pos.moment.match.gamma = function(a, b) {
+
+print("a =")
+print(canonical.to.mean.and.variance(positive.moment.match.canonical(a)))
+print("b =")
+print(canonical.to.mean.and.variance(positive.moment.match.canonical(b)))
+
+  a.gamma = gamma.mv2n(t(canonical.to.mean.and.variance(positive.moment.match.canonical(a))))
+  b.gamma = gamma.mv2n(t(canonical.to.mean.and.variance(positive.moment.match.canonical(b))))
+
+print("a.gamma =")
+print(a.gamma)
+print("b.gamma =")
+print(b.gamma)
+
+  mm = t(gamma.n2mv( a.gamma - b.gamma ))
+print("mm =")
+print(mm)
+  mean.and.variance.to.canonical(mm)
+}
+
 # Also approximates a region constrained such that x >= 0,
 # but includes damping (which may help convergence.)
 # Args:
-#   A, b - these give the constraint that
+#   A, b, b.var - these give the constraint that
 #     Ax = b, x >= 0
 #   converge.tolerance - determines when to stop
 #   max.iters - maximum number of iterations
@@ -211,22 +240,24 @@ cat(" \n")
 #   m, v - the mean and variance of the posterior
 #   t - the prior times the terms (without the linear constraint)
 #   update.stats - matrix with mean and variance of update sizes
-approx.region.damping = function(A, b, converge.tolerance = 1e-9,
+approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
     max.iters=100, prior.var=Inf, damping=1, damping.adjust=0.5) {
+
   n = ncol(A)
 
   # prior (for now, restricted to be diagonal)
   prior = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(prior.var,n)))
 
   # the term approximations (initially flat)
-  terms = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(Inf,n)))
+  terms = mean.and.variance.to.canonical(cbind(m=rep(1,n), v=rep(1,n)))
 
-  # the linear constraint (for now, this is exact)
-  lin.constraint = lin.constraint.factor(A, b, 0 * b)
+  # the linear constraint
+  lin.constraint = lin.constraint.factor(A, b, b.var)
 
   # the posterior (??? initialize with pseudoinverse?)
-  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(1,n)))
-#  q = lin.constraint( prior + terms )
+#  q = mean.and.variance.to.canonical(cbind(m=rep(0,n), v=rep(10,n)))
+  q = lin.constraint( prior + terms )
+ # q = terms * 2
 
   # convergence statistics
   update.stats = NULL
@@ -245,6 +276,8 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
 
       terms.1 = q - terms
       mm = positive.moment.match.canonical(terms.1)
+# trying alternative version of this
+#      mm = pos.moment.match.gamma(q, terms)
 
       # update terms, with damping. XXX not sure this is right.
       terms.new = damping * (mm - q) + terms
@@ -285,7 +318,7 @@ approx.region.damping = function(A, b, converge.tolerance = 1e-9,
     if ((!error.flag) && (max(update.diff) <= converge.tolerance))
       break
   }
-cat(" \n")
+cat("  iters = ", iter, "\n")
 
 # print(update.stats)
 
