@@ -262,6 +262,9 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
   # convergence statistics
   update.stats = NULL
 
+  # previous update size
+  smallest.update.diff = c(m=Inf, v=Inf)
+
   # definition of "numbers looking reasonably defined"
   num.defined = function(x)
     ((sum(is.na(x)) == 0) && (sum(is.nan(x)) == 0) && (sum(is.infinite(x)) == 0))
@@ -301,10 +304,12 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
     if ((!error.flag) && num.defined(terms.new) && num.defined(q.new) &&
 #        (min(canonical.to.mean.and.variance(q.new)[1,"m"]) >= 1e-6) &&
         (!is.null(update.stats)) &&
-        (update.diff["m"] <= 2 * update.stats[nrow(update.stats),"m"]) &&
-        (update.diff["v"] <= 2 * update.stats[nrow(update.stats),"v"])) {
+#        (update.diff["m"] <= 2 * update.stats[nrow(update.stats),"m"]) &&
+#        (update.diff["v"] <= 2 * update.stats[nrow(update.stats),"v"])) {
+        all(update.diff < smallest.update.diff)) {
       terms = terms.new
       q = q.new
+      smallest.update.diff = update.diff
     }
     else {
       if (iter >= 2)
