@@ -1,0 +1,197 @@
+\documentclass[landscape,a0]{a0poster}
+
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{wrapfig}
+\setlength{\topmargin}{1in}
+\setlength{\oddsidemargin}{1in}
+\setlength{\textwidth}{43in}
+\setlength{\textheight}{31in}
+\setlength{\columnsep}{1in}
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/tex/image/}
+{/home/jburdick/gcb/work/svnroot/trunk/tex/thesis/proposal/image/}
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+\thispagestyle{empty}
+
+\title{Genome-wide high-resolution gene expression profiling of the {\em C. elegans} embryo}
+
+\author{Josh Burdick, {\tt jburdick@mail.med.upenn.edu} \\
+Murray lab, University of Pennsylvania}
+\date{}
+
+\maketitle
+\begin{multicols}{4}
+\section*{Introduction}
+Knowing which cells express a given gene is an important clue to its function.
+{\em C. elegans} has an invariant lineage, and is transparent.
+Tracing this lineage, in worms containing a fluorescent reporter for a
+gene of interest,
+allows
+single-cell measurement of embryonic gene expression.
+Worm strains containing reporters for many genes are available,
+but constructing (and imaging and lineaging) a reporter strain is expensive.
+
+\includegraphics[width=\columnwidth]{murray2008.jpg}
+
+{\small
+Measuring expression of {\em pha-4} in individual cells.
+(a) The {\em C. elegans} lineage gives rise to various tissues
+(color-coded.)
+(b) {\em pha-4} is expressed in several different lineages.
+(c) A histone-GFP fusion protein (in yellow) allows
+determining which cells are expressing RFP (in red)
+under a {\em pha-4} promoter. (d) Locations of cells expressing {\em pha-4}.
+(From \cite{pmid18587405}.)}
+
+\section*{Proposed method}
+
+We propose to use flow cytometry to sort cells from {\em C. elegans}
+embryos, into fractions which
+express (or don't express) a gene whose expression pattern is already known.
+We then measure expression in
+each fraction using RNA-seq, and deconvolve these to estimate expression of each
+gene in each cell.
+
+This gives spatial resolution that is limited by the number and
+patterns of the sort markers, but complete genomic coverage.
+
+\begin{center}
+\includegraphics[width=0.4\columnwidth]{cLineageFigure2.png}
+\includegraphics[width=0.4\columnwidth]{FACSsort.png}
+\end{center}
+
+\subsection*{Method of deconvolution}
+
+Let $A_{ij}$ be 1 if fraction $i$ contains cell $j$, and 0 otherwise.
+Let $b_i$ be the total expression of a gene in fraction $i$.
+Then we can estimate the expression of that gene $x_j$ in cell $j$,
+since
+
+$$
+A x = b, \mbox{ subject to }
+x \ge 0 \\
+$$
+
+This is an underdetermined system. We can estimate the possible range
+of expression using expectation propagation \cite{minka_expectation_2001}.
+
+\section*{Predictions using simulated data}
+
+We used the known expression patterns of 130 genes, simulated data from predicting using
+thirty flow-sorted fractions, and predicted expression in each cell.
+(Actual expression is shown in black, predicted expression is shown in grey (mean $\pm$ 1 s.d.).
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/ceh-32.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/ceh-36.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/hlh-16.pdf}
+
+% \includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/nhr-68.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/nob-1.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/pha-4.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tbx-8.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tbx-9.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tlp-1.pdf}
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/unc-130.pdf}
+
+We can predict the total expression in a larger group of cells;
+such predictions can have less uncertainty.
+The predicted intervals seem to be centered near the actual expression, regardless of the
+number of cells.
+
+\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/lineageTotalBoundsHoriz.png}
+{\small
+Expression of 130 genes in groups of cells of different sizes, relative to mean and standard deviation of prediction.
+}
+
+\section*{Sequencing of cells sorted by PHA-4}
+
+We flow-sorted cells according to whether they expressed a fluorescent reporter for
+PHA-4, a pharynx-specific gene. Sequencing of these fractions indicated that the
+flow-sorting separated cells which were expressing PHA-4::GFP with high purity.
+
+\begin{minipage}[b]{1\linewidth}
+\begin{tabular}{lllll}
+\hline
+& total& \multicolumn{3}{c}{reads mapping to} \\
+sample & reads & {\em C. elegans} & adapter & GFP sequence \\
+  & & genome & &  \\
+\hline
+low input  & 23.5 m & 10.0 m & 1.2 m & 766 \\
+normal input & 19.2 m & 6.7 m & 0.7 m & 623 \\
+PHA-4::GFP (+) & 21.7 m & 2.7 m & 16.7 m & 915 \\
+PHA-4::GFP (-) & 34.8 m & 8.6 m & 3.6 m & 40 \\
+\hline
+\end{tabular}
+\vspace{5mm}
+
+\hfill Travis Walton
+\end{minipage}
+
+Genes known to be expressed in the pharynx \cite{gaudet2004} were enriched in the sample
+of cells expressing PHA-4::GFP.
+
+\begin{minipage}[b]{1\linewidth}
+\includegraphics[width=1\textwidth]{seq/fraction/gaudet/earlyLateHist.pdf}
+
+{\small PHA-4 (+) enrichment, defined as
+$\log_2$(1 + PHA-4 (+) FPKM) - $\log_2$(1 + PHA-4 (-) FPKM),
+for early and late pharyngeal
+genes from \cite{gaudet2004}.}
+
+\end{minipage}
+
+\columnbreak
+\section*{Reporters optimized in ABplp lineage}
+
+Currently, we are sequencing fractions sorted from fourteen fluorescent reporters.
+These reporters were chosen for prediction accuracy in the ABplp lineage.
+
+\includegraphics[width=0.9\columnwidth]{pattern/distinguishableCells.pdf}
+
+\begin{center}
+\includegraphics[width=0.5\columnwidth]{pattern/distinguishableCellsABplp.pdf}
+\end{center}
+
+\section*{Future directions}
+
+\begin{itemize}
+
+\item Compare predicted expression patterns with measured expression patterns.
+
+\item Expand the set of reporters used for sorting.
+
+\end{itemize}
+
+\section*{Acknowledgements}
+
+\begin{itemize}
+
+\item Travis Walton, for FACS sorting and library preparation
+
+\item the sequencing core, for sequencing
+
+\end{itemize}
+
+\bibliographystyle{apalike}
+\bibliography{../../cites}
+
+\end{multicols}
+\end{document}
+
