@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 # Looks for motifs upstream of genes in clusters.
+# (Actually, currently just writes out .fa files of
+# sequence upstream of genes.)
 
 use Bio::DB::Fasta;
 
@@ -11,7 +13,8 @@ my $fasta = Bio::DB::Fasta->new(
 
 # the upstream region for each gene
 my $upstream_region_bed_file =
-  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_1kb.bed";
+#  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_1kb.bed";
+  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed";
 
 # background (for now, the entire genome)
 my $bg_markov_model = "~/gcb/git/tf/motif/Ce_WS220.order1markov.txt";
@@ -19,7 +22,12 @@ my $bg_markov_model = "~/gcb/git/tf/motif/Ce_WS220.order1markov.txt";
 # path to MEME binaries
 my $meme_path = "/home/jburdick/meme/";
 
-write_cluster_gene_fa("hierarchical/hier.50clusters");
+# name of output directory
+my $output_name = "5kb.nogenes";
+
+foreach my $a (qw/hier.50clusters hier.100clusters hier.200clusters hier.ts.50clusters hier.ts.100clusters hier.ts.200clusters/) {
+  write_cluster_gene_fa("hierarchical/$a", "hierarchical/$a/$output_name/");
+}
 
 # Reads in the clustering, as a hash.
 sub get_clustering {
@@ -86,8 +94,8 @@ sub write_cluster_upstream_regions {
 # Side effects: creates a directory in that directory, called "meme",
 #   containing result of running meme on genes in each cluster.
 sub write_cluster_gene_fa {
-  my($dir) = @_;
-  my $output_dir = "$dir/upstreamFa/";
+  my($dir, $output_dir) = @_;
+
   system("mkdir -p $output_dir");
 
   my %clustering = get_clustering("$dir/clusters.tsv");
