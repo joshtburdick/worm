@@ -16,14 +16,8 @@ my $upstream_region_bed_file =
 #  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_1kb.bed";
   "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed";
 
-# background (for now, the entire genome)
-my $bg_markov_model = "~/gcb/git/tf/motif/Ce_WS220.order1markov.txt";
-
-# path to MEME binaries
-my $meme_path = "/home/jburdick/meme/";
-
 # name of output directory
-my $output_name = "5kb.nogenes";
+my $output_name = "5kb.nogenes.conserved";
 
 foreach my $a (qw/hier.50clusters hier.100clusters hier.200clusters hier.ts.50clusters hier.ts.100clusters hier.ts.200clusters/) {
   write_cluster_gene_fa("hierarchical/$a", "hierarchical/$a/$output_name/");
