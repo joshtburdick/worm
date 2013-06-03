@@ -54,9 +54,10 @@ fraction.barplot = function() {
   mp = barplot(x.f.pes1,
     col=hsv(c(0,0.1,1/3,0.69), 1,1), width=0.8,
     ylim=c(0,5), xlab="", xaxt="n",
-    yaxt="n", ylab="", main="expression from RNA-seq")
+    yaxt="n", ylab="", main="expression from RNA-seq", cex.main=1.3)
   axis(1, at=mp, tick=FALSE,
-    labels=c("alr-1", "nhr-171", "tlp-1", "lin-39"))
+    labels = c(1:4), cex.axis=1.3)
+#    labels=c("alr-1", "nhr-171", "tlp-1", "lin-39"))
 }
 
 # Plots an image.

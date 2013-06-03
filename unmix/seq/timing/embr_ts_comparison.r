@@ -48,7 +48,6 @@ colnames(r.deconvolve) = c("t.000", "t.060", "t.120", "t.150", "t.180",
 
 rownames(r.deconvolve) =
   mart.convert(wb.gene, "transcript", "public_name")(rownames(r.deconvolve))
-q
 g = intersect(rownames(embryo.timeseries), rownames(r.tophat))
 
 

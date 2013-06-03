@@ -13,9 +13,9 @@ norm.var = function(n) {
 # Converts from mean and variance to canonical parameters.
 mean.and.variance.to.canonical = function(a) {
   r = cbind(e1 = a[,"m"] / a[,"v"], e2 = -0.5 / a[,"v"])
-  # deal with special case when m = v = 0.
-  r[ (a[,"m"]==0 & a[,"v"]==0), "e1" ] = 0
-  r[ (a[,"m"]==0 & a[,"v"]==0), "e2" ] = -Inf
+  # ??? deal with special case when m = v = 0.
+#  r[ (a[,"m"]==0 & a[,"v"]==0), "e1" ] = 0
+#  r[ (a[,"m"]==0 & a[,"v"]==0), "e2" ] = -Inf
   r
 }
 
@@ -33,6 +33,15 @@ canonical.to.mean.and.precision = function(a) {
   p = -0.5 * a[,"e2"]
   cbind(m = a[,"e1"] / p, p = p)
 }
+
+# Alternate (shorter) names for some of the above.
+normal.mv2s = mean.and.variance.to.canonical
+normal.s2mv = canonical.to.mean.and.variance
+
+
+
+
+
 
 # Log-evidence contribution for a normal variable.
 # again, the question arises about whether "n" is needed...

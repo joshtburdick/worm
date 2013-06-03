@@ -20,6 +20,7 @@ my $upstream_region_bed_file =
 my $output_name = "5kb.nogenes.conserved";
 
 foreach my $a (qw/hier.50clusters hier.100clusters hier.200clusters hier.ts.50clusters hier.ts.100clusters hier.ts.200clusters/) {
+  print "[writing .fa for clustering $a]\n";
   write_cluster_gene_fa("hierarchical/$a", "hierarchical/$a/$output_name/");
 }
 
@@ -49,7 +50,8 @@ sub write_cluster_upstream_regions {
   my %clustering = %$clustering_ref;
 
   open IN, "<$upstream_region_bed_file" || die;
-  open OUT, ">$fa_file" || die;
+  open OUT, "| /home/jburdick/gcb/git/tf/motif/get_upstream_conserved.pl > $fa_file" || die;
+#  open OUT, ">$fa_file" || die;
 
   while (<IN>) {
     chomp;
@@ -62,16 +64,24 @@ sub write_cluster_upstream_regions {
 
     $chr =~ s/chr//;
 
-    print OUT ">$name\n";
-    if ($strand eq "+") {
-      print OUT $fasta->seq($chr, $a => $b) . "\n";
+    # force region to be >= 500 bp
+    # (although conservation may mean less sequence is printed)
+    my $length = $b - $a;
+    if ($length < 500) {
+      if ($strand eq "+") {
+        $a = $b - 500;
+        if ($a < 1) {
+          $a = 1;
+        }
+      }
+      if ($strand eq "-") {
+        $b = $a + 500;
+      }
     }
-    elsif ($strand eq "-") {
-      print OUT $fasta->seq($chr, $b => $a) . "\n";
-    }
-    else {
-      die "unknown strand $strand\n";
-    }
+
+    # print this region to the filter (which will write the DNA)
+    print OUT join "\t", ($chr, $a, $b, $name, $score, $strand);
+    print OUT "\n";
   }
 
   close IN;

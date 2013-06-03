@@ -2,6 +2,7 @@
 
 load("../data/tree_utils.Rdata")
 source("sim.data/sim.expr.r")
+source("sim.data/sim.expr.gamma.r")
 
 # definitions of which lineages are symmetric (from Sulston)
 sym.lineages = read.csv("../data/symmetric.lineages.csv", as.is=TRUE)
@@ -38,4 +39,8 @@ set.seed(42)
 sim.expr.sym = sim.expr(cell.pairs.on)
 
 save(sim.expr.sym, file="sim.data/sim.expr.sym.Rdata")
+
+# gamma-distributed version of this
+sim.expr.sym.gamma = sim.expr.gamma(cell.pairs.on)
+save(sim.expr.sym.gamma, file="sim.data/sim.expr.sym.gamma.Rdata")
 

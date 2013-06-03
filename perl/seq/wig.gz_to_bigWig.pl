@@ -6,16 +6,24 @@ use strict;
 # input and output directories
 # my $wig_gz_path = "/home/jburdick/data/modencode/ftp/data.modencode.org/C.elegans";
 # my $bigwig_path = "/home/jburdick/data/modencode/bigWig/C.elegans";
-my $wig_gz_path = "/murrlab/jburdick/src/tf/meme/";
-my $bigwig_path = "/murrlab/seq/igv/motif/";
+
+# my $wig_gz_path = "/home/jburdick/data/tf/";
+# my $bigwig_path = "/murrlab/seq/igv/motif/";
+
+my $wig_gz_path = $ARGV[0];
+my $bigwig_path = $ARGV[1];
+
+die if not defined $wig_gz_path;
+die if not defined $bigwig_path;
 
 # directory to convert, relative to the above
-my $data_path = "meme/";
+# deprecated
+# my $data_path = "meme2/";
 
 # needed for bedGraphToBigWig, obtainable using, e.g., "samtools faidx"
 my $chromosome_sizes_file = "/murrlab/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.sizes";
 
-import_dir("$wig_gz_path/$data_path", "$bigwig_path/$data_path");
+import_dir("$wig_gz_path/", "$bigwig_path/");
 
 # Writes out a file, just keeping the maximum score for
 # each location.

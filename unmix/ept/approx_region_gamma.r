@@ -29,6 +29,7 @@ prior = prior / 1
   # the approximating terms
   term = array(0, dim=c(2, ncol(A), nrow(A)),
     dimnames = list(c("e1", "e2"), colnames(A), rownames(A)))
+  # initialize with mean = 1, variance = 1
   term["e1",,] = 0
   term["e2",,] = -1
 
@@ -40,23 +41,82 @@ prior = prior / 1
 
     # sum of messages from all other terms
     q1 = - sweep(term, c(1,2), q, "-")
-# print(gamma.n2mv(m.to))
+# print(gamma.n2mv(q1))
 
     # messages from each factor, conditional on constraint
     q.new = gamma.conditional.approx(q1, A, b)
 
     # difference between those messages, and current posterior
-#    change = sweep(m, c(1,2), q, "-")
+    change = sweep(q.new, c(1,2), q, "-")
+#    change = q1 - q.new
 
     # update messages from each factor (possibly damped)
-#    term = term + 1 * change
-    term = q.new - q1;
+    term = term + 1 * change
 
     # update posterior, as sum of messages
     q = prior + apply(term, c(1,2), sum)
 
     # FIXME check for convergence
 
+  }
+
+  list(x = q, term = term)
+}
+
+# Converts from mean and variance to moments, and back.
+mv2m = function(x) {
+  r = x
+  dimnames(r)[[1]] = c("x1", "x2")
+  r["x2",,] = x["v",,] + x["m",,]^2
+  r
+}
+m2mv = function(x) {
+  r = x
+  dimnames(r)[[1]] = c("m", "v")
+  r["v",,] = x["x2",,] - x["x1",,]^2
+  r
+}
+
+# Another attempt at the same thing.
+approx.region.gamma.2 = function(A, b, max.iters=100) {
+
+  # the prior (initially something non-flat.)
+  x1 = rbind(m = rep(1, ncol(A)), v = rep(1, ncol(A)))
+  prior = gamma.mv2n(x1)
+  colnames(prior) = colnames(A)
+
+  # the approximating terms
+  term = array(0, dim=c(2, ncol(A), nrow(A)),
+    dimnames = list(c("e1", "e2"), colnames(A), rownames(A)))
+  # initialize with mean = 1, variance = 1
+  term["e1",,] = 0
+  term["e2",,] = -1
+
+  # posterior is the sum of terms
+  # FIXME start with truncated pseudoinverse?
+  q = prior + apply(term, c(1,2), sum)
+
+  for (iter in 1:max.iters) {
+
+    # sum of messages from all other terms
+    q1 = - sweep(term, c(1,2), q, "-")
+# print(gamma.n2mv(q1))
+
+    # messages from each factor, conditional on constraint
+    q.new = gamma.conditional.approx(q1, A, b)
+
+    # difference between those messages, and current posterior
+    change = sweep(q.new, c(1,2), q, "-")
+#    change = q1 - q.new
+
+    # update messages from each factor (possibly damped)
+    term = term + 1 * change
+
+    # update posterior, as sum of messages
+    q = prior + apply(term, c(1,2), sum)
+
+    # FIXME check for convergence
+print(q)
   }
 
   list(x = q, term = term)
@@ -78,6 +138,6 @@ A2 = rbind(
   c(0,0,0,1,1,1))
 rownames(A) = c("ceh-6", "hlh-1")
 colnames(A) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
-r2 = approx.region.gamma(A2, c(1,1), max.iters=3)
+r2 = approx.region.gamma.2(A2, c(1,1), max.iters=100)
 }
 

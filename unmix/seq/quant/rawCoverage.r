@@ -19,6 +19,7 @@ compute.coverage = function(data.dir, output.file) {
     sep="\t", quote=FALSE, row.names=TRUE, col.names=NA)
 }
 
+if (FALSE) {
 compute.coverage("20110922/", "rawCoverage_20110922.tsv.gz")
 compute.coverage("20110922_as/", "rawCoverage_20110922_as.tsv.gz")
 
@@ -27,4 +28,7 @@ compute.coverage("Murray_050912_as/", "rawCoverage_Murray_050912_as.tsv.gz")
 
 compute.coverage("Murray_52831_092812/", "rawCoverage_Murray_52831_092812.tsv.gz")
 compute.coverage("Murray_52831_092812_as/", "rawCoverage_Murray_52831_092812_as.tsv.gz")
+}
+
+compute.coverage("embryo_ts/", "rawCoverage_embryo_ts.tsv.gz")
 

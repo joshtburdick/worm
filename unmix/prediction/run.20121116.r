@@ -16,7 +16,7 @@ rna.seq = {
 # the sort matrix, somewhat processed
 sortMatrix = as.matrix(read.table("git/unmix/image/sort/sortMatrix.tsv",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE))
-m = {
+m.orig = {
 
   # add in negative fractions
   neg = 1 - sortMatrix
@@ -33,9 +33,6 @@ m = {
   # add in "all" fraction
   m = rbind(all=1, m)
 
-  # normalize
-  m = m / apply(m, 1, sum)
-
   m
 }
 
@@ -44,9 +41,12 @@ seqAndFractions = read.table("git/unmix/prediction/seqAndFractions.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
 # subset sort and expression matrices to those genes
-m = m[ seqAndFractions$fraction.name , ]
-rownames(m) = seqAndFractions$seq.experiment
+m.orig = m.orig[ seqAndFractions$fraction.name , ]
+rownames(m.orig) = seqAndFractions$seq.experiment
 rna.seq = rna.seq[ , seqAndFractions$seq.experiment ]
+
+# normalize
+m = m.orig / apply(m.orig, 1, sum)
 
 # select genes which are expressed at least 100 rpm
 # in some fraction (which admittedly is conservative)
@@ -54,8 +54,8 @@ max.expr = apply(rna.seq, 1, max)
 rna.seq = rna.seq[ max.expr >= 100 , ]
 
 
-# Does unmixing using EP.
-unmix.ep = function(m, x.f) {
+# Unmixes one gene using EP.
+unmix.ep.1 = function(m, x.f) {
 
   # for now, normalizing this
   scale = max(x.f)
@@ -75,14 +75,44 @@ unmix.ep = function(m, x.f) {
     reporters = rownames(m), x.f = x.f)
 }
 
+# Unmixes a set of genes using an unmixing function.
+unmix.all = function(m, x.f, output.file,
+    unmix.f = unmix.ep.1, write.interval = 100) {
+  x = matrix(nrow=nrow(x.f), ncol=ncol(m))
+  rownames(x) = rownames(x.f)
+  colnames(x) = colnames(m)
 
+  unmix.result = list(mean = x, t.m = x, t.v = x,
+    num.iters = rep(NA, nrow(x.f)), i = NA)
 
-# foo = unmix.ep(m, rna.seq[2,])
-# plot(foo$x)
+  for(i in 1:nrow(x.f)) {
+    try({
+      r = unmix.f(m, x.f[i,])
+      unmix.result$mean[i,] = r$x
+      unmix.result$t.m[i,] = r$t[,"m"]
+      unmix.result$t.v[i,] = r$t[,"v"]
+      unmix.result$num.iters[i] = nrow(r$update.stats)
+    })
 
+    if (i %% write.interval == 0) {
+      unmix.result$i = i
+      cat("**** i =", i, "\n")
+      save(unmix.result, file=output.file)
+    }
+  }
+
+  save(unmix.result, file=output.file)
+}
+
+# Deprecated.
 plot.it = function(g) {
   r = unmix.ep(m, rna.seq[g,] / 1e6)
   plot(r$x[lin.node.names], main=g, type="h")
 }
 
+
+if (FALSE) {
+  system.time(unmix.all(m, rna.seq, "git/unmix/prediction/unmix.result.20121118.Rdata", write.interval=5))
+
+}
 

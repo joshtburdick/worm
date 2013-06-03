@@ -5,18 +5,6 @@ library("seqLogo")
 
 source("git/plot/seqLogo.r")
 
-# Converts a list of motifs to a matrix, padded with NAs.
-# Args:
-#   m - a list of motifs (as returned by, e.g., readPWMfile),
-#     each entry of which is a 4-by-w matrix (where w is
-#     the motif length), with rownames A, C, G, and T.
-# Returns: a 4-by-maxWidth-by-n array, in which
-#   maxWidth is the width of the widest motif, and
-#   n is the number of sequences.
-# (Not yet implemented.)
-
-
-
 # hack to read a MEME format file directly.
 read.meme.file = function(f) {
   # XXX should use a proper temp file, and, like, check for errors
@@ -25,20 +13,6 @@ read.meme.file = function(f) {
 #  system(paste("/home/jburdick/gcb/git/perl/motif/meme2TRANSFAC.pl /var/tmp/meme.txt /var/tmp/meme.transfac.txt")
   system(paste("/home/jburdick/gcb/git/perl/motif/meme2TRANSFAC.pl ", f, " /var/tmp/meme.transfac.txt"))
   r = readPWMfile("/var/tmp/meme.transfac.txt")
-  r
-}
-
-# ??? write a function to read MEME-format files directly?
-# a = readPWMfile("git/perl/motif/hier.ts.200clusters.TRANSFAC.txt")
-
-a = read.meme.file("git/tf/motif/meme_file/hier.ts.200clusters.meme")
-jolma = read.meme.file("data/tf/meme/motif_databases/jolma2013.meme")
-
-# Selects some things from a list.
-# ??? is there a function which would do this?
-list.select = function(a, x) {
-  r = lapply(x, function(x) a[[x]])
-  names(r) = x
   r
 }
 
@@ -90,17 +64,6 @@ cat(i, " ")
   dev.off()
 }
 
-# quick test
-# seqLogoSmall(a[[1]])
-
-
-a1 = cluster.similar.motifs(a, 0.1)
-m = c(jolma, a1)
-plot.motif.clusters(m, 40, "git/tf/motif/jolmaClustered.pdf")
-
-
-
-
 
 if (FALSE) {
 
@@ -129,4 +92,21 @@ draw.clusters.logo = function() {
 #  plot(a1)
    popViewport(1)
 }
+
+
+# read in motif files
+de.novo.motifs = read.meme.file("git/tf/motif/meme_file/hier.ts.200clusters.meme")
+jolma = read.meme.file("data/tf/meme/motif_databases/jolma2013.meme")
+
+# reduce de novo motifs to a representative set
+de.novo.motifs = cluster.similar.motifs(de.novo.motifs, 0.1)
+m = c(jolma, a1)
+
+dists = motifDistances(m)
+motif.clusters = hclust(dists)
+
+save(de.novo.motifs, jolma, motif.clusters, file="git/tf/motif/clusterUsingMotIV.Rdata")
+
+# plot.motif.clusters(m, 40, "git/tf/motif/jolmaClustered.pdf")
+
 

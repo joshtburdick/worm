@@ -178,7 +178,8 @@ plot.segments = function(r, main, root="P0",
     col=r$col, xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
 
   # add labels for a few branches in the tree
-  int.n.1 = int.n    # [ int.n %in% c(lineage.to.list(lin1)) ] # FIXME add this
+  # int.n.1 = int.n    # [ int.n %in% c(lineage.to.list(lin1)) ] # FIXME add this
+  int.n.1 = lin.12.cell
 
   # XXX hacks
   if (root == "ABplp") {
@@ -188,7 +189,7 @@ plot.segments = function(r, main, root="P0",
     int.n.1 = c(int.n.1, grep("^C.?.?.?$", lin.node.names, value=TRUE))
   }
   text(cell.to.x[int.n.1], time.1[int.n.1]-7, int.n.1,
-    adj=0, cex=0.7, srt=90)
+    adj=c(0.5, -0.1), cex=1)  # was adj=0, cex=0.7, srt=90
 
 #  axis(1, at=cell.to.column[axis.nodes], labels=axis.nodes, cex=0.5, las=3)
 

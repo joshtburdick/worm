@@ -4,15 +4,15 @@
 
 use strict;
 
-#write_motif_counts("/murrlab/seq/igv/motif/meme/",
-#  "regions/WS220_5000_bp_upstream.bed",
-#  "./motifs_5kbUpstream.tsv", 3);
+write_motif_counts("/murrlab/seq/igv/motif/meme/",
+  "upstreamRegionsWS220_5kb_nogenes.bed",
+  "./motifs_5kb_nogenes.tsv", 3);
 
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
 
 # count_motifs_chip("/murrlab/seq/igv/chip.TF/", "TF");
-count_motifs_chip("/murrlab/seq/igv/histone.chip/", "histone.chip");
+# count_motifs_chip("/murrlab/seq/igv/histone.chip/", "histone.chip");
 
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
 # count_motifs("/murrlab/seq/igv/histone.chip/Late-Embryos/", "histone_LE_1kbUp.tsv", 5);

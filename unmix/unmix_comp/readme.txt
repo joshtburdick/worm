@@ -36,5 +36,5 @@ being benchmarked there. However, it didn't work for all datasets,
 so we used the "type=2" option.
 
 Josh Burdick
-20130114
+20130118
 

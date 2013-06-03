@@ -11,8 +11,11 @@ public class ImageViewer {
 	public static void main(String[] args) {
 
 		try {
-			File imagePath = new File(args[0]);
+			File imagePath = new File(
+					"/home/jburdick/gcb/data/image/tifs/red/");
 			ImageSet is = new ImageSet(imagePath);
+			
+			
 		}
 		catch (IOException e) {
 			e.printStackTrace();

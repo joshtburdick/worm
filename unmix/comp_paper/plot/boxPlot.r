@@ -5,19 +5,20 @@ source("R/unmix/eval.r")
 
 source("git/plot/label_panel.r")
 
-source("R/unmix/comp_paper/plot/load.unmixed.results.2.r")
+####### source("R/unmix/comp_paper/plot/load.unmixed.results.2.r")
+# source("git/unmix/comp_paper/load.unmixed.results.r")
 
-method.name = c("ep", "tp", "tpc", "pseudo")  # , "mf")
+method.name = c("ep", "tp", "tpc", "pseudo", "ep2")   # , "ep2", "mf", "nnls")
 method.label = c("expectation propagation",
   "constrained pseudoinverse",
   "constrained pseudoinverse with correlation",
-  "pseudoinverse")
-
-# method.label = c("EP", "CPseudo", "CPseudoCorr", "Pseudo")
-
+  "pseudoinverse",
+  "EP with damping")   # ,
+#  "multiplied fractions", "nnls")
 
 #  ,"average fold-change")
-method.color = c("darkgrey", "red", "purple", "blue")   # , "green")
+method.color = c("darkgrey", "red", "purple", "blue",
+  "lightgrey")   #, "orange", "green", "#a0b0c0")
 # method.color = c("#80808080", "#80000080", "#00800080", "#00008080")
 
 # the "actual" answers
@@ -52,7 +53,7 @@ plot.correlation.accuracy = function() {
 
   plot.it = function(data.set, data.set.name) {
     plot(0,0, xlim=xlim, ylim=ylim, type="n",
-      main=data.set.name, xlab="Number of reporters", ylab="Correlation",
+      main=data.set.name, xlab="Number of fractions", ylab="Correlation",
       cex.main=1.6, cex.axis=1.3, cex.lab=1.4, xaxt="n")
     axis(1, at=0.4+(1:length(num.reporters)), cex.axis=1.3, labels=num.reporters)
     if (data.set == "expr.cell") {
@@ -116,7 +117,7 @@ plot.roc.accuracy = function() {
 
   plot.it = function(data.set, data.set.name) {
     plot(0,0, xlim=xlim, ylim=ylim, type="n",
-      main=data.set.name, xlab="Number of reporters", ylab="Area under curve",
+      main=data.set.name, xlab="Number of fractions", ylab="Area under curve",
       cex.main=1.6, cex.axis=1.3, cex.lab=1.4, xaxt="n")
     axis(1, at=0.4+(1:length(num.reporters)), cex.axis=1.3, labels=num.reporters)
     if (data.set == "expr.cell") {
@@ -169,7 +170,7 @@ plot.it = function() {
 
   mat = matrix(1:12, nrow=3, byrow=TRUE)
   mat[3,] = c(9,9,9,10)
-  layout(mat, heights=c(1,1,0.52))
+  layout(mat, heights=c(1,1,0.6))  # was 0.52
 
   auc.accuracy = plot.roc.accuracy()
   save(auc.accuracy, file="git/unmix/comp_paper/auc.accuracy.Rdata")
@@ -182,6 +183,13 @@ plot.it = function() {
 
   legend("topleft", legend=method.label, col=method.color,
     lwd=10, seg.len=0.3, cex=1.2, y.intersp=2.5)
+
+  # XXX
+  plot.new()
+  mtext(paste("* = cases in which one method\n",
+    "performed significantly\n",
+    "better than the others,\n",
+    "using 30 reporters\n"), cex=0.9, line=-10)
 
   dev.off()
 

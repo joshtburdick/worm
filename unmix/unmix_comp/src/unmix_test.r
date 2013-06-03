@@ -18,8 +18,7 @@ m.cell = rbind(all=1, expression.on.off(expr.cell))
 reporters = read.table("reporters.tsv",
   row.names=1, header=TRUE, as.is=TRUE)
 
-# num.reporters = c(10,20,30,50,75,100)
-num.reporters = c(10)
+num.reporters = c(10,20,30,50,75,100)
 
 # Runs an unmixing function with different numbers of reporters.
 # When predicting a given gene, avoids using it as a reporter.
@@ -74,7 +73,6 @@ run.unmix = function(unmix.f, output.dir) {
         file=paste(output.dir, name, ".", nr, ".Rdata", sep=""))
     }
   }
-
 
   run.1(expr.cell, "expr.cell")
   run.1(sim.expr.cell, "sim.expr.cell")

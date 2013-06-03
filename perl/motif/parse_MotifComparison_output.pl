@@ -3,6 +3,9 @@
 
 use strict;
 
+# scores with a cutoff above this won't be recorded
+my $score_cutoff = 4;
+
 $_ = <>;
 die if not /^#INCLUSive GFF File/;
 
@@ -40,9 +43,11 @@ while (<>) {
   my $offset1 = $2;
   my $offset2 = $3;
 
-  print join "\t", ($query_name, $query_consensus,
-    $match_name, $match_consensus, $score, $offset1, $offset2);
-  print "\n";
+  if ($score <= $score_cutoff) {
+    print join "\t", ($query_name, $query_consensus,
+      $match_name, $match_consensus, $score, $offset1, $offset2);
+    print "\n";
+  }
 }
 
 $_ = <>;

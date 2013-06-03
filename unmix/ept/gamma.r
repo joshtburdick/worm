@@ -121,7 +121,7 @@ gamma.conditional.approx = function(x, A, b) {
   # determine how much to scale each
   s1 = b / A
   s1[A==0] = 0
- print(s1)
+# print(s1)
 
   # scale these
   xs = x
@@ -151,6 +151,26 @@ gamma.conditional.approx = function(x, A, b) {
   xc
 }
 
+# Approximates marginals of gamma-distributed variables,
+# given constraints on their expected sums.
+# Args:
+#   x - natural parameters of gamma distributions
+#   A, b - these give the exact constraint that A * x = b
+# Returns: x, conditional on the constraint
+gamma.conditional.approx = function(x, A, b) {
+
+  # convert to mean and variance?
+  x.mv = gamma.n2mv(x)
+
+
+  # compute nullspace of A
+  Z = Null(A)
+
+
+
+
+
+}
 
 # The density function for the gamma, conditional on vars summing to 1.
 # XXX not sure this is right.

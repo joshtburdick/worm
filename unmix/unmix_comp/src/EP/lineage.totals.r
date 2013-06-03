@@ -70,10 +70,16 @@ get.lineage.totals = function(file, original.scale) {
 }
 
 # get lineage totals for one particular case
-lineage.totals = get.lineage.totals("EP/expr.cell.30.Rdata", TRUE)
-save(lineage.totals, file="EP/lineage.totals.Rdata")
+if (FALSE) {
+  lineage.totals = get.lineage.totals("EP/expr.cell.30.Rdata", TRUE)
+  save(lineage.totals, file="EP/lineage.totals.Rdata")
+  lineage.totals.unscaled = get.lineage.totals("EP/expr.cell.30.Rdata", FALSE)
+  save(lineage.totals.unscaled, file="EP/lineage.totals.unscaled.Rdata")
+}
 
-lineage.totals.unscaled = get.lineage.totals("EP/expr.cell.30.Rdata", FALSE)
-save(lineage.totals.unscaled, file="EP/lineage.totals.unscaled.Rdata")
+lineage.totals = get.lineage.totals("EP.2/expr.cell.30.Rdata", TRUE)
+save(lineage.totals, file="EP.2/lineage.totals.Rdata")
+lineage.totals.unscaled = get.lineage.totals("EP.2/expr.cell.30.Rdata", FALSE)
+save(lineage.totals.unscaled, file="EP.2/lineage.totals.unscaled.Rdata")
 
 

@@ -22,9 +22,13 @@ pwm2ic<-function(pwm) {
 # Computes the paths for a letter ("normalized"; callers can
 # scale points as needed.)
 # Modified from seqLogo functions.
-# jtb: for C and G, cranked down the number of line segments,
-# This gives slightly lower resolution, but a far smaller file.
 create.acgt.paths = function() {
+
+# Number of arc-segments for C and G.
+# jtb: cranked down the number of line segments,
+# This gives slightly lower resolution, but a far smaller file.
+num.arc.segments = 5
+
 
 letterA <- function(x.pos,y.pos,ht,wt,id=NULL){
   
@@ -71,8 +75,8 @@ letterT <- function(x.pos,y.pos,ht,wt,id=NULL){
 
 ## C
 letterC <- function(x.pos,y.pos,ht,wt,id=NULL){
-  angle1 <- seq(0.3+pi/2,pi,length=3)
-  angle2 <- seq(pi,1.5*pi,length=3)
+  angle1 <- seq(0.3+pi/2,pi,length=num.arc.segments)
+  angle2 <- seq(pi,1.5*pi,length=num.arc.segments)
   x.l1 <- 0.5 + 0.5*sin(angle1)
   y.l1 <- 0.5 + 0.5*cos(angle1)
   x.l2 <- 0.5 + 0.5*sin(angle2)
@@ -119,8 +123,8 @@ letterC <- function(x.pos,y.pos,ht,wt,id=NULL){
 
 ## G
 letterG <- function(x.pos,y.pos,ht,wt,id=NULL){
-  angle1 <- seq(0.3+pi/2,pi,length=3)
-  angle2 <- seq(pi,1.5*pi,length=3)
+  angle1 <- seq(0.3+pi/2,pi,length=num.arc.segments)
+  angle2 <- seq(pi,1.5*pi,length=num.arc.segments)
   x.l1 <- 0.5 + 0.5*sin(angle1)
   y.l1 <- 0.5 + 0.5*cos(angle1)
   x.l2 <- 0.5 + 0.5*sin(angle2)
@@ -191,8 +195,8 @@ addLetter <- function(letters,which,x.pos,y.pos,ht,wt){
   
   # get appropriate letter, and shift its location
   letter = letter.paths[[which]]
-  letter$x = ht * letter$x + x.pos
-  letter$y = wt * letter$y + y.pos
+  letter$x = wt * letter$x + x.pos
+  letter$y = ht * letter$y + y.pos
 
   letters$x <- c(letters$x,letter$x)
   letters$y <- c(letters$y,letter$y)

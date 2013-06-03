@@ -198,10 +198,11 @@ public class AceMenuBar extends JMenuBar implements ActionListener, ItemListener
         iSave = new JMenuItem(SAVE);
         iSave.addActionListener(this);
         menu.add(iSave);
+        /* jtb: omitting this
         iSaveConfig = new JMenuItem(SAVECONFIG);
         iSaveConfig.addActionListener(this);
         menu.add(iSaveConfig);
-
+		*/
 
         menu.addSeparator();
         menu.add(new JMenuItem("    "));

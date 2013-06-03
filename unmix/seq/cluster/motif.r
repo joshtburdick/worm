@@ -6,6 +6,9 @@ library(rpart)   # deprecated
 #  gzfile("git/tf/motif/motifCount/motifs_1kbUpstream.tsv.gz"),
 #  sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
 
+# ??? not sure this is the right measure
+stderr <- function(x) sqrt(var(x)/length(x))
+
 if (TRUE) {
 
   source("git/tf/motif/motifCount/motif.counts.r")
@@ -88,8 +91,58 @@ t.test.many = function(a, b) {
     df = as.integer(r[,"df"]))
 }
 
+# Same as above, but also graphs the distributions.
+# Args:
+#   a, b - two matrices with the same number of columns
+# Returns: data frame with columns:
+#   name - which column was being tested
+#   t, df, p - results from two-sided t-test
+#   output.dir, base.name - these define the output file
+t.test.many.graphing = function(a, b, output.dir, base.name) {
+  system(paste("mkdir -p", output.dir))
+  r = NULL
+
+  for(j in colnames(a)) {   # XXX testing
+    pos = a[,j]
+    neg = b[,j]
+    m = t.test(pos, neg)
+
+    # graphing
+    # XXX going by nominal p-value
+    p = m[[3]]
+    if (p <= 1e-5) {
+      base.name = gsub(" ", "_", gsub("/", "_", base.name))
+      output.file = paste(output.dir, "/", base.name, "_", j, ".pdf", sep="")
+      pdf(output.file, width=2.5, height=4)
+#      par(mfrow=c(1,2))
+      pos.mean = mean(pos)
+      neg.mean = mean(neg)
+      pos.se = stderr(pos)        # 1.96 * sd(pos)
+      neg.se = stderr(neg)        # 1.96 * sd(neg)
+      ylim = c(min(0, pos.mean - pos.se, neg.mean - neg.se) - 0.1,
+        max(0, pos.mean + pos.se, neg.mean + neg.se) + 0.1)
+      mp = barplot(c(neg.mean, pos.mean),
+        col=c("#4040ff", "#ff4040"), space=0.5, ylim=ylim)
+      arrows(mp[1], neg.mean-neg.se, mp[1], neg.mean+neg.se,
+        code=3, angle=90, lwd=2, length=0.13)
+      arrows(mp[2], pos.mean-pos.se, mp[2], pos.mean+pos.se,
+        code=3, angle=90, lwd=2, length=0.13)
+      dev.off()
+    }
+
+    r = rbind(r,
+      c(name=j, m[[1]], p=m[[3]], m[[2]]))
+  }
+
+  # XXX type conversion hack
+  data.frame(name = r[,"name"],
+    t = as.numeric(r[,"t"]),
+    p = as.numeric(r[,"p"]),
+    df = as.integer(r[,"df"]))
+}
+
 # Tests for motifs enriched in particular sorted fractions.
-enriched.in.fraction.1 = function(log.enrich, motif) {
+enriched.in.fraction.1 = function(log.enrich, motif, output.dir) {
   cutoff = log2(3)
 
   g1 = intersect(rownames(log.enrich), rownames(motif))
@@ -98,8 +151,8 @@ enriched.in.fraction.1 = function(log.enrich, motif) {
   a = NULL
   for(s in colnames(log.enrich)) {
     cat(s, "")
-    r = t.test.many(motif[ log.enrich[,s] >= cutoff , ],
-      motif[ log.enrich[,s] <= -cutoff , ])
+    r = t.test.many.graphing(motif[ log.enrich[,s] >= cutoff , ],
+      motif[ log.enrich[,s] <= -cutoff , ], output.dir, s)
     r$p.bh = p.adjust(r$p, method="hochberg")
     r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
     r = r[ order(r$p.bh) , ]
@@ -119,10 +172,12 @@ enriched.in.fraction = function() {
   r = as.matrix(read.table("git/unmix/seq/cluster/readsNormalized.tsv",
     header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
-  write.table(enriched.in.fraction.1(r[,c(1:25)], motif),
+  write.table(enriched.in.fraction.1(r[,c(1:25)], motif,
+    paste(output.path, "/motif_5kb", sep="")),
     file=paste(output.path, "/motif_5kb.tsv", sep=""),
     sep="\t", row.names=TRUE, col.names=NA)
-  write.table(enriched.in.fraction.1(r[,c(1:25)], chip),
+  write.table(enriched.in.fraction.1(r[,c(1:25)], chip,
+    paste(output.path, "/chip_5kb", sep="")),
     file=paste(output.path, "/chip_5kb.tsv", sep=""),
     sep="\t", row.names=TRUE, col.names=NA)
 }
@@ -195,6 +250,6 @@ compute.interaction.stats = function(f, bh.cutoff = 0.5) {
 # a = compute.interaction.stats("git/unmix/seq/cluster/hierarchical/hier/motifEnrichment_5kb.tsv")
 # print(a)
 
-# enriched.in.fraction()
+enriched.in.fraction()
 
 

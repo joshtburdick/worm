@@ -47,6 +47,7 @@ write.reads.per.million = function(coverage.file, output.file) {
 
 system(paste("mkdir -p", output.path))
 
+if (FALSE) {
 write.reads.per.million(
   "rawCoverage_20110922.tsv.gz",
   "readsPerMillion_20110922.tsv")
@@ -67,4 +68,10 @@ write.reads.per.million(
 write.reads.per.million(
   "rawCoverage_Murray_52831_092812_as.tsv.gz",
   "readsPerMillion_092812_as.tsv")
+}
+
+write.reads.per.million(
+  "rawCoverage_embryo_ts.tsv.gz",
+  "readsPerMillion_embryo_ts.tsv")
+
 

@@ -60,11 +60,30 @@ sub lift_over {
     " ~/gcb/data/UCSC/ce4/ce4ToCe6.over.chain tmp.ce6.gff tmp.unMapped");
 }
 
+# Reads a mapping from gene IDs to human-readable names.
+sub get_gene_names {
+  my $gene_file = "/home/jburdick/data/seq/Caenorhabditis_elegans/Ensembl/WS220/Annotation/Genes/refGene.txt";
+  my %h = ();
+
+  open IN, "<$gene_file" || die;
+  while (<IN>) {
+    chomp;
+    my @a = split /\t/;
+    $h{ $a[1] } = $a[12];
+    $a
+
+  }
+
+  return %h;
+}
+
 # Gets just the minimal features from a GFF file.
 # This only includes features called "transcript",
 # "exon", and "CDS".
 sub get_minimal_gff {
   my($infile, $outfile) = @_;
+
+  my %id_to_name = get_gene_names();
 
 #  open IN, "gunzip -c $infile |" || die;
   open IN, "<$infile" || die;
@@ -89,11 +108,13 @@ sub get_minimal_gff {
   #print "\n";
       my $id = $ids[0];
 
-      my $gene_name = $a{"overlapping_wormbase_transcript"};
-      if (not defined $gene_name) {
-        $gene_name = $id;
+      my $gene_name = $id;
+      my $id1 = $id;
+      $id1 =~ s/\.T[0-9]+$//;
+      if (defined $id_to_name{$id1}) {
+        $gene_name = $id_to_name{$id1};
       }
-      $attr = "gene_id=$gene_name ; transcript_id=$id;";
+      $attr = "geneID=$gene_name ; transcript_id=$id;";
 
       print OUT (join "\t", ($chr, $source, $type, $start, $end,
         $score, $strand, $phase, $attr));

@@ -110,13 +110,13 @@ incorrect.m.regression = function() {
 
   r$log.auc = log(r$auc.incorrect.m)
   m.auc = lm(log.auc ~ fraction.diff, data=r)
-  predicted.auc = exp(predict.lm(m.auc, newdata=data.frame(fraction.diff = c(0, 0.05))))
+  predicted.auc = exp(predict.lm(m.auc, newdata=data.frame(fraction.diff = c(0, 0.01))))
   cat("AUC:\n")
   print(c(predicted.auc, (predicted.auc[1] - predicted.auc[2]) / predicted.auc[1]))
 
   r$log.cor = log(r$cor.incorrect.m)
   m.cor = lm(log.cor ~ fraction.diff, data=r)
-  predicted.cor = exp(predict.lm(m.cor, newdata=data.frame(fraction.diff = c(0, 0.05))))
+  predicted.cor = exp(predict.lm(m.cor, newdata=data.frame(fraction.diff = c(0, 0.01))))
   cat("correlation:\n")
   print(c(predicted.cor, (predicted.cor[1] - predicted.cor[2]) / predicted.cor[1]))
 }

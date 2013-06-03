@@ -126,56 +126,7 @@ write.table(tf.ortho, file="git/tf/ortholog.tsv",
   sep="\t", row.names=FALSE, col.names=TRUE)
 }
 
-# Writes orthologs based on Wormbase data.
-write.tf.ortho.wb = function() {
-
-wb.tf = getBM(
-  attributes = c("public_name", "sequence_name",             
-"homolog_species",                      
-"homolog_info_database",                 
-"homolog_info_accession",                   
-"homolog_blastp_rank",                
-"homolog_blastp_evalue"),
-  filters = c("sequence_name"),
-  values = wtf$sequence.name,
-  mart = wb.gene)
-wb.tf = wb.tf[ !is.na( wb.tf$homolog_blastp_evalue ) , ]
-wb.tf = wb.tf[ order(wb.tf$public_name, wb.tf$homolog_blastp_evalue) , ]
-wb.tf$homolog_gene = NA
-
-wb.tf$type = wtf[wb.tf$sequence_name,"DNA.binding.domain"]
-
-# tack on symbols
-i = wb.tf$homolog_species == "Homo sapiens" &
-  wb.tf$homolog_info_database == "ENSEMBL"
-wb.tf[ i , "homolog_gene" ] =
-  mart.convert(ens.hs, "ensembl_peptide_id", "hgnc_symbol")(
-    wb.tf[ i , "homolog_info_accession" ] )
-
-i = wb.tf$homolog_species == "Mus musculus" &
-  wb.tf$homolog_info_database == "SW"
-wb.tf[ i , "homolog_gene" ] =
-  mart.convert(ens.mm, "uniprot_swissprot_accession", "mgi_symbol")(
-    wb.tf[ i , "homolog_info_accession" ] )
-
-i = wb.tf$homolog_species == "Drosophila melanogaster" &
-  wb.tf$homolog_info_database == "FLYBASE"
-wb.tf[ i , "homolog_gene" ] =
-  mart.convert(ens.dm, "flybasecgid_gene", "flybasename_gene")(
-    wb.tf[ i , "homolog_info_accession" ] )
-
-
-wb.tf = wb.tf[ !is.na(wb.tf$homolog_gene) , ]
-
-wb.tf = check.for.motif(wb.tf)
-
-write.table(wb.tf, file="git/tf/wb.ortholog.tsv",
-  sep="\t", row.names=FALSE, col.names=TRUE)
-
-}
-
-
 # write.tf.ortho()
-write.tf.ortho.wb()
+# wb.tf = write.tf.ortho.wb()
 
 

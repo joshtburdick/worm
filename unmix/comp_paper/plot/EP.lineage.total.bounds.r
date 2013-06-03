@@ -4,8 +4,8 @@ cwd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
 load("../data/tree_utils.Rdata")
-load("EP/lineage.totals.Rdata")
-load("EP/lineage.totals.unscaled.Rdata")
+load("EP.2/lineage.totals.Rdata")
+load("EP.2/lineage.totals.unscaled.Rdata")
 setwd(cwd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
@@ -65,9 +65,17 @@ if(TRUE) {
 
   z[ z < -zmax ] = -zmax
   z[ z > zmax ] = zmax
-  hist(z, main=name, xlab="z", xlim=c(-zmax,zmax),
-    breaks=50, col="grey",
+
+cat("z: mean = ", mean(z, na.rm=TRUE),
+  "   sd = ", sd(as.vector(z), na.rm=TRUE),
+  "   proportion outliers = ", mean(abs(as.vector(z)) >= (zmax - 1e-2)), "\n")
+
+  hist(as.vector(z), main=name, xlab="z", xlim=c(-zmax,zmax),
+    breaks=c(-50:50)/10, col="grey",
     cex.axis = 2.1, cex.lab=2.8, cex.main=3)
+
+  legend("topleft", bty="n", cex=2.5,
+    paste("s.d. =", round(sd(as.vector(z)), 3)))
 }
 
 plot.it = function() {

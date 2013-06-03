@@ -6,10 +6,10 @@
 
 my $dir = "/home/jburdick/gcb/data/expression/lincRNA/";
 
-convert("$dir/ancRNAs_W3PSeq3_ce10.gtf",
-  "$dir/ancRNAs_cuff.gff");
-convert("$dir/lincRNAs_W3PSeq3_ce10.gtf",
-  "$dir/lincRNAs_cuff.gff");
+convert("$dir/ancRNAs_W3PSeq3_ce6.gtf",
+  "$dir/ancRNAs_cuff_ce6.gff");
+convert("$dir/lincRNAs_W3PSeq3_ce6.gtf",
+  "$dir/lincRNAs_cuff_ce6.gff");
 
 # XXX put this elsewhere?
 #system("cat /home/jburdick/data/modencode/mRNA/integratedTranscriptsMinimalWS220.gff3 " .

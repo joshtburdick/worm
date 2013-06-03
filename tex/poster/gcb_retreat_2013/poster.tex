@@ -1,5 +1,4 @@
 \documentclass[landscape,a0]{a0poster}
-
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{multicol}
@@ -7,11 +6,13 @@
 \usepackage{wrapfig}
 \setlength{\topmargin}{1in}
 \setlength{\oddsidemargin}{1in}
-\setlength{\textwidth}{43in}
-\setlength{\textheight}{31in}
+\setlength{\textwidth}{40in}
+\setlength{\textheight}{28in}   %% was 31
 \setlength{\columnsep}{1in}
 \floatplacement{figure}{H}
 \floatplacement{table}{H}
+
+\pagenumbering{gobble}
 
 \graphicspath{
 {/home/jburdick/gcb/work/svnroot/trunk/tex/image/}
@@ -22,7 +23,7 @@
 \begin{document}
 \thispagestyle{empty}
 
-\title{Genome-wide high-resolution gene expression profiling of the {\em C. elegans} embryo}
+\title{Tissue-specific gene expression and regulation in the {\em C. elegans} embryo}
 
 \author{Josh Burdick, {\tt jburdick@mail.med.upenn.edu} \\
 Murray lab, University of Pennsylvania}
@@ -50,27 +51,113 @@ Measuring expression of {\em pha-4} in individual cells.
 (c) A histone-GFP fusion protein (in yellow) allows
 determining which cells are expressing RFP (in red)
 under a {\em pha-4} promoter. (d) Locations of cells expressing {\em pha-4}.
-(From \cite{pmid18587405}.)}
+(From \cite{pmid18587405}).}
 
-\section*{Proposed method}
+\section*{Genome-wide measurement of tissue-specific expression}
 
-We propose to use flow cytometry to sort cells from {\em C. elegans}
+We used flow cytometry to sort cells from {\em C. elegans}
 embryos, into fractions which
 express (or don't express) a gene whose expression pattern is already known.
-We then measure expression in
-each fraction using RNA-seq, and deconvolve these to estimate expression of each
-gene in each cell.
+We then measured expression in
+each fraction using RNA-seq.
 
 This gives spatial resolution that is limited by the number and
-patterns of the sort markers, but complete genomic coverage.
+patterns of the sort markers, but complete genomic coverage. We have
+done this reporter-specific transcriptome profiling for fourteen transcription factors.
 
 \begin{center}
 \includegraphics[width=0.4\columnwidth]{cLineageFigure2.png}
 \includegraphics[width=0.4\columnwidth]{FACSsort.png}
 \end{center}
 
-\subsection*{Method of deconvolution}
 
+\columnbreak
+
+\subsection*{Transcriptome of cells expressing {\em pha-4} }
+
+FACS-RNA-seq of {\em pha-4} showed many genes coexpressed with {\em pha-4} (shown in red),
+as well as many genes not coexpressed with {\em pha-4} (shown in blue).
+
+\begin{center}
+\includegraphics[width=0.5\columnwidth]{talk/pha4enrichment.png}
+\end{center}
+
+{\em pha-4} is the {\em C. elegans} ortholog of mammalian FOXA1.
+The human FOXA1 motif was significantly enriched upstream of genes coexpressed with
+{\em pha-4}, as was {\em pha-4} ChIP signal.
+
+This suggests that we can use this method to find some signals of transcriptional regulation.
+
+\subsection*{Enhanced resolution by sorting using multiple markers}
+
+If we have two reporters which only overlap in a small number of cells, then we
+can sort by both of them, and measure the transcriptomes of just the cells in
+which those reporters are coexpressed.
+
+For example, {\em ceh-6} (shown in red) and {\em hlh-16} (shown in green)
+only overlap in expression in two pairs of cells,
+the DB1 neurons and excretory duct cells.
+
+\begin{center}
+\includegraphics[angle=270,width=0.9\columnwidth,clip=true,trim=2in 1in 3in 3in]{talk/trees/hlh16ceh6ABplp.pdf}
+\end{center}
+
+Sorting by both of these markers enriched many genes (shown in red), including genes
+known to be expressed in the DB neurons.
+
+\begin{center}
+\includegraphics[width=0.5\columnwidth]{talk/graphs/ceh6hlh16Enrichment.png}
+\end{center}
+
+\columnbreak
+
+\subsection*{A cluster of genes coexpressed with {\em hlh-6}}
+
+We clustered the expression measurements of fourteen FACS-RNA-seq experiments,
+and arbitrarily grouped these into 200 clusters. One of these clusters consists of genes
+enriched by sorting for {\em pha-4} and {\em ceh-26}.
+
+\begin{center}
+\includegraphics{talk/clusters/clusters.pdf}
+\end{center}
+
+\vspace{1in}
+
+Lineage tracing shows that {\em pha-4} (shown in red) and {\em ceh-26}
+(shown in green) overlap
+in expression in a small number of cells, including pharyngeal gland cells.
+
+\begin{center}
+\includegraphics[angle=270,width=0.8\columnwidth,clip=true,trim=2in 1in 1in 1in]{talk/trees/pha4ceh26MSa.pdf}
+\end{center}
+
+This cluster includes many known pharyngeal gland cells, as well as
+{\em hlh-6}, a known regulator of genes in those cells
+\cite{smit_hlh-6_2008}. Thus, clustering the FACS-RNA-seq data can find groups
+of genes which are expressed in similar tissues, and are co-regulated. It may
+also suggest potential regulators of a group of genes.
+
+\subsection*{Determining regulators of other clusters}
+
+We looked upstream of the genes in each cluster for signs of known transcriptional
+regulators.
+
+We searched for enrichment of 957 transcription factor motifs upstream of the clusters.
+Of the 200 clusters, 15 had at least one motif enriched upstream of its genes.
+
+We also searched for enrichment of transcription factor binding from
+65 ChIP-seq experiments. Of the 200 clusters, 63 had enrichment of at least
+one ChIP signal upstream of its genes.
+
+This suggests that we may be able to use this dataset to find cases of
+tissue-specific transcriptional regulation.
+
+In the future, we hope to improve this analysis by optimizing the number of clusters,
+filtering potential regulators by coexpression, and including interactions among regulators.
+
+\subsection*{Deconvolving expression}
+
+We can also estimate expression in individual cells.
 Let $A_{ij}$ be 1 if fraction $i$ contains cell $j$, and 0 otherwise.
 Let $b_i$ be the total expression of a gene in fraction $i$.
 Then we can estimate the expression of that gene $x_j$ in cell $j$,
@@ -81,116 +168,30 @@ A x = b, \mbox{ subject to }
 x \ge 0 \\
 $$
 
-This is an underdetermined system. We can estimate the possible range
-of expression using expectation propagation \cite{minka_expectation_2001}.
-
-\section*{Predictions using simulated data}
-
-We used the known expression patterns of 130 genes, simulated data from predicting using
-thirty flow-sorted fractions, and predicted expression in each cell.
-(Actual expression is shown in black, predicted expression is shown in grey (mean $\pm$ 1 s.d.).
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/ceh-32.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/ceh-36.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/hlh-16.pdf}
-
-% \includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/nhr-68.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/nob-1.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/pha-4.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tbx-8.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tbx-9.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/tlp-1.pdf}
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/graphs.diag.3.nonzero/unc-130.pdf}
-
-We can predict the total expression in a larger group of cells;
-such predictions can have less uncertainty.
-The predicted intervals seem to be centered near the actual expression, regardless of the
-number of cells.
-
-\includegraphics[width=1\columnwidth]{R/unmix/comp_paper/EP/lineageTotalBoundsHoriz.png}
-{\small
-Expression of 130 genes in groups of cells of different sizes, relative to mean and standard deviation of prediction.
-}
-
-\section*{Sequencing of cells sorted by PHA-4}
-
-We flow-sorted cells according to whether they expressed a fluorescent reporter for
-PHA-4, a pharynx-specific gene. Sequencing of these fractions indicated that the
-flow-sorting separated cells which were expressing PHA-4::GFP with high purity.
-
-\begin{minipage}[b]{1\linewidth}
-\begin{tabular}{lllll}
-\hline
-& total& \multicolumn{3}{c}{reads mapping to} \\
-sample & reads & {\em C. elegans} & adapter & GFP sequence \\
-  & & genome & &  \\
-\hline
-low input  & 23.5 m & 10.0 m & 1.2 m & 766 \\
-normal input & 19.2 m & 6.7 m & 0.7 m & 623 \\
-PHA-4::GFP (+) & 21.7 m & 2.7 m & 16.7 m & 915 \\
-PHA-4::GFP (-) & 34.8 m & 8.6 m & 3.6 m & 40 \\
-\hline
-\end{tabular}
-\vspace{5mm}
-
-\hfill Travis Walton
-\end{minipage}
-
-Genes known to be expressed in the pharynx \cite{gaudet2004} were enriched in the sample
-of cells expressing PHA-4::GFP.
-
-\begin{minipage}[b]{1\linewidth}
-\includegraphics[width=1\textwidth]{seq/fraction/gaudet/earlyLateHist.pdf}
-
-{\small PHA-4 (+) enrichment, defined as
-$\log_2$(1 + PHA-4 (+) FPKM) - $\log_2$(1 + PHA-4 (-) FPKM),
-for early and late pharyngeal
-genes from \cite{gaudet2004}.}
-
-\end{minipage}
-
-\columnbreak
-\section*{Reporters optimized in ABplp lineage}
-
-Currently, we are sequencing fractions sorted from fourteen fluorescent reporters.
-These reporters were chosen for prediction accuracy in the ABplp lineage.
-
-\includegraphics[width=0.9\columnwidth]{pattern/distinguishableCells.pdf}
-
-\begin{center}
-\includegraphics[width=0.5\columnwidth]{pattern/distinguishableCellsABplp.pdf}
-\end{center}
-
-\section*{Future directions}
-
-\begin{itemize}
-
-\item Compare predicted expression patterns with measured expression patterns.
-
-\item Expand the set of reporters used for sorting.
-
-\end{itemize}
+The solutions of this form a convex region in a linear space.
+We can estimate the possible range
+of expression using Expectation Propagation \cite{minka_expectation_2001}.
 
 \section*{Acknowledgements}
 
 \begin{itemize}
 
-\item Travis Walton, for FACS sorting and library preparation
+\item the Murray lab (especially
+Travis Walton, for FACS sorting and library preparation)
+
+\item other Penn worm labs (particularly the Sundaram lab)
 
 \item the sequencing core, for sequencing
+
+\item GCB
+
+\item NIH for funding
 
 \end{itemize}
 
 \bibliographystyle{apalike}
-\bibliography{../../cites}
+%% FIXME this needs updating
+\bibliography{/home/jburdick/gcb/work/svnroot/trunk/tex/cites.bib}
 
 \end{multicols}
 \end{document}

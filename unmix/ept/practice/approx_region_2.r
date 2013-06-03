@@ -245,14 +245,14 @@ approx.region.gamma.2 = function(A, b, b.var,
   t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
   # the "constraint" term
-  t.c = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
+#  t.c = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
   # the linear constraints
   lc = lin.constraint.gamma(A, b, b.var)
   lcp = lin.constraint.gamma.pos(A, b, b.var)
 
   # the posterior
-  q = t.m + t.c
+  q = lcp(t.m)
 
   # convergence statistics
   update.stats = NULL
@@ -260,11 +260,10 @@ approx.region.gamma.2 = function(A, b, b.var,
   for(iter in 1:max.iters) {
 #  print(gamma.n2mv(terms))
 
-    t.m = q - t.c
-    t.c = q - lc(t.m)
+    t.m = q - lc(t.m)
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    q.new = t.m + t.c
+    q.new = lcp(t.m)
 # print(q.new)
 
     # FIXME this should be based on change in the terms, properly
@@ -288,6 +287,60 @@ cat("\n")
     update.stats = update.stats)
 }
 
+# Yet another take on the same thing.
+approx.region.gamma.3 = function(A, b, b.var,
+    converge.tolerance=1e-9, max.iters=100) {
+  n = ncol(A)
+
+  # the "marginal" terms
+  t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
+
+  # the "constraint" term
+  t.c = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
+
+  # the linear constraints
+  lc = lin.constraint.gamma(A, b, b.var)
+  lcp = lin.constraint.gamma.pos(A, b, b.var)
+
+  # the posterior
+  q = lcp(t.m)
+  t.c = q - t.m
+
+  # convergence statistics
+  update.stats = NULL
+
+  for(iter in 1:max.iters) {
+#  print(gamma.n2mv(terms))
+
+    t.m = q - t.c
+
+    # update posterior: terms, with the Ax ~ N(-,-) constraint
+    q.new = lcp(t.m)
+    t.c = q.new - t.m
+# print(q.new)
+
+    # FIXME this should be based on change in the terms, properly
+    diff = apply(abs(gamma.n2mv(q.new) - gamma.n2mv(q)), 1, max)
+cat(backspace, signif(diff, 2), " ")
+    update.stats = rbind(update.stats, diff) 
+
+    # possibly stop early
+    if (max(diff, na.rm=TRUE) <= converge.tolerance)
+      break
+
+    q = q.new
+# print(gamma.n2mv(q))
+  }
+cat("\n")
+
+  mv = gamma.n2mv(q)    # lc(q))
+
+  list(m = mv["m",], v = mv["v",],
+    t = gamma.n2mv( t.m ),
+    update.stats = update.stats)
+}
+
+
 
 # XXX for practice
 n = 3
@@ -298,7 +351,7 @@ lc = lin.constraint.gamma(A, 1, 0)
 
 r = approx.region.gamma.2(t(rep(1,3)), c(1), c(0))
 
-#A1 = matrix(c(1,0,0,1,1,1), nrow=2)
-#r1 = approx.region.gamma.2(A1, c(1,1), c(0,0))
+A1 = matrix(c(1,0,0,1,1,1), nrow=2)
+r1 = approx.region.gamma.3(A1, c(1,1), c(0,0))
 
 

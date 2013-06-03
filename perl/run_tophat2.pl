@@ -6,9 +6,11 @@ use strict;
 
 use File::Temp;
 
-my $csfasta_dir = $ARGV[0];
-die "$csfasta_dir doesn't look like xsqconvert's output\n" if not -e "$csfasta_dir/Libraries/";
-my $output_dir = $ARGV[1];
+my $xsq_file = $ARGV[0];
+
+my $csfasta_dir = $ARGV[1];
+
+my $output_dir = $ARGV[2];
 die if not defined $output_dir;
 
 # The iGenome build (with colorspace index.)
@@ -22,10 +24,11 @@ my $bin_dir = "/murrlab/software/bin";
 my $transcriptome_index = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/TranscriptomeColorspaceBowtieIndex/genes";
 
 # extract the reads into a temporary directory
-# ??? this may not be part of this script...
 # my $csfasta_dir = File::Temp->newdir( CLEANUP => undef );
-# system("$bin_dir/xsqconvert -c -o $csfasta_dir $xsq_file");
-# exit(0);
+system("mkdir -p $csfasta_dir");
+system("$bin_dir/xsqconvert -c -o $csfasta_dir $xsq_file");
+
+die "$csfasta_dir doesn't look like xsqconvert's output\n" if not -e "$csfasta_dir/Libraries/";
 
 foreach my $f (<$csfasta_dir/Libraries/*/F3/reads/*.csfasta>) {
 
@@ -42,14 +45,14 @@ foreach my $f (<$csfasta_dir/Libraries/*/F3/reads/*.csfasta>) {
   my $output_name = $base_name;
   $output_name =~ s/ /_/g;   # avoid spaces in names, as they cause issues
 
-  # XXX rude hack
-  next if $output_name eq "Murray050912_Pool1Pool2_02_cehm27";
-
-#  system("mkdir -p $csfasta_dir/modified_csfasta/$output_name");
+  system("mkdir -p $csfasta_dir/modified_csfasta/$output_name");
 
   rename_csfasta("$csfasta_dir/Libraries/$library_name/", $base_name, $csfasta_dir);
   run_tophat2($csfasta_dir, "$output_dir/$output_name");
 }
+
+# removing csfasta directory
+# system("rm -rf $csfasta_dir");
 
 # Extracts csfasta files, with read name.
 sub rename_csfasta {
@@ -85,7 +88,7 @@ sub run_tophat2 {
 
 # note: not including "--GTF $gene_gtf", as we're using a prebuilt transcriptome index
 system(<<END);
-$bin_dir/tophat2 --transcriptome-index $transcriptome_index --GTF $gene_gtf --no-novel-juncs --library-type fr-secondstrand --mate-inner-dist 200 --mate-std-dev 200 --color --integer-quals --bowtie1 --num-threads 6 --output-dir $output_dir $bwt_index $reads_dir/F3.csfasta $reads_dir/F5-RNA.csfasta $reads_dir/F3.qual $reads_dir/F5-RNA.qual
+$bin_dir/tophat2 --transcriptome-index $transcriptome_index --GTF $gene_gtf --no-novel-juncs --library-type fr-secondstrand --mate-inner-dist 200 --mate-std-dev 200 --color --integer-quals --bowtie1 --num-threads 7 --output-dir $output_dir $bwt_index $reads_dir/F3.csfasta $reads_dir/F5-RNA.csfasta $reads_dir/F3.qual $reads_dir/F5-RNA.qual
 END
 ;
 

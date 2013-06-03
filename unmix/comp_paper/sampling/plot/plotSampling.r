@@ -25,7 +25,9 @@ plot.comparison.linear = function(expr.cell, sampling.stats, gene.name) {
   plot(1:1341, as.vector(expr.cell[gene.name,]), ylim=c(0,ymax),
     xaxt="n", yaxt="n", xlab="", ylab="", pch=20, cex=0.2)
 
-  axis(1, at=cell.to.column[int.n], labels=int.n, las=2, cex.axis=0.35)
+#  axis(1, at=cell.to.column[int.n], labels=int.n, las=2, cex.axis=0.35)
+  axis(1, at=cell.to.column[lin.12.cell], labels=lin.12.cell,
+    cex.axis=0.7)
 }
 
 # Plots all the genes.

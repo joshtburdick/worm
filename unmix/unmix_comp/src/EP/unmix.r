@@ -19,7 +19,7 @@ unmix.ep = function(m, x.f) {
   x.f = as.vector(x.f + m %*% (rep(eps, ncol(m))))
 
   ep = approx.region(m, x.f, 0 * x.f,
-    converge.tolerance = 1e-6, prior.var=100, max.iters = 200)
+    converge.tolerance = 1e-6, prior.var=Inf, max.iters = 200)
 
   x = ep$m - rep(eps, ncol(m))
 
@@ -28,5 +28,5 @@ unmix.ep = function(m, x.f) {
     reporters = rownames(m), x.f = x.f)
 }
 
-run.unmix(unmix.ep, "EP/")
+# run.unmix(unmix.ep, "EP/")
 

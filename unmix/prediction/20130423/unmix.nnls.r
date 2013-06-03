@@ -79,8 +79,8 @@ unmix.nnls = function(m, x.fraction) {
   w = 1e-3    # weight for penalty for sum of this
   num.cells = dim(m)[2]
 
-  r = nnls(A = rbind(m, rep(1/num.cells, num.cells)),
-    B = c(x.fraction, 0), verbose=TRUE)
+  r = nnls(A = rbind(m, w * diag(num.cells)),
+    B = c(x.fraction, rep(0, num.cells)), verbose=TRUE)
   x = as.vector(r$X)
   names(x) = colnames(m)
   list(x = x)
@@ -108,8 +108,8 @@ unmix.fcnnls = function(m, x.f, w=1e-2) {
 
 
 
-unmix.all(m, rna.seq, unmix.nnls,
-  "git/unmix/prediction/20130423/unmix.nnls.Rdata")
+# unmix.all(m, rna.seq, unmix.nnls,
+#   "git/unmix/prediction/20130423/unmix.nnls.Rdata")
 
 
 

@@ -81,7 +81,7 @@ cat(rownames(x.actual)[i], "")
     plot.segments.per.cell(c1, paste(gene, "measured expression"), time=c(-30, 300), lwd=1.1)  # was 1.5
     label.panel("a)")
 
-    c1 = rgb(scale.to.unit(x.predicted[i,]), 0, 0)
+    c1 = rgb(0, scale.to.unit(x.predicted[i,]), 0)
     names(c1) = colnames(x.actual)
     plot.segments.per.cell(c1, paste(gene, "prediction"), time=c(-30, 300), lwd=1.1)    # was 1.5
     label.panel("b)")

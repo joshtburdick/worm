@@ -111,13 +111,22 @@ wb = read.table("git/data/homology/wormbase.tf.ortholog.tsv",
 r.w = data.frame(gene = wb$public_name, method = "WormBase",
   species = wb$homolog_species, related.gene = wb$homolog_gene,
   gene.score = NA, related.gene.score = -log10(wb$homolog_blastp_evalue),
-  ortho.cluster = NA, type = wb$type)
+  ortho.cluster = NA, type = NA)
 
 ortho.five.methods = rbind(r.e, r.h, r.i, r.o, r.w)
+
+ortho.five.methods[
+  ortho.five.methods$species=="Homo sapiens", "species" ] = "H.sapiens"
+ortho.five.methods[
+  ortho.five.methods$species=="Mus musculus", "species" ] = "M.musculus"
+ortho.five.methods[
+  ortho.five.methods$species=="Drosophila melanogaster", "species" ] = "D.melanogaster"
 
 ortho.five.methods = ortho.five.methods[
   !is.na(ortho.five.methods$gene) & !is.na(ortho.five.methods$related.gene) , ]
 ortho.five.methods = unique(ortho.five.methods)
+ortho.five.methods = ortho.five.methods[
+  order(ortho.five.methods$gene, ortho.five.methods$related.gene), ]
 
 write.table(ortho.five.methods,
   file=gzfile("git/data/homology/ortho.five.methods.tsv.gz"),

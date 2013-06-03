@@ -4,6 +4,7 @@ library("mnormt")
 library("rgl")
 
 source("R/lineage/embryodb.r")
+source("git/unmix/ept/practice/multi_gp.r")
 
 # Gets the coordinates from a file at some time.
 # Args:
@@ -34,7 +35,7 @@ scale1 = function(x) {
 # usually be s.p.d.
 get.dist.covariance = function(x, length.scale=1) {
   d = dist(scale(x))
-  s = exp(-( d / length.scale) ^2 )
+  s = exp( - ((d / length.scale) ^ 2) )
   kronecker(as.matrix(d)^2, diag(3))
 }
 
@@ -68,12 +69,12 @@ render.embryo = function(a, offset) {
 
 # Draws an embryo, and some samples from the same distribution.
 draw.embryos = function() {
-  r = get.points(e1, 140)
+  r = get.points(e1, 30)
   render.embryo(scale(r), c(0, 0, 10))
 
-  si2 = get.dist.covariance(scale1(r))
+  si2 = get.dist.covariance(scale1(r), 0.1)
   for(i in 1:5) {
-    r.sampled = scale1(sample.random.embryo(si2, 500))
+    r.sampled = scale1(sample.random.embryo(si2, 200))
     render.embryo(r.sampled, c(10 * (i-1), 0, 0))
   }
 }
@@ -115,17 +116,27 @@ dist.shuffle.hist = function(x, n) {
   hist(r, xlim = c(min(r), 1), breaks=100, col="grey")
 }
 
-# read a random embryo file
-e1 = read.embryodb.dat.file("20111208_JIM108_L1")
+# Renders some randomly-perturbed embryos.
+show.perturbed.embryos = function() {
+  e1 = read.embryodb.dat.file("20111208_JIM108_L1")
+  r = get.points(e1, 30)
+  si2 = get.dist.covariance(scale(r), 0.1)
+  open3d()
+  draw.embryos()
+}
 
-r = get.points(e1, 140)
-si2 = get.dist.covariance(scale(r))
-
-open3d()
-draw.embryos()
-
-if (FALSE) {
-  pdf("git/unmix/image/mvnorm_embryo_dist_shuffle.pdf")
-  dist.shuffle.hist(r,100000)
+# computes histogram of log probability of cell locations
+# with cell identities shuffled
+draw.lp.shuffle = function() {
+  pdf("git/unmix/image/mvnorm_embryo_lp_shuffle.pdf")
+#  dist.shuffle.hist(r,100000)
+  lp.shuffle.hist(r, 300, 10000)
   dev.off()
 }
+
+
+
+
+
+
+

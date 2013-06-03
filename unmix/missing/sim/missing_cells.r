@@ -16,6 +16,8 @@ source("pseudoinverse/unmix.r")
 source("EP/unmix.r")
 setwd(wd)
 
+source("git/unmix/missing/sim/plot_accuracy_with_noise.r")
+
 num.cells = apply(cell.lineage.matrix, 1, sum)
 
 m1 = m.cell[ c("all", rownames(reporters[1:31,])) , ]
@@ -149,7 +151,7 @@ cat(num.lineages.missing, min.cells, "\n")
 sim.removing.from.individual.fractions = function() {
   r = NULL
 
-  for(num.lineages.missing in c(1:70))
+  for(num.lineages.missing in 1)    # c(1:70))
     for(min.cells in c(20, 40, 60)) {
 cat(num.lineages.missing, min.cells, "\n")
       max.cells = min.cells + 20
@@ -184,8 +186,8 @@ plot.with.missing.cells = function() {
     "git/unmix/missing/sim/missing_cells.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=9, height=4)
-  par(mfrow=c(1,2))
+#  pdf("git/unmix/missing/sim/accuracy with missing cells.pdf", width=9, height=4)
+#  par(mfrow=c(1,2))
 
   plot(missing.cells$num.missing, missing.cells$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="number of cells missing", ylab="correlation",
@@ -193,7 +195,7 @@ plot.with.missing.cells = function() {
   plot(missing.cells$num.missing, missing.cells$auc.incorrect.m, ylim=c(0.5,1), pch=20,
     xlab="number of cells missing", ylab="area under the curve",
     main="Accuracy with cells missing")
-  dev.off()
+#  dev.off()
 }
 
 plot.with.incorrect.matrix = function() {
@@ -201,9 +203,9 @@ plot.with.incorrect.matrix = function() {
     "git/unmix/missing/sim/missing_cells_separate_fractions.txt",
     sep="\t", header=TRUE, row.names=1, as.is=TRUE, stringsAsFactors=FALSE)
 
-  pdf("git/unmix/missing/sim/accuracy with incorrect sorting.pdf",
-    width=9, height=4)
-  par(mfrow=c(1,2))
+#  pdf("git/unmix/missing/sim/accuracy with incorrect sorting.pdf",
+#    width=9, height=4)
+#  par(mfrow=c(1,2))
 
   plot(missing.cells.separate.fractions$percent.missing, missing.cells.separate.fractions$cor.incorrect.m, ylim=c(0,1), pch=20,
     xlab="percent incorrect entries", ylab="correlation", xlim=c(0, 4),
@@ -212,12 +214,22 @@ plot.with.incorrect.matrix = function() {
     xlab="percent incorrect entries", ylab="area under the curve", xlim=c(0, 4),
     main="Accuracy with incorrect sorting")
 
+#  dev.off()
+}
+
+plot.accuracy.with.noise = function() {
+  # write.accuracy.tables()
+
+  pdf("git/unmix/missing/sim/accuracy_with_noise.pdf", width=6, height=7)
+  par(mfrow=c(3,2))
+
+  plot.with.missing.cells()
+  plot.with.incorrect.matrix()
+  plot.accuracy.with.measurement.noise()
+
   dev.off()
 }
 
-if (FALSE) {
-  # write.accuracy.tables()
-  plot.with.missing.cells()
-  plot.with.incorrect.matrix()
-}
+# plot.accuracy.with.noise()
+
 

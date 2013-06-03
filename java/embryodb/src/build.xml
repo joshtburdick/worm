@@ -46,8 +46,9 @@
 
 	<target name="dist" depends="copyImageJ">
         <jar jarfile="${dist}/${jar}" basedir="${build}">
- <!--     as seen at http://stackoverflow.com/questions/1821803/creating-a-bundle-jar-with-ant,
- 	<zipgroupfileset dir="${external-lib-dir-1}" includes="*.jar"/> -->
+ <!--     as seen at http://stackoverflow.com/questions/1821803/creating-a-bundle-jar-with-ant -->
+ 	<zipgroupfileset dir="${external-lib-dir-1}"
+ 		includes="colt.jar,ij.jar,ij-plugins_toolkit.jar,forester.jar,flanagan.jar,sgt_v30.jar,ij-ImageIO_.jar"/>
             <manifest>
                 <attribute name="Main-Class" value="AceTreeLauncher"/>
             </manifest>

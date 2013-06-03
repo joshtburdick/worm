@@ -9,15 +9,7 @@ source("sim.data/sim.expr.sym.r")
 source("pick_reporters.r")
 
 
-
-
-
-
 # small test of EP (which doesn't require the actual data)
 source("EP/approx_region_test.r")
-
-
-
-
 
 

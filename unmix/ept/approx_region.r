@@ -15,15 +15,20 @@ backspace = paste(rep("\b", 70), collapse="")
 # "Moments of Truncated (Normal) Distributions".
 positive.moment.match = function(m, v) {
   m1 = -as.vector(m)
-  v[v<0] = 0      # XXX hack (was 1e10)
+  v[v<0] = 1e10      # XXX hack (was 1e10)
   s = sqrt(v)
   z = -m1 / s
   a = dnorm(z) / pnorm(z)
-
+# cat("is.na(z) =", sum(is.na(z)), "\n")
   # hack to deal with when z is very negative
-  # (was N(1e-4, 1e-10))
   r = cbind(m = ifelse(z < -30, 1e-6, - (m1 - s * a)),
     v = ifelse(z < -30, 1e-14, v * (1 - z*a - a^2)))
+# cat("is.na(r$m) =", sum(is.na(r[,"m"])), "\n")
+# cat("is.na(r$v) =", sum(is.na(r[,"v"])), "\n")
+
+r[ is.na(r[,"v"]), "m" ] = 1e-6
+r[ is.na(r[,"v"]), "v" ] = 1e-14
+
 #  r = cbind(m = - (m1 - s * a), v = v * (1 - z*a - a^2))
   r
 }
@@ -251,6 +256,10 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
   # the term approximations (initially flat)
   terms = mean.and.variance.to.canonical(cbind(m=rep(1,n), v=rep(1,n)))
 
+  # keep track of terms and posterior as we go
+  terms.i = list()
+  q.i = list()
+
   # the linear constraint
   lin.constraint = lin.constraint.factor(A, b, b.var)
 
@@ -270,6 +279,10 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
     ((sum(is.na(x)) == 0) && (sum(is.nan(x)) == 0) && (sum(is.infinite(x)) == 0))
 
   for(iter in 1:max.iters) {
+
+    # save this, in case we need to backtrack
+    terms.i[[iter]] = terms
+
     error.flag = FALSE
     update.diff = NULL
 
@@ -278,19 +291,38 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
       terms.old = terms
 
       terms.1 = q - terms
+#cat("moment-matching    ")
       mm = positive.moment.match.canonical(terms.1)
-# trying alternative version of this
-#      mm = pos.moment.match.gamma(q, terms)
-
+#cat("moment-matched\n")
+#mm1 = canonical.to.mean.and.variance(mm)
+#cat(range(mm1[,"m"]), "\n")
+#cat(range(mm1[,"v"]), "\n")
+#cat(sum(is.na(mm1)), "\n")
       # update terms, with damping. XXX not sure this is right.
       terms.new = damping * (mm - q) + terms
+
+#t1 = canonical.to.mean.and.variance(terms.new)
+#cat(range(t1[,"m"]), "\n")
+#cat(range(t1[,"v"]), "\n")
 
       # add in Ax ~ N(-,-) constraint
       q.new = lin.constraint( prior + terms.new )
 
+    # constrains posterior to be positive
+if (TRUE) {
+    q1 = canonical.to.mean.and.variance(q.new)
+    q1[ q1[,"m"] < 1e-6 , "m" ] = 1e-6
+    q1[ q1[,"v"] < 1e-14, "v" ] = 1e-14
+    q.new = mean.and.variance.to.canonical(q1)
+}
+
       # how much the posterior changed
       update.diff <- apply(abs(canonical.to.mean.and.variance(q.new) -
-        canonical.to.mean.and.variance(q.old)), 2, max)
+        canonical.to.mean.and.variance(q.old)), 2, max)  # function(x) max(x, na.rm=TRUE))
+
+      # save these
+     terms.i[[iter]] = terms.new
+     q.i[[iter]] = q.new
 
     }, error = function(e) error.flag <<- TRUE)
 
@@ -305,18 +337,27 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
 #        (min(canonical.to.mean.and.variance(q.new)[1,"m"]) >= 1e-6) &&
         (!is.null(update.stats)) &&
 #        (update.diff["m"] <= 2 * update.stats[nrow(update.stats),"m"]) &&
-#        (update.diff["v"] <= 2 * update.stats[nrow(update.stats),"v"])) {
-        all(update.diff < smallest.update.diff)) {
+ #       (update.diff["v"] <= 2 * update.stats[nrow(update.stats),"v"])) {
+        all(update.diff <= smallest.update.diff)) {
       terms = terms.new
       q = q.new
       smallest.update.diff = update.diff
     }
     else {
-      if (iter >= 2)
+      if (iter >= 2) {
         damping = damping * damping.adjust
+
+        # reset to term which had smallest difference
+#        diff.size = apply(update.stats, 1, sum)
+#        t1 = order(diff.size, na.last=TRUE)[1]
+#        terms = terms.i[[t1]]
+#        q = q.i[[t1]]
+      }
+
     }
 
- cat(backspace, damping, update.diff, backspace)   # signif(diff, 2)
+# cat(damping, update.diff, "\n")
+cat(backspace, damping, update.diff, backspace)   # signif(diff, 2)
     update.stats = rbind(update.stats, c(damping=damping, update.diff))
 
     # possibly stop early

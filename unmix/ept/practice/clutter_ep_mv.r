@@ -9,8 +9,9 @@ library(mnormt)
 # Note that all "scale factors" s are log-transformed.
 init.model = function(n, d, w) {
 
-  # prior variance
-   v.0 = 100
+  # prior mean and variance
+  m.0 = rep(0, d)
+  v.0 = 100
 
   list(
 
@@ -19,12 +20,12 @@ init.model = function(n, d, w) {
     n = n, d = d, w = w,
 
     # current estimate of the "signal" peak (starts at the prior)
-    m.x = rep(0, d), v.x = v.0,
+    m.x = m.0, v.x = v.0,
 
     # the prior term
     m.0 = rep(0, d), v.0 = v.0, s.0 = (-d/2) * log(2*pi*v.0),
 
-    # the data terms
+    # the data terms t_i
     m = matrix(0, nrow=d, ncol=n), v = rep(1e4, n), s = rep(0, n))
 }
 
@@ -46,30 +47,39 @@ ep.update = function(m, y) {
 
     # 3.(a): "old" posteriors for data terms (the "...\i" term)
     old.v = 1 / ( 1/m$v.x - 1/m$v[i] )
-    old.m = m$m.x + (old.v / m$v[i]) * t( m$m.x - m$m[,i] )
-# print(c(i, m$v.x, old.v, old.m))
+    old.m = m$m.x + (old.v / m$v[i]) * (m$m.x - m$m[,i])
+print(c(i, m$v.x, old.v, old.m))
 
     # 3.(b) (as in ADF): update estimates of m.x and v.x
-    r = 1 - (1/z) * m$w * dmnorm(y[,i],
-      rep(m$m.0, m$d), sqrt(m$v.0) * diag(m$d))
-#    l.off = m$w * mvnorm.sphere(y[,i], rep(0, m$d), 10)
-#    l.on = (1 - m$w) * mvnorm.sphere(y[,i], old.m, old.v + 1)
-#    z = l.off + l.on
-#    r = l.on / z
-# print(c(i,r))
+#    r = 1 - (1/z) * m$w * dmnorm(y[,i],
+#      rep(m$m.0, m$d), sqrt(m$v.0) * diag(m$d))
+    # ??? do this in log-space?
+    l.clutter = m$w * dmnorm(y[,i], rep(0, m$d), 100 * diag(m$d))
+    l.signal = (1 - m$w) * dmnorm(y[,i], old.m, (old.v + 1) * diag(m$d))
+    z = l.clutter + l.signal
+    r = l.signal / (l.clutter + l.signal)
+
+print(c(i,z,r))
+
     m$m.x = old.m + old.v * r * (y[,i] - old.m) / (old.v + 1)
     m$v.x = old.v - r * (old.v^2) / (old.v+1) +
       r * (1-r) * (old.v^2) * sum((y[,i] - old.m)^2) / (m$d * ((old.v+1)^2))
     z_i = (1 - m$w) * dmnorm(y[,i], old.m, (old.v+1) * diag(m$d)) +
-      m$w * dmnorm(y[,i], rep(0, m$d), m$v.0 * diag(m$d))
+      m$w * dmnorm(y[,i], m$m.0, m$v.0 * diag(m$d))
+cat("z_i =", z_i, "\n")
 
     # 3.(c): update this term approximation
     m$v[i] = 1 / (1 / m$v.x - 1 / old.v)
-# print(c(i, m$v.x, vi.before.update, m$v[i]))
+print(c(i, m$v.x, m$v[i]))
+print(old.m)
+
 #    if (is.finite(m$v[i])) {
-      m$m[,i] = old.m + ((m$v[i] + old.v) / old.v) * (m$m.x - old.m)
-      m$s[i] = log(z_i) - (m$d/2) * log(2 * pi * m$v[i]) -
-        dmnorm(m$m[,i], old.m, (m$v[i] + old.v[i]) * diag(m$d), log=TRUE)
+    m$m[,i] = old.m + ((m$v[i] + old.v) / old.v) * (m$m.x - old.m)
+cat("m$m[,i] =", m$m[,i], "\n")
+cat("old.m = ", old.m, "\n")
+cat("m$v[i] =", m$v[i], "   old.v =", old.v, "\n")
+    m$s[i] = log(z_i) - (m$d/2) * log(2 * pi * m$v[i]) -
+      dmnorm(m$m[,i], old.m, (m$v[i] + old.v) * diag(m$d), log=TRUE)
 #    }
 #    else {    FIXME implement this
       # XXX if a data point has zero likelihood, ignore it
@@ -91,7 +101,6 @@ ep.log.evidence = function(m, y) {
 
 
 # Constructs a toy data set.
-set.seed(19)
 clutter.y = matrix(rnorm(200, sd=10), nrow=2)
 signal.y = matrix(rnorm(200), nrow=2) + 5
 y = cbind(clutter.y, signal.y)

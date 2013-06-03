@@ -141,5 +141,5 @@ cat(fr, "")
 # compute.anatomy.enriched()
 # compute.anatomy.enriched.negatives()
 
-compute.anatomy.enriched.hypergeometric()
+# compute.anatomy.enriched.hypergeometric()
 

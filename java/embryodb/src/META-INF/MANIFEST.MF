@@ -5,3 +5,4 @@ Laboratory: Waterston Laboratory
 University-of-Washington: Department of Genome Sciences
 Created-By: biowolp biowolp@u.washington.edu
 Main-Class: AceTreeLauncher
+DBLocation: /gpfs/fs0/l/murr/embryoDB/

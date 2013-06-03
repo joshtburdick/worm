@@ -3,6 +3,8 @@
 source("git/utils.r")
 source("git/data/biomart_utils.r")
 
+wb.gene = useMart("WS220", "wormbase_gene")
+
 # deconvolved data from modENCODE
 r.deconvolve = as.matrix(read.table(gzfile("data/modencode/N2_EE_50_mod1.csv.gz"),
   sep=",", header=FALSE, row.names=1))

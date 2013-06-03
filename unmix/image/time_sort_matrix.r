@@ -37,7 +37,7 @@ for(i in c(2:18)) {
   time.sort.matrix.unweighted = rbind(time.sort.matrix.unweighted,
     time.sort.matrix.row(cell.weights, time.points[i-1], time.points[i]))
 }
-rownames(time.sort.matrix) = paste("t.", time.points[2:18], sep="")
+rownames(time.sort.matrix.unweighted) = paste("t.", time.points[2:18], sep="")
 
 time.sort.matrix = t( t(time.sort.matrix.unweighted) * cell.weights[lin.node.names,"w"] )
 time.sort.matrix[ is.na(time.sort.matrix) ] = 0

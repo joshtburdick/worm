@@ -21,6 +21,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import java.util.zip.*;
 
 /*
  * Created on Apr 18, 2006
@@ -42,11 +43,22 @@ public class ManifestX {
     static Hashtable    cManifestHash;
     
     public static void reportAndUpdateManifest() {
+    	/* jtb: omitting this
+
         String s = "Running from jar";
         if (!amRunningFromJar()) {
             s = "NOT " + s;
-            updateManifest();
+            readManifest();
         }
+        
+    	cManifestHash.put("DBLocation", "/gpfs/fs0/l/murr/embryoDB/");
+    	 */
+    	
+    	// jtb XXX replacing with this slightly absurd hack
+    	// properly, this should use a resource file
+    	cManifestHash = new Hashtable();
+    	cManifestHash.put("DBLocation", "/gpfs/fs0/l/murr/embryoDB/");
+
         showManifest();
     }
     
@@ -106,12 +118,13 @@ public class ManifestX {
     }
     
 
-    public static void updateManifest() {
+    public static void readManifest() {
         cManifestHash = new Hashtable();
         File f = new File(SRC_MANIFEST_FILE);
         Vector v = new Vector();
         try {
-            FileInputStream fis = new FileInputStream(f);
+        	InputStream fis = new FileInputStream(f);
+        	ClassLoader cl = new Object().getClass().getClassLoader();
             BufferedReader br = new BufferedReader(new InputStreamReader(fis));
             String sr = br.readLine();
             while (sr != null && sr.length() > 2) {
@@ -150,7 +163,6 @@ public class ManifestX {
         String version = String.valueOf(year) + padInt(month)
             + padInt(day) + padInt(hr) + padInt(min);
         return version;
-
     }
     
     public static String getManifestValue(String property) {
