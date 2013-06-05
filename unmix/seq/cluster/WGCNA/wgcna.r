@@ -2,22 +2,33 @@
 
 library(WGCNA)
 
+source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
 
 options(stringsAsFactors = FALSE)
 enableWGCNAThreads(nThreads=7)
 
-r = read.table("git/unmix/seq/cluster/readsNormalized.tsv",
-    sep="\t", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
+r = as.matrix(read.tsv("git/unmix/seq/cluster/readsFACSandTS.tsv"))
 
-# XXX for prototyping
-r = r[1:5000,]
+# r = r[1:2000,]        # XXX for testing
 
 # remove constant rows
 r = r[ apply(r, 1, var) > 0 , ]
 
+r.sort.only = r[,c(1:23)]
+r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
+
+# old version of this
+if (FALSE) {
+r = read.table("git/unmix/seq/cluster/readsNormalized.tsv",
+    sep="\t", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
+# XXX for prototyping
+r = r[1:5000,]
+# remove constant rows
+r = r[ apply(r, 1, var) > 0 , ]
 r.sort.only = r[,c(1:21,23,24)]
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
+}
 
 # Runs WGCNA clustering on some dataset.
 # Args:
@@ -67,6 +78,5 @@ if (TRUE) {
 
   # then, run including the timeseries data
   run.wgcna(r, r, "wnet.ts")
-
 }
 
