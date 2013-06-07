@@ -4,13 +4,14 @@ library(WGCNA)
 
 source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
+source("git/unmix/seq/cluster/WGCNA/hclustMerge.r")
 
 options(stringsAsFactors = FALSE)
 enableWGCNAThreads(nThreads=7)
 
 r = as.matrix(read.tsv("git/unmix/seq/cluster/readsFACSandTS.tsv"))
 
-# r = r[1:2000,]        # XXX for testing
+# r = r[1:5000,]        # XXX for testing
 
 # remove constant rows
 r = r[ apply(r, 1, var) > 0 , ]
@@ -18,16 +19,27 @@ r = r[ apply(r, 1, var) > 0 , ]
 r.sort.only = r[,c(1:23)]
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
 
-# old version of this
-if (FALSE) {
-r = read.table("git/unmix/seq/cluster/readsNormalized.tsv",
-    sep="\t", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
-# XXX for prototyping
-r = r[1:5000,]
-# remove constant rows
-r = r[ apply(r, 1, var) > 0 , ]
-r.sort.only = r[,c(1:21,23,24)]
-r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
+# Constructs an hclust object including all of the
+#   dendrograms from a WGCNA clustering.
+# Args:
+#   wnet - list returned by blockwiseModules().
+#   gene.names - the names of the genes
+# Returns: an hclust object, which combines all the
+#   clusterings in h.
+get.combined.hclust = function(wnet, gene.names) {
+  h = wnet$dendrograms
+  if (length(h) == 1)
+    return(h[[1]])
+
+  # compute dendrograms
+  ds = lapply(h, as.dendrogram)
+
+  # merge these all together, as dendrograms
+  dm = ds[[1]]
+  for(i in 2:length(ds))
+    dm = merge(dm, ds[[i]], height=1)
+
+  as.hclust(dm)
 }
 
 # Runs WGCNA clustering on some dataset.
@@ -50,10 +62,12 @@ run.wgcna = function(r, r.cluster, output.path) {
     saveTOMs = TRUE,
     saveTOMFileBase = paste(output.path, "TOM", sep="/"),
     verbose = 3)
-  save(wnet, file=paste(output.path, "wnet.Rdata", sep="/"))
+  h = get.wgcna.dendrogram(wnet, rownames(r.cluster))
+  save(wnet, h, file=paste(output.path, "wnet.Rdata", sep="/"))
 
   # write out files
   clusters = wnet$colors + 1
+cat("number of clusters =", max(clusters), "\n")
 
   write.table(data.frame(gene=rownames(r.cluster), cluster=clusters),
     file=paste(output.path, "clusters.tsv", sep="/"),
