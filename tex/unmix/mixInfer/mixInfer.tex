@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+
+\subsection*{Using expectation propagation for unmixing}
+
+We are trying to estimate marginals of the distribution of $x$, given the
+constraints that $Ax = b$ and $x \ge 0$. We can express these constraints
+as ``indicator functions'':
+
+\begin{eqnarray}
+t_A(x) & = & [Ax = b] \\
+t_i(x) & = & [x_i \ge 0]
+\end{eqnarray}
+
+Their product is the (improper) probability distribution whose marginals
+we are estimating:
+
+\begin{eqnarray}
+p(x) & \propto & t_A(x) \prod_i t_i(x)
+\end{eqnarray}
+
+EP is applicable when we're approximating a product of terms. We approximate each of the terms with
+Gaussians
+$\tilde{t}_i(x)$ and $\tilde{t}_A(x)$ (although none of these
+terms, individually, is at all Gaussian.) 
+
+\begin{eqnarray}
+q(x) & \propto & \tilde{t}_A(x) \prod_i \tilde{t}_i(x)
+\end{eqnarray}
+
+As in Cseke and Heskes, rather than updating each term individually,
+we update all of the $\tilde{t}_i(x)$ terms in parallel, and then factor in
+the linear constraint $\tilde{t}_A(x)$.
+
+\subsection*{Including mixture proportions}
+
+In practice, we don't know the ``sort matrix'' $A$ precisely.
+Let $A$ be the sort matrix, $X$ be the matrix of per-cell expression, and
+$B$ be the matrix of expression data. We are essentially trying to factor
+$AX=B$, with everything non-negative.
+
+This is reminiscent of non-negative matrix factorization. However, in our situation,
+the dimensions of $X$ are larger than $B$. Also, we'd like to use our
+prior information about $A$ to constrain the solutions.
+
+Erkkila {\em et al} use a Dirichlet prior on $A$, which seems reasonable. Trying to do
+this, we add a term $t_M(x)$, which encodes the Dirichlet prior $\alpha$.
+
+\begin{eqnarray}
+t_M(A) & = & \mathrm{Dirichlet}(A|\alpha) \\
+t_A(x) & = & [Ax = b] \\
+t_i(x) & = & [x_i \ge 0]
+\end{eqnarray}
+
+Now, the product representing the (again, improper) probability distribution
+whose marginals we are estimating:
+
+\begin{eqnarray}
+p(A, x|\alpha) & \propto & t_M(A) t_A(x) \prod_i t_i(x)
+\end{eqnarray}
+
+Sampling from this seems painful, as it seems to require sampling all of
+the $x_i$, and $A$, simultaneously.
+
+
+\subsection{One attempt}
+
+If we write
+
+$A_{si}$ is the proportion of cell $i$ in fraction $s$,
+
+$X_{ij}$ is the expression of gene $j$ in cell $i$, and
+
+$B_{sj}$ is the total expression of gene $j$ in fraction $s$.
+
+then the problem is of the form $AX = B, X > 0$.
+
+Unfortunately, this includes many equations of the form
+
+\[
+\forall s, j. \sum_i A_{si} X_{ij} = B_{sj}
+\]
+
+in which both A and X are unknown.
+
+
+\section{Phrasing the problem as a constrained linear system}
+
+
+
+
+
+\end{document}
+
