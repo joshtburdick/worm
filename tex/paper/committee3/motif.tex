@@ -1,0 +1,164 @@
+\documentclass{article}
+% \usepackage{amsfonts}
+% \usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{multirow}
+% \usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/work/svnroot/trunk/src/}
+{/home/jburdick/gcb/}
+}
+\begin{document}
+
+\title{Expression patterns and their regulation}
+\author{Josh Burdick}
+\maketitle
+
+\section*{Unmixing}
+
+Previously, we described an approach for estimating expression in
+groups of cells, from measurements in a subset of cells.
+
+In order to control for missing cells, or errors in the sort matrix,
+we only used sort fractions for which both positive and negative
+sort fractions are available. Currently, we have twelve such fractions
+available:
+{\em ceh-26, ceh-27, ceh-36, ceh-6, cnd-1, F21D5.9, mir-57, mls-2, pal-1,
+pha-4, ttx-3,} and {\em unc-130.}
+
+
+We converted each gene's relative expression to a ``proportion of total
+expression'' between 0 and 1.
+
+
+Higher expression measurements tend to
+be more reproducible (FIXME CITE). We see this in the samples for which
+we have replicates.
+
+Based on this, we modelled the measurement error, based on the read count,
+so that the measurement standard deviation was
+narrower for genes with higher measured
+expression.
+
+
+\includegraphics[width=\textwidth]{git/unmix/prediction/20130612/replicateNoise.png}
+
+
+
+It seems that ideally, we should be estimating the sort matrix, as well
+as the expression matrix. It is not currently clear how to do that.
+Also, incorporating the timeseries data would be helpful.
+
+
+\section*{Clustering}
+
+
+
+
+
+
+\section*{Motif analysis}
+
+We searched for motifs which might regulate expression.
+
+
+\subsection*{Known binding motifs}
+
+We used a subset of the motifs distributed with the MEME software.
+This includes a set of FIXME motifs for human and mouse transcription
+factors obtained recently using
+high-throughput SELEX experiments.
+
+
+
+
+\subsection*{{\em De novo} motif search}
+
+We searched for novel motifs using three different methods:
+BioProspector, which uses Gibbs sampling, and MEME, which uses EM.
+
+We searched for motifs in the upstream intergenic regions.
+We included
+up to 5 kb upstream, and at least 500 bp.
+
+We also searched the conserved portions of those regions,
+requiring a PhastCons score of 7-way conservation with other nematodes
+of at least 0.5.
+
+One measure of how well
+
+
+
+\subsection*{Motif clustering}
+
+Many different transcription factors recognize essentially the same
+motif. Also, many of the motifs found {\em de novo} will be duplicates,
+because a transcription factor is active in multiple clusters, or because,
+for instance, motif finders based on Gibbs sampling may sample the same
+motif multiple times. Therefore, we need to reduce the motifs to a
+non-redundant set.
+
+We used the MotIV R package to compute similarities between known
+motifs, using Pearson correlation coefficient as a similarity score.
+Here is an example of such a cluster. In this case, a motif found
+{\em de novo} is very similar to the known mouse {\em Ascl2} motif.
+
+\begin{center}
+\includegraphics[trim=0in 4in 0in 3.5in,scale=0.6]{Ascl2cluster.pdf}
+\end{center}
+
+
+We then grouped together any pair of motifs having Pearson correlation
+$ > FIXME$, and kept one of the motifs arbitrarily.
+
+\section*{Enrichment of motifs}
+
+If a particular transcription factor is important in regulating
+a particular cluster of genes, we might expect to see a motif
+enriched upstream of the genes in that cluster.
+
+
+
+
+
+
+
+\begin{center}
+\begin{tabular}{lr|rr}
+\hline
+                 & \# & \# of clusters with an enriched & \# of clusters with an enriched \\
+Clustering method & clusters & known motifs & {\em de novo} motifs \\
+\hline
+Hierarchical & 50 & 9 & 9 \\
+not including time & 100 & 7 & 8 \\
+            & 200 & 7 & 9 \\
+\hline
+Hierarchical & 50 & 8 & 12 \\
+including time & 100 & 9 & 11 \\
+  & 200 & 11 & 12 \\
+\hline
+WGCNA not & n & 9 & 11 \\
+including time & n & 8 & 9 \\
+\hline
+WGCNA & n & 10 & 9 \\
+including time & n & 8 & 12 \\
+\hline
+\end{tabular}
+\end{center}
+
+\section*{Summary}
+
+
+
+
+
+\section*{Future work}
+
+We have predicted where many genes are expressed.
+
+
+
+
+
+\end{document}
+
