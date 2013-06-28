@@ -15,13 +15,14 @@ use Bio::DB::BigFile;
 use Bio::DB::BigFile::Constants;
 use Bio::DB::Fasta;
 
-my $cutoff = 0.75;
+my $cutoff = 0.5;
+
+my $min_size = 20;
 
 # the conservation track to use
 my $wig = Bio::DB::BigFile->bigWigFileOpen(
   "/murrlab/seq/igv/conservation/ce10.phastCons7way.bw");
 
-my $count = 0;
 while (<>) {
   chomp;
   my($chr, $a, $b, $name, $score, $strand) = split /\t/;
@@ -29,10 +30,6 @@ while (<>) {
   $chr =~ s/chr//;
 
   write_conserved_regions(0.5, $chr, $a, $b, $name, $score, $strand);
-  $count++;
-  if ($count > 3) {
-    exit(0);
-  }
 }
 
 # Prints FASTA-formatted DNA at a region, masked at some
@@ -76,14 +73,20 @@ sub write_conserved_regions {
     # if conservation has dropped below the cutoff,
     # write out the region
     if ($c < $cutoff && defined($region_start)) {
-      print "$region_start $i\n";
+      if ($i - $region_start >= $min_size) {
+        push @regions, (join "\t",
+          ($chr, $a + $region_start, $a + $i, $name, $score, $strand)) . "\n";
+      }
       $region_start = undef;
     }
   }
 
   # possibly tack on the final region
   if (defined $region_start) {
-    print "$region_start $n\n";
+    if ($n - $region_start >= $min_size) {
+      push @regions, (join "\t",
+        ($chr, $a + $region_start, $a + $n, $name, $score, $strand)) . "\n";
+    }
   }
 
   # print the regions, if there were any
