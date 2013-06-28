@@ -3,6 +3,24 @@
 
 library(WGCNA)
 
+# Sorts an hclust object so that heights are in ascending order.
+sort.hclust = function(h) {
+  p = order(h$height)
+
+  # renumber the nodes
+  m1 = h$merge
+  m1[ m1 > 0 ] = order(p)[ m1[ m1 > 0 ] ]
+
+  r = list(
+    merge = m1[ p , ],
+    height = h$height[ p ],
+    order = h$order,
+    labels = h$labels,
+    method = h$method, call = h$call, distance = h$distance)
+  class(r) = "hclust"
+  r
+}
+
 # Merges two hclust objects.
 # Args: a, b - two hclust objects; these should have
 #   non-overlapping labels.
@@ -28,24 +46,6 @@ merge.hclust = function(a, b) {
   r
 }
 
-# Sorts an hclust object so that heights are in ascending order.
-sort.hclust = function(h) {
-  p = order(h$height)
-
-  # renumber the nodes
-  m1 = h$merge
-  m1[ m1 > 0 ] = order(p)[ m1[ m1 > 0 ] ]
-
-  r = list(
-    merge = m1[ p , ],
-    height = h$height[ p ],
-    order = h$order,
-    labels = h$labels,
-    method = h$method, call = h$call, distance = h$distance)
-  class(r) = "hclust"
-  r
-}
-
 # Generates a random hclust (for testing.)
 random.hclust = function(n) {
   x = runif(n)
@@ -55,7 +55,6 @@ random.hclust = function(n) {
 
 # Quick test of the above.
 merge.hclust.test = function(n) {
-
   h1 = random.hclust(n)
   h2 = random.hclust(n)
   h3 = merge.hclust(h1, h2)
@@ -68,53 +67,30 @@ merge.hclust.test = function(n) {
   list(h1=h1, h2=h2, h3=h3, h3s=h3s)  
 }
 
-
-# Merges dendrograms (deprecated.)
-mergeWGCNAdendrograms = function(wnet) {
+# Merges dendrograms from a WGCNA analysis.
+# Args:
+#   wnet - the list returned by blockwiseModules
+#   name - the names of the genes
+# Returns: a dendrogram
+get.wgcna.dendrogram = function(wnet, name) {
   numBlocks = length(wnet$blockGenes)
 
-  # number of genes in each block
-  blockSizes = sapply(wnet$blockGenes, length)
-
-  # amount to add to, or actually subtract from, leaves
-  leafOffsets = c(0, cumsum(blockSizes[-numBlocks]))
-  
-  # amount to add to internal nodes
-  internalOffsets = c(0, cumsum(blockSizes[-numBlocks]-1))
-
-  r = list(merge = c(),
-    height = NULL,
-    order = NULL,
-    labels = NULL,
-    call = wnet$dendrograms[[1]]$call,
-    method = wnet$dendrograms[[1]]$method)
-
-  for(i in 1) {    # c(1:numBlocks)) {
-
-    m1 = wnet$dendrograms[[i]]$merge
-
-    # renumber leaf nodes
-    m1[ m1 < 0 ] = m1[ m1 < 0 ] - leafOffsets[i]
-#    m1[m1 < 0] = - wnet$blockGenes[[i]][
-#      wnet$dendrograms[[i]]$order[ - m1[m1 < 0] ] ]
-
-    # renumber internal nodes
-    m1[m1 > 0] = m1[m1 > 0] + internalOffsets[i]
-
-    r$merge = rbind(r$merge, m1)
-    r$height = c(r$height, wnet$dendrograms[[i]]$height)
-    r$order = c(r$order, wnet$blockGenes[[i]])
-#    r$order = c(r$order, wnet$blockGenes[[i]][ wnet$dendrograms[[i]]$order ])  #+ blockOffsets[i])
+  # add labels to hclust objects
+  h = list()
+  for(i in 1:numBlocks) {
+    h[[i]] = wnet$dendrograms[[i]]
+    h[[i]]$labels = name[ wnet$blockGenes[[i]] ]
   }
 
-  # add in any genes that haven't been added
-  r$order = c(r$order, setdiff(1:100, r$order))
-#  r$order = c(1:100)
+  # if there's only one block, we're done
+  if (numBlocks == 1)
+    return(h[[1]])
 
-  # FIXME add links between all clusters
+  # otherwise, merge the hclust objects together
+  r = h[[1]]
+  for(i in 2:numBlocks)
+    r = merge.hclust(r, h[[i]])
 
-  class(r) = "hclust"
-  r
+  sort.hclust(r)
 }
-
 

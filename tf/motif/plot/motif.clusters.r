@@ -115,7 +115,7 @@ plot.all = function() {
   pdf("git/tf/motif/plot/motif.clusters.pdf", width=7.5, height=10)
 
 #  m = cluster.using.motif.comparison$labels
-  motif.groups = cutree(cluster.using.motif.comparison, k=200)
+  motif.groups = cutree(cluster.using.motif.comparison, k=300)
   for(i in 1:max(motif.groups)) {
 cat(i, " ")
 

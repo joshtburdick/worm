@@ -16,12 +16,14 @@ my $upstream_region_bed_file =
 #  "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_1kb.bed";
   "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed";
 
-# name of output directory
-my $output_name = "5kb.nogenes.conserved";
-
 foreach my $a (qw/hier.50clusters hier.100clusters hier.200clusters hier.ts.50clusters hier.ts.100clusters hier.ts.200clusters/) {
   print "[writing .fa for clustering $a]\n";
-  write_cluster_gene_fa("hierarchical/$a", "hierarchical/$a/$output_name/");
+  write_cluster_gene_fa("hierarchical/$a", "hierarchical/$a/5kb.intergenic/fa");
+}
+foreach my $a (qw/wnet_pow11_mch0.1 wnet_pow11_mch0.2
+    wnet.ts_pow11_mch0.1 wnet.ts_pow11_mch0.2/) {
+  print "[writing .fa for clustering $a]\n";
+  write_cluster_gene_fa("WGCNA/$a", "WGCNA/$a/5kb.intergenic/fa");
 }
 
 # Reads in the clustering, as a hash.
@@ -45,13 +47,14 @@ sub get_clustering {
 }
 
 # Creates a file of upstream regions.
+# FIXME add a switch indicating whether to get all / conserved sequence
 sub write_cluster_upstream_regions {
   my($clustering_ref, $cluster, $fa_file) = @_;
   my %clustering = %$clustering_ref;
 
   open IN, "<$upstream_region_bed_file" || die;
-  open OUT, "| /home/jburdick/gcb/git/tf/motif/get_upstream_conserved.pl > $fa_file" || die;
-#  open OUT, ">$fa_file" || die;
+#  open OUT, "| /home/jburdick/gcb/git/tf/motif/get_upstream_conserved.pl > $fa_file" || die;
+  open OUT, "| /home/jburdick/gcb/git/tf/motif/get_dna_in_region.pl > $fa_file" || die;
 
   while (<IN>) {
     chomp;

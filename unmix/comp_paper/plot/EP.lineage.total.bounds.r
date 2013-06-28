@@ -1,11 +1,13 @@
 # Compares error margins in particular sublineages.
 
+source("git/plot/label_panel.r")
+
 cwd = getwd()
 setwd("~/gcb/git/unmix/unmix_comp/src/")
 source("unmix_test.r")
 load("../data/tree_utils.Rdata")
-load("EP.2/lineage.totals.Rdata")
-load("EP.2/lineage.totals.unscaled.Rdata")
+load("EP/lineage.totals.Rdata")
+load("EP/lineage.totals.unscaled.Rdata")
 setwd(cwd)
 
 num.cells = apply(cell.lineage.matrix, 1, sum)
@@ -52,6 +54,9 @@ if(TRUE) {
     xlim=xylim, ylim=xylim,
     type="p", pch=20, col="#00000080", cex=2,
     cex.axis = 2.1, cex.lab=2.8, cex.main=3)
+  if (length(lineages) == 12) {
+    label.panel("a)", gp = gpar(fontsize=36, col="black"))
+  }
 }
 
   mean.over.sd = lineage.totals[,lineages,"lineage.mean"] /
@@ -76,6 +81,9 @@ cat("z: mean = ", mean(z, na.rm=TRUE),
 
   legend("topleft", bty="n", cex=2.5,
     paste("s.d. =", round(sd(as.vector(z)), 3)))
+  if (length(lineages) == 12) {
+    label.panel("b)", gp = gpar(fontsize=36, col="black"))
+  }
 }
 
 plot.it = function() {

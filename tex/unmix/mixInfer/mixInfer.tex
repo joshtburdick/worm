@@ -10,7 +10,81 @@
 }
 \begin{document}
 
-\subsection*{Using expectation propagation for unmixing}
+
+\section{Estimating the sort matrix}
+
+
+Another way to phrase the problem is to let $X_{ij}$ represent
+a {\em proportion of the expression in a given cell}, rather than
+a proportion of the total expression in the embryo.
+
+Suppose that
+
+$S_{si}$ is the fraction (relative to the whole embryo)
+of cell $i$ in fraction $s$,
+
+$X_{ij}$ is the fraction of gene $j$ in cell $i$, and
+
+$B_{sj}$ is the total expression of gene $j$ in fraction $s$.
+
+Here, $S$ and $X$ are unknown; we model them with normal
+distributions.\footnote{The fact that so many things are proportions makes it tempting
+to use something like Dirichlet distributions; however, the variances
+for several of these may be different (we may know that some cells
+are definitely in a fraction, but others we may think are possibly 
+in the fraction, and possibly not.}
+
+$B$, on the other hand, is known. There is some uncertainty in its
+measurement, but noise in RNA-seq experiments is arguably better understood
+than which cells are going to included in cell sorting, or the relative
+sizes of different cells.
+
+For now, we assume that $B$ is known {\em precisely}. Thus, 
+
+
+\subsection{Modelling cell volume}
+
+Suppose that for each cell $i$ we have an estimate $V_i$ of the mean and
+variance of its volume. If we have a variable for each cell's volume, then
+we can incorporate this as a ``soft'' constraint. We also have the constraint
+that $\sum_i V_i = 1$.
+
+We can sort of encode the assumption that ``all of a cell $i$ is included
+in a sort fraction $s$'' by adding a constraint that $S_{si} = V_i$
+(or, trivially, ``none of a cell $i$ is included in a sort fraction $s$''
+as $S_{si} = 0$.) These are ``hard'' constraints, for better or worse;
+we could add some variance, but if it's constant, it won't scale with
+the volume.
+
+Presumably, predictions that ``cells are missing'' should correspond to
+solutions with $V_i \approx 0$.
+
+
+
+
+
+\section{Other stuff}
+
+This may not be relevant.
+
+\subsection{Including mixture proportions}
+
+In practice, we may not know the ``sort matrix'' $A$ precisely.
+Let $A$ be the sort matrix, $X$ be the matrix of per-cell expression, and
+$B$ be the matrix of expression data. We are essentially trying to factor
+$AX=B$, with $A, X$, and $B$ non-negative.
+
+This is reminiscent of non-negative matrix factorization, but
+there are important differences. First, in our situation,
+the dimensions of $X$ are larger than $B$. Also, we have some
+prior information about
+the matrix $A$, from the microscopy data.
+We'd like to use this to constrain our estimate of $A$.
+
+Side note: covariance or correlation is somewhat related to
+the product of variables.
+
+\subsection{The EP problem, using Gaussians}
 
 We are trying to estimate marginals of the distribution of $x$, given the
 constraints that $Ax = b$ and $x \ge 0$. We can express these constraints
@@ -41,16 +115,8 @@ As in Cseke and Heskes, rather than updating each term individually,
 we update all of the $\tilde{t}_i(x)$ terms in parallel, and then factor in
 the linear constraint $\tilde{t}_A(x)$.
 
-\subsection*{Including mixture proportions}
 
-In practice, we don't know the ``sort matrix'' $A$ precisely.
-Let $A$ be the sort matrix, $X$ be the matrix of per-cell expression, and
-$B$ be the matrix of expression data. We are essentially trying to factor
-$AX=B$, with everything non-negative.
-
-This is reminiscent of non-negative matrix factorization. However, in our situation,
-the dimensions of $X$ are larger than $B$. Also, we'd like to use our
-prior information about $A$ to constrain the solutions.
+\subsection{Using a Dirichlet prior}
 
 Erkkila {\em et al} use a Dirichlet prior on $A$, which seems reasonable. Trying to do
 this, we add a term $t_M(x)$, which encodes the Dirichlet prior $\alpha$.
@@ -70,38 +136,6 @@ p(A, x|\alpha) & \propto & t_M(A) t_A(x) \prod_i t_i(x)
 
 Sampling from this seems painful, as it seems to require sampling all of
 the $x_i$, and $A$, simultaneously.
-
-
-\subsection{One attempt}
-
-If we write
-
-$A_{si}$ is the proportion of cell $i$ in fraction $s$,
-
-$X_{ij}$ is the expression of gene $j$ in cell $i$, and
-
-$B_{sj}$ is the total expression of gene $j$ in fraction $s$.
-
-then the problem is of the form $AX = B, X > 0$.
-
-Unfortunately, this includes many equations of the form
-
-\[
-\forall s, j. \sum_i A_{si} X_{ij} = B_{sj}
-\]
-
-in which both A and X are unknown.
-
-
-\section{Phrasing the problem as a constrained linear system}
-
-Another way to phrase the problem is to let $X_{ij}$ represent
-a {\em proportion of the expression in a given cell}, rather than
-a proportion of the total expression in the embryo.
-
-
-
-
 
 
 \end{document}

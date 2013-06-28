@@ -4,8 +4,12 @@
 
 use strict;
 
+# write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
+#   "upstreamRegionsWS220_5kb_nogenes.bed",
+#   "./foo.tsv", 3);
+
 write_motif_counts("/murrlab/seq/igv/motif/meme/",
-  "upstreamRegionsWS220_5kb_nogenes.bed",
+ "upstreamRegionsWS220_5kb_nogenes.bed",
   "./motifs_5kb_nogenes.tsv", 3);
 
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);

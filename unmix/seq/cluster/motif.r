@@ -11,7 +11,8 @@ stderr <- function(x) sqrt(var(x)/length(x))
 
 if (TRUE) {
 
-  source("git/tf/motif/motifCount/motif.counts.r")
+#  source("git/tf/motif/motifCount/motif.counts.r")
+  load("git/tf/motif/motifCount/motif.counts.Rdata")
 
   chip = read.table(gzfile("git/tf/chip/TF_chip_5kbUp.tsv.gz"),
     sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
@@ -205,18 +206,28 @@ cat(cl, "")
   r
 }
 
+cluster.dirs = paste("git/unmix/seq/cluster/",
+  c("hierarchical/hier.50clusters/",
+    "hierarchical/hier.100clusters/",
+    "hierarchical/hier.200clusters/",
+    "hierarchical/hier.ts.50clusters/",
+    "hierarchical/hier.ts.100clusters/",
+    "hierarchical/hier.ts.200clusters/",
+    "WGCNA/wnet_pow11_mch0.1/",
+    "WGCNA/wnet_pow11_mch0.2/",
+    "WGCNA/wnet.ts_pow11_mch0.1/",
+    "WGCNA/wnet.ts_pow11_mch0.2/"), sep="")
+
+
+
+
 # Does the above test, for all clusters.
 # Args:
 #   motif - a set of predictors
 #   output.name - name of output file
 t.test.all.clusters.1 = function(motif, output.name) {
 
-  for(cluster.dir in c(
-    "git/unmix/seq/cluster/hierarchical/hier",
-    "git/unmix/seq/cluster/hierarchical/hier.ts",
-    "git/unmix/seq/cluster/WGCNA/wnet",
-    "git/unmix/seq/cluster/WGCNA/wnet.ts")) {
-
+  for(cluster.dir in cluster.dirs) {
     t.test.clusters(cluster.dir, motif, output.name)
   }
 #t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
@@ -241,15 +252,35 @@ compute.interaction.stats = function(f, bh.cutoff = 0.5) {
     num.clusters = length(unique(r$cluster)))
 }
 
-# t.test.all.clusters.1(motif, "motifEnrichment_5kb")
-# t.test.all.clusters.1(chip, "chipEnrichment_5kb")
+if (FALSE) {
+t.test.all.clusters.1(known.motifs, "knownMotifEnrichment_5kb")
+t.test.all.clusters.1(de.novo.motifs, "deNovoMotifEnrichment_5kb")
+t.test.all.clusters.1(chip, "chipEnrichment_5kb")
+}
 
+# Computes stats about enrichment for all the clusterings.
+cluster.stats = function() {
+  r = NULL
+  for(cl in cluster.dirs) {
+    r = rbind(r,
+      c(cl,
+        compute.interaction.stats(
+          paste(cl, "knownMotifEnrichment_5kb.tsv", sep="/"), 0.05),
+        compute.interaction.stats(
+          paste(cl, "deNovoMotifEnrichment_5kb.tsv", sep="/"), 0.05)))
+  }
+  colnames(r) = c("clustering",
+    "known.motifs.pairs", "known.motifs", "known.motifs.clusters",
+    "de.novo.motif.pairs", "de.novo.motifs", "de.novo.motifs.clusters")
+  r
+}
+write.table(cluster.stats(), file="git/unmix/seq/cluster/clusterStats.tsv",
+  sep="\t", row.names=TRUE, col.names=NA)
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
 
 
 # a = compute.interaction.stats("git/unmix/seq/cluster/hierarchical/hier/motifEnrichment_5kb.tsv")
 # print(a)
 
-enriched.in.fraction()
-
+# enriched.in.fraction()
 

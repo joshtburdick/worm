@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 # Combines many MEME-format files from many directories
-# into one large minimal MEME-format file, with each motif
-# named according to the directory it's in.
+# (e.g. from running MEME) into one large minimal
+# MEME-format file, with each motif named according to
+# the directory it's in.
 # (Arguably, I should have renamed these in the first place.)
 # Writes to standard output.
 

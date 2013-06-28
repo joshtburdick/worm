@@ -11,7 +11,8 @@ my $fasta = "/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.topleve
 
 # my $meme_matrix_path = "/home/jburdick/gcb/data/tf/meme/motif_databases/";
 # my $meme_matrix_path = ".";  # XXX temporary hack
-my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/meme_file/";
+# my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/meme_file/";
+my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/";
 
 my @meme_files = (
   qw/jolma2013 JASPAR_CORE_2009 dmmpmm2009 dpinteract/,
@@ -29,7 +30,8 @@ my @meme_files = (
 #  fimo_to_bedGraph("$f.meme", "/home/jburdick/tmp/meme");
 #}
 
-fimo_to_bedGraph("meme_hier_ts_200clusters.meme", "/home/jburdick/tmp/meme");
+fimo_to_bedGraph("deNovoMotifs.meme",
+  "/home/jburdick/tmp/meme_denovo");
 
 
 # Runs FIMO, converting its output to bedGraph files (which nonetheless
