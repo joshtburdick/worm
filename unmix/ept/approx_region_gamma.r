@@ -1,5 +1,7 @@
 # Approximates a region using gamma distributions.
 
+library("limSolve")
+
 source("git/unmix/ept/beta.r")
 source("git/unmix/ept/gamma.r")
 
@@ -106,8 +108,8 @@ approx.region.gamma.2 = function(A, b, max.iters=100) {
     q.new = gamma.conditional.approx(q1, A, b)
 
     # difference between those messages, and current posterior
-    change = sweep(q.new, c(1,2), q, "-")
-#    change = q1 - q.new
+#    change = sweep(q.new, c(1,2), q, "-")
+    change = q1 - q.new
 
     # update messages from each factor (possibly damped)
     term = term + 1 * change
@@ -123,21 +125,25 @@ print(q)
 }
 
 A0 = t(rep(1,4))
+r = approx.region.gamma(A0, 1, max.iters=100)
+# this exactly matches the moments of the actual marginals,
+# which are ~ Beta(1,3) (for what that's worth)
+# to see this, eval 
+#     gamma.n2mv(r$x)
+
 x0 = array(gamma.s2n(rbind(a=c(2,3,4,5), b=rep(1,4))), dim=c(2,4,1))
 dimnames(x0)[[1]] = c("e1", "e2")
-# r = gamma.conditional.approx(x0, A0, 1)
-
-r = approx.region.gamma(A0, 1, max.iters=100)
+r.gca = gamma.conditional.approx(x0, A0, 1)
+# this seems fairly plausible
 
 A1 = rbind(c(1,1,0), c(0,1,1))
 r1 = approx.region.gamma(A1, c(1,1), max.iters = 6)
 
-if (FALSE) {
 A2 = rbind(
   c(1,1,1,1,1,0),
   c(0,0,0,1,1,1))
-rownames(A) = c("ceh-6", "hlh-1")
-colnames(A) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
-r2 = approx.region.gamma.2(A2, c(1,1), max.iters=100)
-}
+rownames(A2) = c("ceh-6", "hlh-1")
+colnames(A2) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
+r2 = approx.region.gamma.2(A2, c(1,1), max.iters=10)
+
 
