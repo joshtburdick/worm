@@ -23,7 +23,6 @@ r.sort.only = r[,c(1:23)]
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
 
 
-
 # Does hierarchical clustering.
 # Args:
 #   r - the dataset
