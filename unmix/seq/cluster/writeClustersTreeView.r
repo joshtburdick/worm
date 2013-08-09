@@ -55,7 +55,11 @@ write.treeview = function(x, wx, clusters, col, basefile) {
 
   # cluster arrays, and write this out
   # XXX for now, not sorting by this
-  hc <- hcluster(t(x), method = "correlation", nbproc=4)
+  x1 = x
+  x1[ is.na(x1) ] = 0
+  hc <- hcluster(t(x1), method = "correlation", nbproc=4)
+cat("computed hc\n")
+
   hc$order = sort(hc$order)
   r2atr(hc, file = paste(basefile, ".atr", sep = ""))
 
@@ -66,7 +70,11 @@ write.treeview = function(x, wx, clusters, col, basefile) {
   for(i in 1:num.clusters) {
 
     wx1 = wx[ clusters == i , ]
+    wx1[ is.na(wx1) ] = 0    # XXX hack
 
+cat("i =", i, "\n")
+cat("num genes =", sum(clusters==i), "\n")
+cat("dim(wx1) =", dim(wx1), "\n")
     hr = hcluster(wx1, method = "correlation", nbproc = 7)
 
     # write out gene tree, colored appropriately
@@ -107,6 +115,71 @@ write.treeview = function(x, wx, clusters, col, basefile) {
   unlink(paste(temp.file.base, ".ctd", sep=""))
 
   options(stringsAsFactors = FALSE)
+}
+
+# Alternative version of this, which just colors the original
+# dendrogram. (This should put similar clusters nearby, making
+# the overall clustering easier to interpret.) Somewhat hacky.
+# Args:
+#   x - the expression dataset to write out
+#   hr, hc - row and column clustering to use
+#   clusters - the cluster each gene is in
+#   cluster.colors - the color for each cluster
+#   basefile - base output file
+# Side effects: writes out files colored appropriately
+write.clusters.treeview = function(x, hr, hc,
+    clusters, cluster.colors, basefile) {
+  num.clusters = max(clusters)
+
+  # first, write the files (not colorized)
+  options(stringsAsFactors = TRUE)  # XXX don't know why this is needed
+  r2gtr(hr, file = paste(basefile, ".gtr", sep = ""))
+  r2atr(hc, file = paste(basefile, ".atr", sep = ""))
+  r2cdt(hr, hc, x, file = paste(basefile, ".cdt", sep = ""))
+
+  # then, color the rows according to the clustering
+  # read in files
+  cdt = read.table(paste(basefile, ".cdt", sep = ""), skip=3, as.is=TRUE)
+  gene.id = cdt[,1]
+  names(gene.id) = cdt[,2]
+
+  gtr = read.table(paste(basefile, ".gtr", sep = ""), as.is=TRUE)
+  colnames(gtr) = c("NODEID", "LEFT", "RIGHT", "CORRELATION")
+  rownames(gtr) = gtr$NODEID
+  gtr$NODECOLOR = NA
+
+  # vector for the names of nodes
+  nn = unique(union(gtr$NODEID, union(gtr$LEFT, gtr$RIGHT)))
+  node.colors = rep(NA, length(nn))
+  names(node.colors) = nn
+
+  # color genes according to their cluster
+  # (note that TreeView can't deal with the alpha channel,
+  # so these are truncated to, e.g., "#FF007A")
+  node.colors[ gene.id[ names(clusters) ] ] =
+    substr(cluster.colors[ clusters ], 1, 7)
+
+  # propagate color up when a node's children are the same color
+  done = FALSE
+  while (!done) {
+    nc1 = node.colors
+    col.a = node.colors[ gtr[,"LEFT"] ]
+    col.b = node.colors[ gtr[,"RIGHT"] ]
+    i = col.a == col.b
+    i[ is.na(i) ] = FALSE
+    node.colors[ gtr[,"NODEID"][i] ] = col.a[ i ]   # FIXME
+    gtr[,"NODECOLOR"] = node.colors[ gtr[,"NODEID"] ]
+    done = all(node.colors == nc1, na.rm=TRUE) &&
+      all(is.na(node.colors) == is.na(nc1))
+  }
+  gtr[,"NODECOLOR"] = node.colors[ gtr[,"NODEID"] ]
+
+  # set remaining colors to grey
+  gtr[ is.na(gtr[,"NODECOLOR"]), "NODECOLOR" ] = "#808080"
+
+  # overwrite gene clustering with added color column
+  write.table(gtr, file=paste(basefile, ".gtr", sep = ""),
+    sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
 }
 
 
