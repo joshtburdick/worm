@@ -21,6 +21,11 @@ if (TRUE) {
 
   chip = read.table(gzfile("git/tf/chip/TF_chip_5kbUp.tsv.gz"),
     sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
+
+  # only keep genes which are in both lists
+  g = intersect(rownames(r), rownames(known.motifs))
+  r = r[g,]
+  known.motifs = known.motifs[g,]
 }
 
 # orthology data
@@ -67,7 +72,6 @@ compute.cluster.centers = function(r, cl, motif) {
   tf.expr = r[g,]
   tf.cluster.cor = cor(t(r[g,]), t(r.center))
 
-
   list(r.center = r.center, tf.cluster.cor = tf.cluster.cor)
 }
 
@@ -111,7 +115,7 @@ t.test.many = function(a, b) {
   data.frame(name = r[,"name"],
     t = as.numeric(r[,"t"]),
     p = as.numeric(r[,"p"]),
-    df = as.integer(r[,"df"]))
+    df = as.numeric(r[,"df"]))
 }
 
 # Same as above, but also graphs the distributions.
@@ -222,7 +226,7 @@ cat(cl, "")
   z1 = (motif[i,])
   z2 = (motif[!i,])
 
-    a = t.test.many(motif[i,], motif[!i,])
+    a = t.test.many(motif[i,], motif[!i,], var.equal=TRUE)
 #    a = t.test.many(motifs[i,], motifs[ sample(which(!i), sum(i)) , ])
     r = rbind(r, cbind(cluster = cl, a))
   }
@@ -231,31 +235,48 @@ cat(cl, "")
 }
 
 # Same as above, but only tests potential regulation
-# by TFs within a cluster.
+# by TFs associated with a cluster.
 # Args:
+#   expr - the expression dataset
 #   cluster - which cluster each gene is in
-#   motif - the motifs or other predictors.
+#   motif - the motifs or other predictors
 #   reg - data frame with columns "gene" and "regulator",
 #     giving presumed regulatory motifs for each gene
+#   min.tf.cor - only TFs at least this correlated with
+#     the average of the cluster are considered 
 # Returns: data frame of results.
-t.test.all.clusters.filtered = function(cluster, motif, reg) {
+t.test.all.clusters.filtered =
+    function(expr, cluster, motif, reg, min.tf.cor) {
+
+  r.center = compute.cluster.centers(expr, cluster, motifs)
+
   r = NULL
 
   for(cl in sort(unique(cluster))) {
-cat(cl, "")
+cat("cluster =", cl, "\n")
+
+    # which genes are in this cluster
     i = cluster == cl
 
-  m = reg[ reg[,"gene"] %in% names(cluster)[i] , "regulator" ]
-print(length(m))
-  if (length(m) == 0)
-    next
+    # which TFs are correlated with this cluster's center
+    # above the cutoff
+    cor.tfs = which( r.center$tf.cluster.cor[,cl] >= min.tf.cor )
+    if (length(cor.tfs) == 0)
+      next
+cat("num. somewhat correlated TFs =", length(cor.tfs), "\n")
 
-#  z1 = (motif[i,m])    ??? not needed?
-#  z2 = (motif[!i,m])
+    # motifs associated with those TFs
+    m = reg[ cor.tfs , "regulator" ]
+cat("num motifs =", length(m), "\n")
+    if (length(m) == 0)
+      next
+
+cat("t.test.many inputs have size", dim(motif[i,m]),
+  "and", dim(motif[!i,m]), "\n")
 
     a = t.test.many(motif[i,m], motif[!i,m])
 #    a = t.test.many(motifs[i,], motifs[ sample(which(!i), sum(i)) , ])
-print(a)
+# print(a)
 
     if(nrow(a) > 0) {
       r = rbind(r, cbind(cluster=cl, a))
@@ -378,8 +399,8 @@ names(cl1) = rownames(cl)
 # r.center = compute.cluster.centers(r, cl1, known.motifs)
 
 
-z = t.test.all.clusters.filtered(cl1, known.motifs,
-  data.frame(gene=ortho[,"gene"], regulator=ortho[,"motif"]))
+z = t.test.all.clusters.filtered(r, cl1, known.motifs,
+  data.frame(gene=ortho[,"gene"], regulator=ortho[,"motif"]), 0.5)
 z$p.corr = p.adjust(z$p)
 
 
