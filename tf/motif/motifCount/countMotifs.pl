@@ -4,13 +4,25 @@
 
 use strict;
 
+# count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip");
+# write_motif_counts("/murrlab/seq/igv/motif/meme/",
+#   "upstream_liftOver_WS220.bed",
+#   "./knownMotif_5kbUp.tsv", 3);
+write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
+  "upstream_liftOver_WS220.bed",
+  "./deNovoMotif_5kbUp.tsv", 3);
+
 # write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
 #   "upstreamRegionsWS220_5kb_nogenes.bed",
 #   "./foo.tsv", 3);
 
-write_motif_counts("/murrlab/seq/igv/motif/meme/",
- "upstreamRegionsWS220_5kb_nogenes.bed",
-  "./motifs_5kb_nogenes.tsv", 3);
+# write_motif_counts("/murrlab/seq/igv/motif/meme/",
+#  "upstreamRegionsWS220_5kb_nogenes.bed",
+#   "./motifs_5kb_nogenes.tsv", 3);
+
+# write_motif_counts("/murrlab/seq/igv/motif/meme/",
+#  "upstreamRegionsWS220_5kb_nogenes_cons_0.5.bed",
+#   "/home/jburdick/tmp/motifs_5kb_nogenes_cons_0.5.tsv", 3);
 
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
 # count_motifs("/murrlab/seq/igv/histone.chip/Early-Embryos/", "histone_EE_1kbUp.tsv", 5);
@@ -30,12 +42,14 @@ sub count_motifs_chip {
   my($base_dir, $name) = @_;
   my @stages = `ls $base_dir/`;
 
+#  system("mkdir -p TF_chip");
   foreach my $stage (@stages) {
     chomp $stage;
     print "stage $stage\n";
     count_motifs("$base_dir/$stage/",
-      "regions/WS220_5000_bp_upstream.bed",
-      $name . "_" . $stage . "_5kbUp.tsv", 5);
+      "upstream_liftOver_WS220.bed",
+#      "regions/WS220_5000_bp_upstream.bed",
+      "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
   }
 }
 
@@ -74,7 +88,11 @@ sub count_motifs {
     open IN, "cut -f$column tmp.tsv |" || die;
     foreach my $i (0..(@r-1)) {
       $_ = <IN>;
-      die if not defined $_;
+#      die if not defined $_;
+      # XXX now skipping cases in which something fails
+      if (not defined $_) {
+        $_ = "";
+      }
       chomp;
       push @{$r[$i]}, $_;
     }
