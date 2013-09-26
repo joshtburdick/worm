@@ -4,10 +4,10 @@
 
 use strict;
 
-# count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip");
-# write_motif_counts("/murrlab/seq/igv/motif/meme/",
-#   "upstream_liftOver_WS220.bed",
-#   "./knownMotif_5kbUp.tsv", 3);
+count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip");
+write_motif_counts("/murrlab/seq/igv/motif/meme/",
+  "upstream_liftOver_WS220.bed",
+  "./knownMotif_5kbUp.tsv", 3);
 write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
   "upstream_liftOver_WS220.bed",
   "./deNovoMotif_5kbUp.tsv", 3);
@@ -42,13 +42,16 @@ sub count_motifs_chip {
   my($base_dir, $name) = @_;
   my @stages = `ls $base_dir/`;
 
-#  system("mkdir -p TF_chip");
+  system("mkdir -p TF_chip");
   foreach my $stage (@stages) {
     chomp $stage;
     print "stage $stage\n";
-    count_motifs("$base_dir/$stage/",
-      "upstream_liftOver_WS220.bed",
+#    count_motifs("$base_dir/$stage/",
+#      "upstream_liftOver_WS220.bed",
 #      "regions/WS220_5000_bp_upstream.bed",
+#      "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
+    write_motif_counts("$base_dir/$stage/",
+      "upstream_liftOver_WS220.bed",
       "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
   }
 }
