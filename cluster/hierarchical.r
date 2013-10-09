@@ -10,26 +10,19 @@ source("git/unmix/seq/cluster/writeClustersTreeView.r")
 
 # The read ratios.
 r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
+# r = r[c(1:500,19360:19369),]        # XXX for testing
 
-r = r[1:1000,]        # XXX for testing
-
-# only keep rows which are not constant
+# Tests for a row not being constant.
 non.const.row = function(x) {
   v = var(x, na.rm=TRUE)
   !is.na(v) && (v > 0)
 }
+
 r = r[ apply(r, 1, non.const.row) , ]
 
-
-# was: r = r[ apply(r, 1, var) > 0 , ]
-# remove rows which are all NA
-# r = r[ apply(!is.na(r), 1, sum) > 0 , ]
-
 r.sort.only = r[,c(1:23)]
-# r.sort.only = r.sort.only[ apply(!is.na(r.sort.only), 1, sum) > 0 , ]
 
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
-
 
 # Does hierarchical clustering, and saves TreeView files.
 # Args:
@@ -39,7 +32,7 @@ r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
 #   link - which clustering method
 # Modified from ctc::hclust2treeview() .
 # Returns: row and column clustering
-hcluster.treeview = function(r, r.cluster, method = "correlation", link = "complete") {
+deprecated.hcluster.treeview = function(r, r.cluster, method = "correlation", link = "complete") {
   nbproc = 7
 
   hr <- hcluster(r.cluster, method = method, link = link, nbproc = nbproc)
@@ -54,52 +47,55 @@ hcluster.treeview = function(r, r.cluster, method = "correlation", link = "compl
 # Does hierarchical clustering.
 # Args:
 #   r - the dataset
-#   r.cluster - data subsetted (or weighted) for clustering
-#   output.path - directory in which to save output
+#   r.cluster - subset of data to use for clustering
+#   output.name - directory in which to save output
 #     (relative to this directory)
 #   num.clusters - vector of different number of clusters to include
 # Side effects: writes results in that directory,
 #   including list of genes and clusters.
-# Note that this can crash if some cluster is empty.
-h.cluster = function(r, r.cluster, output.path, num.clusters.list) {
+# FIXME this should replace .cdt files with symlinks, if possible.
+h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
-  # do the clustering
-  a = hcluster.treeview(r, r.cluster)
-cat("computed a\n")
+  # do clustering
+  hr = hcluster(as.matrix(r.cluster),
+    method="correlation", link="complete", nbproc=7)
+  hc = hcluster(as.matrix(t(r)),
+    method="correlation", link="complete", nbproc=7)
+
+  # ignore the column ordering
+  hc$order = sort(hc$order)
+
 #    paste(output.path.1, "/clusters", sep=""))
+
+  cluster.coloring = rep(rainbow(12), 100)
 
   for (num.clusters in num.clusters.list) {
 
-    output.path.1 = paste("git/cluster/hierarchical", "/",
-      output.path, ".", num.clusters, "clusters", sep="")
+    output.path.1 = paste("git/cluster/hierarchical/",
+      output.name, ".", num.clusters, ".clusters", sep="")
 
     system(paste("mkdir -p ", output.path.1))
 
     # write out clusters, at a threshold to get some number of clusters
-    clusters = cutree(a$hr, k=num.clusters)
+    clusters = cutree(hr, k=num.clusters)
     write.table(data.frame(gene=rownames(r.cluster), cluster=clusters),
       file=paste(output.path.1, "clusters.tsv", sep="/"),
       sep="\t", row.names=TRUE, col.names=NA)
 
-    write.clusters.treeview(   
-      a$hr, a$hc, r.cluster,
-      paste(output.path.1, "clusters", sep="/"))
-
-    # write in TreeView format
-#    write.clusters.treeview(r, r.cluster, clusters,
-#      rainbow(max(clusters))[sample(max(clusters),max(clusters))],
-#      paste(output.path.1, "clusters", sep="/"))
+    write.clusters.treeview(as.matrix(r), hr, hc,
+      clusters, cluster.coloring, 
+      paste(output.path.1, "cluster", sep="/"))
+    unlink(paste(output.path.1, "/cluster.atr", sep=""))
 
     # use handmade dendrogram
 #    system(paste("cp git/unmix/seq/cluster/readsNormalizedDendrogram.csv ",
 #      output.path.1, "/clusters.atr", sep=""))
-    # FIXME this isn't currently working, so we just omit this
-    system(paste("rm ", output.path.1, "/clusters.atr", sep=""))
+
   }
 }
 
 # attempt at simpler alternative method
-if (TRUE) {
+if (FALSE) {
   # do clustering
   hr = hcluster(as.matrix(r),
     method="correlation", link="complete", nbproc=7)
@@ -121,7 +117,11 @@ if (TRUE) {
   unlink(paste(basefile, ".atr", sep=""))
 }
 
-
+if (TRUE) {
+  n.clusters = c(50,100,150,200,250,300)
+  h.cluster(r[rownames(r.sort.only),], r.sort.only, "hier", n.clusters)
+  h.cluster(r, r, "hier.ts", n.clusters)
+}
 
 # do clustering, and save results (deprecated)
 if (FALSE) {
