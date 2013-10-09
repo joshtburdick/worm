@@ -1,8 +1,33 @@
-# Constructs a network based on enriched upstream motifs.
+# Constructs a network based on things (motifs and ChIP signal)
+# upstream of genes in clusters, filtered by correlation of a TF
+# with clusters.
 
 source("git/utils.r")
 
+r = read.tsv("git/cluster/readRatios.tsv")
+ortho = read.table("git/tf/motif.ortholog.2.tsv", header=TRUE, as.is=TRUE)
 
+# for now, not including InParanoid orthology
+ortho = ortho[ ortho$method != "InParanoid" , ]
+
+# XXX some of these motifs aren't included (I'm not sure why),
+# so omit those cases
+ortho = ortho[ ortho$motif %in% colnames(known.motifs) , ]
+
+# just keep cases in which there's a motif, and only keep
+# the motif from the "best" homolog (by "gene.score"; arguably
+# these should be normalized in some way)
+ortho = ortho[
+  order(ortho$gene,
+    ortho$species,
+    -ortho$related.gene.score) , ]
+
+# ortho = ortho[ !duplicated(ortho[ , c("gene", "species"),]) , ]
+# ??? just keeping unique gene names
+ortho = ortho[ !duplicated(ortho[ , c("gene"),]) , ]
+
+# the ratio data
+r = read.tsv("git/cluster/readRatios.tsv")
 
 # Reads in the various enrichments, and writes out a file
 # which Cytoscape can read.
@@ -25,6 +50,9 @@ write.enrichment.cytoscape.file = function(path) {
 }
 
 
+if (FALSE) {
 write.enrichment.cytoscape.file(
   "git/cluster/hierarchical/hier.ts.300.clusters/")
+}
+
 
