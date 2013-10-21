@@ -12,7 +12,7 @@ import javax.media.jai.*;
 import javax.media.j3d.*;
 import com.sun.j3d.utils.image.*;
 
-/** A set of images. */
+/** A set of images. This basically just reads the images in. */
 public class ImageSet {
 
 	/** Base location of images. This includes the pathname
@@ -30,7 +30,7 @@ public class ImageSet {
 	public TreeMap<Integer, TreeMap<Integer, Texture>> tex
 		= new TreeMap<Integer, TreeMap<Integer, Texture>>();
 
-	/** Voxel size, in nanometers (for x, y, and z.) 
+	/** Voxel size, in micrometers (for x, y, and z.) 
 	 * FIXME this shouldn't be hardcoded */
 	public double resolution[] = { 0.087, 0.087, 0.504 };
 	
