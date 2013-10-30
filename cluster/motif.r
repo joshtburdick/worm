@@ -4,7 +4,7 @@ source("git/utils.r")
 
 r = read.tsv("git/cluster/readRatios.tsv")
 
-#motifs = read.table(
+#motifs.1kb = read.table(
 #  gzfile("git/tf/motif/motifCount/motifs_1kbUpstream.tsv.gz"),
 #  sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
 
@@ -58,24 +58,6 @@ ortho = ortho[ !duplicated(ortho[ , c("gene"),]) , ]
 # tfs = intersect(rownames(known.motifs), ortho$gene)
 }
 
-# compute center of each cluster
-compute.cluster.centers = function(r, cl, motif) {
-  num.clusters = max(cl)
-  r.center = matrix(nrow=num.clusters, ncol=ncol(r))
-  colnames(r.center) = colnames(r)
-
-  # cluster centers
-  for (i in 1:num.clusters)
-    r.center[i,] = apply(r[cl==i,], 2,
-      function(x) mean(x, na.rm=TRUE))
-
-  # correlation of each TF with each cluster center
-  g = intersect(rownames(r), ortho$gene)
-  tf.expr = r[g,]
-  tf.cluster.cor = cor(t(r[g,]), t(r.center))
-
-  list(r.center = r.center, tf.cluster.cor = tf.cluster.cor)
-}
 
 
 if (FALSE) {
@@ -105,22 +87,31 @@ motifs = motifs[g,]
 # Returns: data frame with columns:
 #   name - which column was being tested
 #   t, df, p - results from t-test
-# FIXME rewrite using genefilter::rowttest? the only issue
-# is that that isn't one-sided...
+# FIXME rewrite using genefilter::rowttest? the issues are
+# that it isn't one-sided (and doesn't seem much faster, either)
 t.test.many = function(a, b) {
   r = NULL
 
   for(j in colnames(a)) {
-    m = t.test(a[,j], b[,j], alternative="greater")
+#    m = t.test(a[,j], b[,j], alternative="greater")
+#    r = rbind(r,
+#      c(name=j, m[[1]], p=m[[3]], m[[2]]))
+    m = wilcox.test(a[,j], b[,j])
     r = rbind(r,
-      c(name=j, m[[1]], p=m[[3]], m[[2]]))
+      c("name"=j, m$statistic, "p"=m$p.value, "df"=NA,
+        a.mean = mean(a[,j]), a.sd = sd(a[,j]),
+        b.mean = mean(b[,j]), b.sd = sd(b[,j])))
   }
 
   # XXX type conversion hack
   data.frame(name = r[,"name"],
-    t = as.numeric(r[,"t"]),
+    stat = as.numeric(r[,"W"]),
     p = as.numeric(r[,"p"]),
-    df = as.numeric(r[,"df"]))
+    df = as.numeric(r[,"df"]),
+    a.mean = as.numeric(r[,"a.mean"]),
+    a.sd = as.numeric(r[,"a.sd"]),
+    b.mean = as.numeric(r[,"b.mean"]),
+    b.sd = as.numeric(r[,"b.sd"]))
 }
 
 # Same as above, but also graphs the distributions.
@@ -187,7 +178,7 @@ enriched.in.fraction.1 = function(log.enrich, motif, output.dir) {
       motif[ log.enrich[,s] <= -cutoff , ])
 #    r = t.test.many.graphing(motif[ log.enrich[,s] >= cutoff , ],
 #      motif[ log.enrich[,s] <= -cutoff , ], output.dir, s)
-    r$p.bh = p.adjust(r$p, method="hochberg")
+    r$p.bh = p.adjust(r$p, method="fdr")
     r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
     r = r[ order(r$p.bh) , ]
     if (nrow(r) > 0)
@@ -373,10 +364,12 @@ t.test.clusters = function(path, x, output.name) {
   cl = cl[g,]
 
   r = t.test.all.clusters(cl$cluster, x)
+
+if (TRUE) {   # XXX testing
   r$p.bh = p.adjust(r$p, method="fdr")
-  r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
-#  r = r[ r$p <= 0.01 & r$t > 0 , ]
+  r = r[ r$p.bh <= 0.5 & r$stat > 0 , ]
   r = r[ order(r$p.bh) , ]
+}
 
   write.table(r,
     file=paste(path, "/", output.name, ".tsv", sep=""),
@@ -386,12 +379,19 @@ t.test.clusters = function(path, x, output.name) {
 }
 
 
-# using new location
-cluster.dirs = c(paste("git/cluster/hierarchical/hier.",
-    c(50, 100, 150, 200, 250, 300), ".clusters", sep=""),
-  paste("git/cluster/hierarchical/hier.ts.",
-    c(50, 100, 150, 200, 250, 300), ".clusters", sep=""))
 
+cluster.names = c(
+  paste("hier.", c(50, 100, 150, 200, 250, 300), sep=""),
+  paste("hier.ts.", c(50, 100, 150, 200, 250, 300), sep=""))
+
+# cluster.dirs = c(paste("git/cluster/hierarchical/hier.",
+#     c(50, 100, 150, 200, 250, 300), ".clusters", sep=""),
+#   paste("git/cluster/hierarchical/hier.ts.",
+#     c(50, 100, 150, 200, 250, 300), ".clusters", sep=""))
+
+# using new location
+cluster.dirs = paste("git/cluster/hierarchical/", cluster.names, ".clusters", sep="")
+cluster.dirs = cluster.dirs[c(10,4)]    # for testing
 
 # Does the above test, for all clusters.
 # Args:
@@ -413,9 +413,9 @@ t.test.all.clusters.1 = function(motif, output.name) {
 
 }
 
-# Computes statistics about how many potential
-# regulatory elements were enriched near genes in each cluster.
-compute.interaction.stats = function(f, bh.cutoff = 0.5) {
+# Counts how many potential regulatory elements were
+# enriched near genes in each cluster.
+count.enriched = function(f, bh.cutoff = 0.5) {
   r = read.table(f, sep="\t", header=TRUE,
     row.names=1, stringsAsFactors=FALSE)
   r = r[ r[,"t"] > 0 & r[,"p.bh"] <= bh.cutoff, ]
@@ -427,26 +427,32 @@ compute.interaction.stats = function(f, bh.cutoff = 0.5) {
 
 ###
 # Does t-tests of known motifs, de novo motifs, and ChIP
-if (TRUE) {
-t.test.all.clusters.1(known.motifs, "knownMotifEnrichment_5kb")
-t.test.all.clusters.1(de.novo.motifs, "deNovoMotifEnrichment_5kb")
-t.test.all.clusters.1(chip, "chipEnrichment_5kb")
 
-t.test.all.clusters.1(known.motifs.0.5.cons, "knownMotifEnrichment_5kb_0.5cons")
-t.test.all.clusters.1(de.novo.motifs.0.5.cons, "deNovoMotifEnrichment_5kb_0.5cons")
-t.test.all.clusters.1(chip.0.5.cons, "chipEnrichment_5kb_0.5cons")
+#t.test.all.clusters.1(known.motifs, "knownMotifEnrichment_5kb")
+#t.test.all.clusters.1(de.novo.motifs, "deNovoMotifEnrichment_5kb")
+#t.test.all.clusters.1(chip, "chipEnrichment_5kb")
+#t.test.all.clusters.1(known.motifs.0.5.cons, "knownMotifEnrichment_5kb_0.5cons")
+#t.test.all.clusters.1(de.novo.motifs.0.5.cons, "deNovoMotifEnrichment_5kb_0.5cons")
+#t.test.all.clusters.1(chip.0.5.cons, "chipEnrichment_5kb_0.5cons")
+
+if (TRUE) {
+  load(file="git/tf/motif/motifCount/shuffled.motif.counts.Rdata")
+  t.test.all.clusters.1(shuffled.known.motifs,
+    "shuffledKnownMotifEnrichment_5kb")
+  t.test.all.clusters.1(shuffled.known.motifs.0.5.cons,
+    "shuffledKnownMotifEnrichment_5kb_0.5cons")
 }
 
 if (FALSE) {
   # Computes stats about enrichment for all the clusterings.
-  cluster.stats = function() {
+  cluster.stats.old = function() {
     r = NULL
     for(cl in cluster.dirs) {
       r = rbind(r,
         c(cl,
-          compute.interaction.stats(
+          count.enriched(
             paste(cl, "knownMotifEnrichment_5kb.tsv", sep="/"), 0.05),
-          compute.interaction.stats(
+          count.enriched(
             paste(cl, "deNovoMotifEnrichment_5kb.tsv", sep="/"), 0.05)))
     }
     colnames(r) = c("clustering",
@@ -458,6 +464,35 @@ if (FALSE) {
     sep="\t", row.names=TRUE, col.names=NA)
 }
 
+# Computes statistics about enrichment for all of the clusterings.
+cluster.stats = function() {
+  r = NULL
+  count.regulators = function(cl, regulator) {
+    a = count.enriched(
+      paste("git/cluster/hierarchical/", cl, ".clusters/", regulator, ".tsv", sep=""), 0.05)
+    data.frame(clustering = cl,
+      regulator = regulator,
+      num = a["num"],
+      num.predictors = a["num.predictors"],
+      num.clusters = a["num.clusters"])
+  }
+
+  for(cl in cluster.names)
+    for(a in c("MW_knownMotifEnrichment_5kb"))
+#      "knownMotifEnrichment_5kb_0.5cons",
+#      "deNovoMotifEnrichment_5kb",
+#      "deNovoMotifEnrichment_5kb_0.5cons",
+#      "chipEnrichment_5kb",
+#      "chipEnrichment_5kb_0.5cons"))
+      r = rbind(r, count.regulators(cl, a))
+
+  rownames(r) = NULL
+  r
+}
+if (FALSE) {
+  write.table(cluster.stats(), file="git/cluster/clusterStats.tsv",
+    sep="\t", row.names=TRUE, col.names=NA)
+}
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
 
 
@@ -467,16 +502,16 @@ if (FALSE) {
 # enriched.in.fraction()
 
 
-# testing this
-if (FALSE) {
+# testing filtered-by-correlation search
+
 cl = read.table(
   "git/cluster/hierarchical/hier.ts.200.clusters/clusters.tsv",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE)
-cl1 = cl$cluster
-names(cl1) = rownames(cl)
+cl1 = as.character(cl$cluster)
+names(cl1) = cl$gene
 
+if (FALSE) {
 r.center = compute.cluster.centers(r, cl1, known.motifs)
-
 
 z = t.test.all.clusters.filtered(r, cl1, known.motifs,
   data.frame(gene=ortho[,"gene"], regulator=ortho[,"motif"]), 0.5)
