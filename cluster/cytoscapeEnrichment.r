@@ -72,6 +72,7 @@ compute.cluster.centers = function(r, cl, tf) {
 # Side effects: writes a Cytoscape-readable file in that directory.
 write.enrichment.cytoscape.file = function(path) {
 
+if (FALSE) {
   r1 = read.tsv(paste(path, "chipEnrichment_5kb.tsv", sep="/"))
   r1$type = "ChIP"
   r1$gene = chip.gene.name[ r1$name , "gene" ]
@@ -80,13 +81,13 @@ write.enrichment.cytoscape.file = function(path) {
   r1$log2.fold.enrich = r1$a.mean - r1$b.mean
 
   r1 = r1[ , c("name", "type", "cluster", "p.bh", "gene", "a.mean","b.mean","log2.fold.enrich")]
-
+}
 #  r2 = read.tsv(paste(path, "deNovoMotifEnrichment_5kb.tsv", sep="/")) 
 #  r2$type = "deNovoMotif"
 #  r2$gene = ""
 #  r2 = r2[ , c("name", "type", "cluster", "p.bh", "gene")]
 
-  r3 = read.tsv(paste(path, "knownMotifEnrichment_5kb.tsv", sep="/"))
+  r3 = read.tsv(paste(path, "chisq_knownMotifEnrichment_5kb.tsv", sep="/"))
   r3$type = "knownMotif"
 
   # add one row for each gene with a given motif
@@ -96,7 +97,7 @@ write.enrichment.cytoscape.file = function(path) {
 cat("\n")
   for (i in 1:nrow(ortho)) {
 cat(backspace.string, i)
-    a = r3[ r3$name == ortho[i,"motif"] , ]
+    a = r3[ r3$motif == ortho[i,"motif"] , ]
     if (nrow(a) > 0) {
       a$gene = ortho[ i, "gene" ]
       r3a = rbind(r3a, a)
@@ -104,19 +105,21 @@ cat(backspace.string, i)
   }
 
   # convert means to "fold enrichment"
-  r3a$log2.fold.enrich = log2(r3a$a.mean) - log2(r3a$b.mean)
-  r3a$log2.fold.enrich[ r3a$a.mean == 0 | r3a$b.mean == 0 ] = 0
+#  r3a$log2.fold.enrich = log2(r3a$a.mean) - log2(r3a$b.mean)
+#  r3a$log2.fold.enrich[ r3a$a.mean == 0 | r3a$b.mean == 0 ] = 0
+  r3a$log2.fold.enrich = log2( r3a$enrichment )
 
 cat("\n")
-  r3a = r3a[ , c("name", "type", "cluster", "p.bh", "gene", "a.mean", "b.mean","log2.fold.enrich") ]
+  r3a = r3a[ , c("motif", "type", "cluster", "p.fdr", "gene","log2.fold.enrich") ]
+  colnames(r3a)[1] = "name"
 print(dim(r3))
 print(dim(r3a))
 
-  r = rbind(r1,r3a)       # XXX temporary
+  r = rbind(r3a)       # XXX temporary
   r$edge_name = r$name
 
   # XXX this doesn't seem to help much
-  r = r[ r$p.bh <= 0.05 , ]
+  r = r[ r$p.fdr <= 0.05 , ]
 
   # add on correlation of gene with each TF
   clusters = read.tsv(paste(path, "/clusters.tsv", sep=""))
@@ -130,7 +133,8 @@ print(dim(r3a))
 #  r = r[ abs(r$tf.correlation) >= 0.5 , ]
 
   # filter by "enrichment"
-  r = r[ abs(r$log2.fold.enrich) >= 0.5 , ]
+#  r = r[ abs(r$log2.fold.enrich) >= 0.5 , ]
+  r = r[ r$log2.fold.enrich >= 0.5 , ]
 
   write.tsv(r, paste(path, "cytoscape.tsv", sep="/"))
 }
@@ -138,7 +142,7 @@ print(dim(r3a))
 
 
 if (TRUE) {
-write.enrichment.cytoscape.file("git/cluster/hierarchical/hier.ts.100.clusters/")
+write.enrichment.cytoscape.file("git/cluster/hierarchical/hier.ts.200.clusters/")
 }
 
 
