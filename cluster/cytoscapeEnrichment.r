@@ -139,9 +139,26 @@ print(dim(r3a))
   write.tsv(r, paste(path, "cytoscape.tsv", sep="/"))
 }
 
+write.motif.enrichment.cytoscape.file = function(path) {
+  r3 = read.table(
+    paste(path, "uniqueKnownMotifEnrichment_5kb.tsv", sep="/"),
+    sep="\t", header=TRUE, as.is=TRUE)
+  r3$type = "knownMotif"
+  r3$log2.fold.enrich = log2(r3$enrichment)
+  r3$log2.fold.enrich[ r3$log2.fold.enrich <= -100 ] = -100
+  r3 = r3[ r3$log2.fold.enrich >= log2(2) , ]
 
+  r = r3
 
+  write.tsv(r, paste(path, "cytoscape.tsv", sep="/"))
+}
+
+# Writes enrichment just for motifs.
 if (TRUE) {
+  write.motif.enrichment.cytoscape.file("git/cluster/hierarchical/hier.100.clusters/")
+}
+
+if (FALSE) {
 write.enrichment.cytoscape.file("git/cluster/hierarchical/hier.ts.200.clusters/")
 }
 
