@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
-# Runs Tophat2 with reads trimmed iteratively.
+# Runs Tophat2, then trims the unmapped reads, and runs
+# Tophat2 on the remainder.
 
 use strict;
 
@@ -7,29 +8,20 @@ my $tophat2_dir = "/murrlab/software/tophat-2.0.10.Linux_x86_64/";
 
 # die if not (@ARGV == 2);
 
-# base name of directory containing F3 and F5-RNA files
-my $input_basename = $ARGV[0];
-
-# where to write output to
-my $output_dir = $ARGV[1];
-
 # genome and transcriptome indices
 my $bwt_base_dir = "/var/tmp/data/tophat2/WS220/";
-# my $bwt_base_dir = "/var/tmp/data/tophat2/WS220/";
 my $bwt_index = "$bwt_base_dir/genome";
 my $transcriptome_index = "$bwt_base_dir/transcriptome";
 
 # clean up files afterwards?
-my $remove_tmp = undef;
+my $remove_tmp = 1;
 
 # options to pass to Tophat2 in all cases
 my $tophat2_common_options = " --color --quals --integer-quals --bowtie1 " .
   "--transcriptome-index $transcriptome_index " .
-  "--GTF $transcriptome_index.gff " .
   "--min-intron-length 35 --max-intron-length 5000 " .
   "--no-coverage-search " .
   "--num-threads 7 ";
-
 
 # Gets read names from a .bam file.
 # Args:
@@ -166,29 +158,95 @@ sub run_tophat_clipping {
   system("mkdir -p $output_base");
 
   # slower, hopefully thorough version
-#  run_tophat($input_base, "$output_base/transcriptome1",
-#    "--no-mixed --segment-length 26 --min-anchor-length 3 " . 
-#    "--read-edit-dist 6 --read-mismatches 4 ");
+  run_tophat($input_base, "$output_base/transcriptome1",
+    "--no-novel-juncs " .
+    "--min-anchor-length 4 --splice-mismatch 1 " . 
+    "--read-edit-dist 8 --read-mismatches 5 --no-sort-bam ");
 
 # faster version of same
 #  run_tophat($input_base, "$output_base/transcriptome1",
 #    "--transcriptome-only --no-mixed --min-anchor-length 3 --read-edit-dist 6 --read-mismatches 4 ");
 
   filter_reads_clipping(
-    undef,   # "$output_base/transcriptome1/accepted_hits.bam",
+    "$output_base/transcriptome1/accepted_hits.bam",
     40, 29, $input_base, "$output_base/reads1");
 
   run_tophat("$output_base/reads1",
     "$output_base/remainder",
-    "--no-novel-juncs --segment-length 23 --min-anchor-length 3",
-    "--read-edit-dist 6 --read-mismatches 4 ");
+    "--no-novel-juncs --min-anchor-length 4 --splice-mismatch 1 ",
+    "--read-edit-dist 8 --read-mismatches 5 --no-sort-bam ");
+
+  # sort, and merge .bam output
+  system("samtools sort -m 2500000000 " .
+    "$output_base/transcriptome1/accepted_hits.bam " .
+    "$output_base/transcriptome1/sorted");
+  system("samtools sort -m 2500000000 " .
+    "$output_base/remainder/accepted_hits.bam " .
+    "$output_base/remainder/sorted");
+  system("samtools merge $output_base/merged.bam " .
+    "$output_base/transcriptome1/sorted.bam " .
+    "$output_base/remainder/sorted.bam ");
+
+  # clean up these files
+  if ($remove_tmp) {
+    unlink("$output_base/transcriptome1/accepted_hits.bam");
+    unlink("$output_base/transcriptome1/sorted.bam");
+    unlink("$output_base/remainder/accepted_hits.bam");
+    unlink("$output_base/remainder/sorted.bam");
+  }
 }
 
+# Does the mapping for a pair of files.
+# Args:
+#   input_base - directory containing F3 and F5-RNA reads
+#   output_base - base directory in which to write output
+sub run_tophat_fast {
+  my($input_base, $output_base) = @_;
+
+  system("mkdir -p $output_base");
+
+  # slower, hopefully thorough version
+  run_tophat($input_base, "$output_base/transcriptome1",
+    "--no-novel-juncs " .
+    "--min-anchor-length 4 --splice-mismatch 1 " . 
+    "--read-edit-dist 8 --read-mismatches 5 --no-sort-bam ");
+
+# faster version of same
+#  run_tophat($input_base, "$output_base/transcriptome1",
+#    "--transcriptome-only --no-mixed --min-anchor-length 3 --read-edit-dist 6 --read-mismatches 4 ");
+
+  filter_reads_clipping(
+    "$output_base/transcriptome1/accepted_hits.bam",
+    40, 29, $input_base, "$output_base/reads1");
+
+  run_tophat("$output_base/reads1",
+    "$output_base/remainder",
+    "--no-novel-juncs --min-anchor-length 4 --splice-mismatch 1 ",
+    "--read-edit-dist 8 --read-mismatches 5 --no-sort-bam ");
+
+  # sort, and merge .bam output
+  system("samtools sort -m 2500000000 " .
+    "$output_base/transcriptome1/accepted_hits.bam " .
+    "$output_base/transcriptome1/sorted");
+  system("samtools sort -m 2500000000 " .
+    "$output_base/remainder/accepted_hits.bam " .
+    "$output_base/remainder/sorted");
+  system("samtools merge $output_base/merged.bam " .
+    "$output_base/transcriptome1/sorted.bam " .
+    "$output_base/remainder/sorted.bam ");
+
+  # clean up these files
+#  unlink("$output_base/transcriptome1/accepted_hits.bam");
+#  unlink("$output_base/transcriptome1/sorted.bam");
+#  unlink("$output_base/remainder/accepted_hits.bam");
+#  unlink("$output_base/remainder/sorted.bam");
+}
 
 # tophat_tune_clipping();
 
 # for testing
-run_tophat_clipping("/var/tmp/data/reads/03_F21D5.9_1e5/",
-  "/var/tmp/tophat_trim_output/6");
+# run_tophat_clipping("/var/tmp/data/reads/03_F21D5.9_1e5/",
+#   "/var/tmp/tophat_trim_output/5");
 
+run_tophat_clipping($ARGV[0], $ARGV[1]);
 
