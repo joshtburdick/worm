@@ -7,6 +7,25 @@ use strict;
 
 use Graph::UnionFind;
 
+# Reads in mapping from transcript names to human-readable
+# WormBase names (when available.)
+sub get_wormbase_names {
+  open IN, "gunzip -c ../../../data/wormbase/c_elegans.PRJNA13758.WS240.xrefs.txt.gz |" || die;
+  my %h = ();
+  while (<IN>) {
+    chomp;
+    my @a = split /\t/;
+    if (!($a[2] eq ".")) {
+      $h{$a[0]} = $a[2];
+      $h{$a[3]} = $a[2];
+    }
+  }
+
+  return \%h;
+}
+
+my $wormbase_name = get_wormbase_names();
+
 # Creates a BED6 file containing merged exons, and the names of all
 # genes overlapping each exon.
 sub get_exons_old {
@@ -73,8 +92,16 @@ sub get_exons {
     if (!($a[1] eq "transcript")) {
       die @a if not $a[8] =~ /gene_id "(\S+)"/;
       my $name = $1;
-      print OUT (join "\t", $a[0], $a[3], $a[4], $name, 0, $a[6]);
-      print OUT "\n";
+
+      # skipping genes whose name starts with "21ur-"
+      if (defined $wormbase_name->{$name}) {
+        $name = $wormbase_name->{$name};
+      }
+
+      if (!($name =~ /^21ur-/)) {
+        print OUT (join "\t", $a[0], $a[3], $a[4], $name, 0, $a[6]);
+        print OUT "\n";
+      }
     }
   }
   close IN;
@@ -126,22 +153,6 @@ sub group_exons {
   close OUT;
 }
 
-# Reads in mapping from transcript names to human-readable
-# WormBase names (when available.)
-sub get_wormbase_names {
-  open IN, "gunzip -c ../../../data/wormbase/c_elegans.PRJNA13758.WS240.xrefs.txt.gz |" || die;
-  my %h = ();
-  while (<IN>) {
-    chomp;
-    my @a = split /\t/;
-    if (!($a[2] eq ".")) {
-      $h{$a[0]} = $a[2];
-      $h{$a[3]} = $a[2];
-    }
-  }
-
-  return \%h;
-}
 
 # Converts from GFF format to BED format.
 # Args:
@@ -150,7 +161,6 @@ sub get_wormbase_names {
 sub gff_to_bed {
   my($gff_in, $bed_out) = @_;
 
-  my $wormbase_name = get_wormbase_names();
 
   # first, read in all records, indexed by gene
   open IN, "bedtools sort -i $gff_in |" || die;
@@ -199,6 +209,9 @@ gff_to_bed("merged_genes_WS220.gff", "merged_genes_WS220.bed");
 
 # XXX the coordinates for these are off-by-one; not worrying
 # about this for now, but still cleaning up these files
-unlink("exons_WS220.bed");
-unlink("merged_exons_WS220.bed");
+# unlink("exons_WS220.bed");
+# unlink("merged_exons_WS220.bed");
+
+
+system("bedtools bed12tobed6 -i merged_genes_WS220.bed | bedtools sort -i - > merged_genes_split_WS220.bed");
 
