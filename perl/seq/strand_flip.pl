@@ -1,22 +1,34 @@
 #!/usr/bin/perl -w
-# Given SOLiD paired-end reads, flips strand of second read.
+# Given SOLiD paired-end reads, flips strand of one read.
 
 use strict;
 
 # this should be a glob which expands to all the Tophat
 # output directories to be included.
 my $dir_paths = $ARGV[0];
+
+# where to write output
 my $out_dir = $ARGV[1];
-my $flip_direction = $ARGV[2];
 
-die if not ($flip_direction eq "last" || $flip_direction eq "first");
-
+# Which strand should be flipped
+# - For most samples, this should be "first".
+# - For unamplified samples (e.g. heat-shock samples),
+#   this should be "last".
+# my $flip_direction = $ARGV[2];
+# XXX hacking this based on sample name
 
 # for samtools conversion -> BAM
-my $genome_fa = "~/data/seq/Caenorhabditis_elegans/UCSC/ce6/Sequence/WholeGenomeFasta/genome.fa";
+# my $genome_fa = "~/data/seq/Caenorhabditis_elegans/Ensembl/WS220/Sequence/WholeGenomeFasta/genome.fa";
+my $genome_fa = "/var/tmp/data/tophat2/WS220/genome.fa";
 
 sub flip_file {
   my($in_file, $out_file) = @_;
+
+  # XXX hack
+  my $flip_direction = "first";
+  if ($in_file =~ /(ges1|lit1|pop1)_/) {
+    $flip_direction = "last";
+  }
 
   open IN, "samtools view $in_file |" || die;
   open OUT, "|samtools view -bT $genome_fa - > $out_file";
@@ -59,16 +71,28 @@ foreach my $dir (glob $dir_paths) {
   chomp $dir;
 #  print "$dir\n";
 
-#  die if not ($dir =~ /_(0[1-6]_.*)$/);
-  die if not ($dir =~ /\/([^\/]+)$/);
+  die if not ($dir =~ /_(0[1-6](?:\.edit)?_.*)$/);
+#  die if not ($dir =~ /\/([^\/]+)$/);
   my $id = $1;
 
 #    my $out_file = "/murrlab/seq/tophat2/Murray050912/strand_flip/$id.bam";
 #  my $out_file = "/murrlab/seq/tophat2/Murray_52831_092812/strand_flip/$id.bam";
   my $out_file = "$out_dir/$id.bam";
 
-print("$dir/accepted_hits.bam $id $out_file\n");
-    flip_file("$dir/accepted_hits.bam", $out_file);
+  # XXX another hack: removing ".edit" from the names of
+  # output files
+  $out_file =~ s/\.edit//;
+
+  # skip cases which are already done
+  next if -e $out_file;
+
+# XXX was "accepted_hits.bam"
+print("$dir/merged.bam $id $out_file\n");
+    flip_file("$dir/merged.bam", "tmp.bam");
+    my $out_prefix = $out_file;
+    $out_prefix =~ s/\.bam$//;
+    system("samtools sort -m 1000000000 tmp.bam $out_prefix");
     system("samtools index $out_file");
+    unlink("tmp.bam");
 }
 
