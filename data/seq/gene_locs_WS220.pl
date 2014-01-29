@@ -59,7 +59,9 @@ sub get_exons {
 
   close OUT;
 
-  system("bedtools merge -s -nms -i exons_WS220.bed " .
+  # XXX hacking this so that it will print _something_ in BED6
+  # format (although it won't have correct names)
+  system("bedtools merge -s -n -scores max -i exons_WS220.bed " .
     "| bedtools sort -i - > merged_exons_WS220.bed");
 }
 
