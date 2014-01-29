@@ -4,6 +4,8 @@
 # numbers from the timeseries data.)
 
 source("git/utils.r")
+source("git/data/name_convert.r")
+
 # source("git/data/biomart_utils.r")
 # wb.gene = useMart("WS220", "wormbase_gene")
 # ens.ce = useMart("ensembl", "celegans_gene_ensembl")
@@ -36,8 +38,6 @@ readsPerMillion = cbind(r1, r2, r3)
 colnames(readsPerMillion) =
   experimentNames[ colnames(readsPerMillion), "name" ]
 readsPerMillion = readsPerMillion[ , order(colnames(readsPerMillion)) ]
-
-write.tsv(round(readsPerMillion,3), "git/cluster/readsPerMillion.tsv")
 
 # log-transformed reads per million, with a pseudocount added
 r = log2(pseudocount + readsPerMillion)
@@ -82,39 +82,7 @@ r.facs = cbind(r.facs,
 r.ts = read.tsv("git/unmix/seq/timing/deconvolved_embryo_ts.tsv")
 r.ts.scaled = t( scale( t(log2(pseudocount + r.ts)), center=TRUE, scale=FALSE) )
 
-# row name matching; possibly deprecated, as WormMart WS220
-# seems to be down
-if (FALSE) {
-  gene.names.1 =
-    mart.convert(wb.gene, "sequence_name", "public_name")(rownames(r.facs))
-  rownames(r.facs)[ !is.na(gene.names.1) ] =
-    gene.names.1[ !is.na(gene.names.1) ]
-  gene.names.1 =
-    mart.convert(wb.gene, "sequence_name", "public_name")(rownames(r.ts.scaled))
-  rownames(r.ts.scaled)[ !is.na(gene.names.1) ] =
-    gene.names.1[ !is.na(gene.names.1) ]
-}
-
-# alternative way of matching, using WormBase annotation
-# XXX using more recent annotation
-gene.ids = read.table(gzfile("data/wormbase/c_elegans.PRJNA13758.WS240.xrefs.txt.gz"), sep="\t")[,c(2,3,4)]
-colnames(gene.ids) = c("wb.gene", "gene", "transcript")
-# omit "unknown gene name" cases
-gene.ids = gene.ids[ gene.ids$gene != "." , ]
-
-# renames a vector of gene names
-rename.gene.names = function(a) {
-  r = rownames(a)
-  i = intersect(r, gene.ids[,"transcript"])
-  r[ match(i, r) ] =
-    gene.ids[ match(i, gene.ids[,"transcript"]), "gene" ]
-
-  a = a[ !duplicated(r) , ]
-  r = r[ !duplicated(r) ]
-  rownames(a) = r
-  a
-}
-
+readsPerMillion = rename.gene.names(readsPerMillion)
 r.facs = rename.gene.names(r.facs)
 r.ts = rename.gene.names(r.ts)
 r.ts.scaled = rename.gene.names(r.ts.scaled)
@@ -126,5 +94,6 @@ g = union(union(rownames(r.facs), rownames(r.ts.scaled)), g.nc)
 r.ft = cbind(as.data.frame(r.facs)[g,], as.data.frame(r.ts.scaled)[g,])
 rownames(r.ft) = g
 
+write.tsv(round(readsPerMillion,3), "git/cluster/readsPerMillion.tsv")
 write.tsv(round(r.ft,4), "git/cluster/readRatios.tsv")
 
