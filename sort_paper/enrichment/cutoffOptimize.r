@@ -2,7 +2,7 @@
 # for considering genes "enriched" (or "depleted".)
 
 # note: this re-generates the "readRatios.tsv" table
-# source("git/cluster/readRatios.r")
+source("git/cluster/readRatios.r")
 
 # Computes enrichment, using some pseudocount.
 # Args:
@@ -30,66 +30,59 @@ pha4.samples = c("pha-4 12/9", "pha-4 5/9", "pha-4 9/1")
 #   enriched (in terms of at least having a positive sign)
 enrich.reproducibility = function(x, y) {
   stopifnot( length(x) == length(y) )
-  y1 = y[ order(x, decreasing=TRUE) ]
+  i = order(x, decreasing=TRUE)
+  y1 = y[ i ]
   s = cumsum( y1 > 0 ) / (1:length(x))
-  s
+  list(x = x[ i ], y = cumsum( y1 > 0 ) / (1:length(x)) )
 }
 
 # some "toy" data sets, which should have the same
 # "enrichment reproducibility".
 x1 = cbind(c(5:-4), c(5,2,-1,-2,4,5,1,1,1,-1))
 x2 = x1[sample(1:10),]
-stopifnot(all( enrich.reproducibility(x1[,1], x1[,2]) == 
-  enrich.reproducibility(x2[,1], x2[,2]) ))
 
 # Computes enrichment reproducibility for all pairs of
 # samples.
 # Args:
-#   x - enrichment of each gene (with one sample per column)
-# Returns: matrix of reproducibility, with one column
-#   per pair of samples.
-enrich.reproducibility.all.pairs = function(x) {
-  n = ncol(x)
-  r = NULL
+#   en - enrichment of each gene (with one sample per column)
+# Returns: list with two matrices (one column per pair of samples)
+#   x - matrix of first samples' enrichment
+#   y - fraction of things reproducible per pair of samples.
+enrich.reproducibility.all.pairs = function(en) {
+  n = ncol(en)
+  x = NULL
+  y = NULL
   for(i in 1:n)
     for(j in 1:n)
       if (i != j) {
-        r = cbind(r, enrich.reproducibility(x[,i], x[,j]))
+        er = enrich.reproducibility(en[,i], en[,j])
+        x = cbind(x, er$x)
+        y = cbind(y, er$y)
       }
-  r
+  list(x = x, y = y)
 }
 
 plot.enrichment.reproducibility = function(r, samples, depletion, main) {
-  # only plot this many genes
-  num.genes = 4000
 
-  pseudocount = c(1,5,10,100)
-  color = hsv(0:3/4, 1, 1, alpha=0.5)
+  en = enrichment(r, samples, 3)
+  if (depletion) {
+    en = -en
+  }
+  er = enrich.reproducibility.all.pairs(en)
 
-  plot(1,1, xlim=c(num.genes, 1), ylim=c(0.6,1), type="n", main=main,
-    xlab="rank of gene in first replicate", ylab="fraction replicated")
+  plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n", main=main,
+    xlab="enrichment in first replicate", ylab="fraction replicated")
 
-  for(i in 1:length(pseudocount)) {
-    en = enrichment(r, samples, pseudocount[i])
-    if (depletion) {
-      en = -en
-    }
-    er = enrich.reproducibility.all.pairs(en)
-    er = er[ 1:num.genes , ]
-
-    for(j in 1:ncol(er)) {
-      lines(1:num.genes, er[,j], col=color[i])
-    }
-
+  for(j in 1:ncol(er$x)) {
+    lines(er$x[,j], er$y[,j], col="#0000ff80")
   }
 
-  legend("bottomright", legend = c("Pseudocount", pseudocount),
-    col = c("#00000000", color), cex=0.8, pch=20)
+  abline(v = 2, col="#00000080")
 }
 
 pdf("git/sort_paper/enrichment/cutoffOptimize.pdf",
-  width=7.5, height=10)
-par(mfrow=c(4,1))
+  width=7.5, height=7.5)
+par(mfrow=c(2,2))
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
   FALSE, "pha-4 enrichment")
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
