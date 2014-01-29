@@ -8,6 +8,8 @@ library("ctc")
 source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
 
+system("mkdir -p git/cluster/hierarchical")
+
 # The read ratios.
 r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
 # r = r[c(1:500,19360:19369),]        # XXX for testing
@@ -23,6 +25,45 @@ r = r[ apply(r, 1, non.const.row) , ]
 r.sort.only = r[,c(1:23)]
 
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
+
+# Get list of genes which have TransgenOme clones
+transgenome.genes = {
+  tg.table = read.table(
+    gzfile("data/genetic/TransgenOmeGenes.tsv.gz"),
+    sep="\t", header=TRUE, as.is=TRUE)
+  unique(c(tg.table[,5], tg.table[,6]))
+}
+
+# Gets short descriptions of genes.
+func.descr = {
+  fd0 = read.table(gzfile(
+    "data/wormbase/c_elegans.PRJNA13758.WS240.functional_descriptions.txt.gz"),
+    sep="\t", skip=4, quote="", fill=TRUE, as.is=TRUE)
+  fd0 = fd0[,c(2,7)]
+  fd0 = fd0[ !duplicated(fd0[,1]) , ]
+  fd1 = fd0[,2]
+  names(fd1) = fd0[,1]
+  fd1[ fd1 == "not known" ] = NA
+  fd1
+}
+
+# Renumbers a clustering, so that it's in ascending order.
+# Args:
+#   cl - a clustering, assumed to be consecutive numbers
+#     starting with 1
+#   ordering - the order the numbers are in
+# Returns: that clustering, renumbered to be in order.
+renumber.clusters.sorted = function(cl, ordering) {
+  gene.names = names(cl)
+  cl1 = cl[ ordering ]
+  n = max(cl1)
+
+  p = order(order(sapply(1:n, function(i) which(i==cl1)[1])))
+
+  r = p[cl]
+  names(r) = gene.names
+  r
+}
 
 # Does hierarchical clustering, and saves TreeView files.
 # Args:
@@ -44,6 +85,13 @@ deprecated.hcluster.treeview = function(r, r.cluster, method = "correlation", li
   list(hr=hr, hc=hc)
 }
 
+# definition of correlation, which skips missing values
+cor.dist = function(a) {
+  a = as.dist( 1 - cor(t(as.matrix(a)), use="na.or.complete") )
+#  a[ is.na(a) ] = 2
+  a
+}
+
 # Does hierarchical clustering.
 # Args:
 #   r - the dataset
@@ -57,17 +105,19 @@ deprecated.hcluster.treeview = function(r, r.cluster, method = "correlation", li
 h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
   # do clustering
-  hr = hcluster(as.matrix(r.cluster),
-    method="correlation", link="complete", nbproc=7)
-  hc = hcluster(as.matrix(t(r)),
-    method="correlation", link="complete", nbproc=7)
+#  hr = hcluster(as.matrix(r.cluster),
+#    method="correlation", link="complete", nbproc=7)
+#  hc = hcluster(as.matrix(t(r)),
+#    method="correlation", link="complete", nbproc=7)
+  hr = hclust(cor.dist(r.cluster))
+  hc = hclust(cor.dist(t(r)))
 
   # ignore the column ordering
   hc$order = sort(hc$order)
 
 #    paste(output.path.1, "/clusters", sep=""))
 
-  cluster.coloring = rep(rainbow(12), 100)
+  cluster.coloring = rep(hsv(c(1:5) / 6, 1, 0.7), 100)
 
   for (num.clusters in num.clusters.list) {
 
@@ -78,19 +128,33 @@ h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
     # write out clusters, at a threshold to get some number of clusters
     clusters = cutree(hr, k=num.clusters)
+print(clusters[1:5])
+print(class(clusters[1:5]))
+    # sort clusters, in numerically increasing order
+    # (just for convenience)
+    clusters = renumber.clusters.sorted(clusters, hr$order)
+
     write.table(data.frame(gene=rownames(r.cluster), cluster=clusters),
       file=paste(output.path.1, "clusters.tsv", sep="/"),
       sep="\t", row.names=TRUE, col.names=NA)
 
+    # adding "number of cluster" annotation, whether each
+    # gene has a TransgenOme clone, and the short
+    # "functional description" from Wormbase
+    fd1 = func.descr[ rownames(r) ]
+    fd1[ is.na(fd1) ] = ""
+
+    descr = paste(clusters, rownames(r),
+      ifelse(rownames(r) %in% transgenome.genes, "(TG)", ""),
+      fd1)
+
     write.clusters.treeview(as.matrix(r), hr, hc,
       clusters, cluster.coloring, 
-      paste(output.path.1, "cluster", sep="/"))
-    unlink(paste(output.path.1, "/cluster.atr", sep=""))
+      paste(output.path.1, "cluster", sep="/"), descr=descr)
 
     # use handmade dendrogram
-#    system(paste("cp git/unmix/seq/cluster/readsNormalizedDendrogram.csv ",
-#      output.path.1, "/clusters.atr", sep=""))
-
+    system(paste("cp git/cluster/dummy_atr_file.tsv ",
+      output.path.1, "/cluster.atr", sep=""))
   }
 }
 
