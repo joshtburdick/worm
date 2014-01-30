@@ -55,7 +55,7 @@ print "$name\n";
 
 # make_merged_list("/murrlab/seq/tophat2/Murray050912/strand_flip/",
 #   "/murrlab/seq/igv/expression/Murray050912/");
-my $output_dir = "/murrlab/seq/igv/expression/Murray_FACS/";
+my $output_dir = "/murrlab/seq/igv/expression/embryo_FACS/";
 
 make_merged_list("/murrlab/seq/tophat2/WS220_20140111/20110922",
   $output_dir);
