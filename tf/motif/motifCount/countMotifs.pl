@@ -4,6 +4,7 @@
 
 use strict;
 
+if (undef) {
 count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip");
 write_motif_counts("/murrlab/seq/igv/motif/meme/",
   "upstream_liftOver_WS220.bed",
@@ -11,6 +12,27 @@ write_motif_counts("/murrlab/seq/igv/motif/meme/",
 write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
   "upstream_liftOver_WS220.bed",
   "./deNovoMotif_5kbUp.tsv", 3);
+}
+
+if (undef) {
+  write_motif_counts("/murrlab/seq/igv/motif/meme/",
+    "upstream_liftOver_WS220_0.5cons.bed",
+    "./knownMotif_5kbUp_0.5cons.tsv", 3);
+  write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
+    "upstream_liftOver_WS220_0.5cons.bed",
+    "./deNovoMotif_5kbUp_0.5cons.tsv", 3);
+#  count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip_0.5cons");
+}
+
+if (undef) {
+  write_motif_counts("/home/jburdick/tmp/meme_shuffled_bw/",
+    "upstream_liftOver_WS220.bed",
+    "./shuffledKnownMotif_5kbUp.tsv", 3);
+  write_motif_counts("/home/jburdick/tmp/meme_shuffled_bw/",
+    "upstream_liftOver_WS220_0.5cons.bed",
+    "./shuffledKnownMotif_5kbUp_0.5cons.tsv", 3);
+}
+
 
 # write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
 #   "upstreamRegionsWS220_5kb_nogenes.bed",
@@ -51,7 +73,7 @@ sub count_motifs_chip {
 #      "regions/WS220_5000_bp_upstream.bed",
 #      "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
     write_motif_counts("$base_dir/$stage/",
-      "upstream_liftOver_WS220.bed",
+      "upstream_liftOver_WS220_0.5cons.bed",
       "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
   }
 }
