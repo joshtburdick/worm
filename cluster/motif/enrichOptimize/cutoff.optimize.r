@@ -210,7 +210,7 @@ compute.enrichment.diff.cutoffs.faster = function(motifs, clustering) {
   clusters = as.character(sort(unique(clustering)))
 
   # array of p-values
-  r = array(dim = list(length(motifs), length(clusters), 3, 3, 3),
+  r = array(dim = list(length(motifs), length(clusters), 3, 4, 3),
     dimnames = list(motif = motifs,
       group = clusters,
       upstream.dist.kb = c(1, 2, 3),
