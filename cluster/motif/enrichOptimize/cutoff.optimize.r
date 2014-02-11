@@ -135,6 +135,7 @@ compute.enrichment.diff.cutoffs = function(motif, clustering) {
         m1 = m[ m$upstream.dist >= -1000 * upstream.dist.kb &
           m$motif.cons >= conservation &
           m$motif.score >= motif.score , ]
+        gc()
         m.counts = c(table(clustering[m1$gene]))
 
         r1 = compute.enrichment.1(motif, clustering, m.counts, upstream.bp)
@@ -144,7 +145,57 @@ compute.enrichment.diff.cutoffs = function(motif, clustering) {
   r
 }
 
-for (f in list.files(clustering.dir)) {
+# Faster version of the above (hopefully.)
+# Args:
+#   motifs - list of motifs
+#   clustering - the clustering to use
+# Returns: a large array of unadjusted p-values
+compute.enrichment.diff.cutoffs.faster = function(motifs, clustering) {
+  clustering = clustering[ !is.na(clustering) ]
+  clusters = sort(unique(clustering))
+
+  # array of p-values
+  r = array(dim = list(length(motifs), length(clusters), 3, 3, 3),
+    dimnames = list(motif = motifs,
+      group = clusters,
+      upstream.dist.kb = c(1, 2, 3),
+      conservation = c(0.5, 0.7, 0.9),
+      motif.score = c(30, 35, 40)))
+
+  # loop through the motifs
+  for (motif in motifs[1:3]) {
+    m = get.motif.counts(motif)
+
+    # try various cutoffs
+    for (upstream.dist.kb in c(1:3))
+      for (conservation in c(0.5, 0.7, 0.9)) {
+
+        # amount of upstream sequence present at that cutoff
+        bp1 = upstream.cons.dist[[upstream.dist.kb]]
+        upstream.bp = apply(bp1[ , colnames(bp1) >= conservation ], 1, sum)
+
+        for (motif.score in c(30, 35, 40)) {
+          write.status(paste(motif, upstream.dist.kb,
+            conservation, motif.score))
+
+          m1 = m[ m$upstream.dist >= -1000 * upstream.dist.kb &
+            m$motif.cons >= conservation &
+            m$motif.score >= motif.score , ]
+          gc()
+          m.counts = c(table(clustering[m1$gene]))
+
+          r1 = compute.enrichment.1(motif, clustering, m.counts, upstream.bp)
+          r[motif,,as.character(upstream.dist.kb),as.character(conservation),as.character(motif.score)] =
+            r1[, "p"]
+        }
+      }
+  }
+
+  r
+}
+
+if (FALSE) {
+for (f in list.files(clustering.dir)[1]) {
   cat(f, "\n")
 
   # clustering to use
@@ -161,5 +212,24 @@ for (f in list.files(clustering.dir)) {
   r = r[ r$p.corr <= 0.05 & r$X.squared > 0 , ]
 
   write.tsv(r, paste0(output.dir, "/", f, ".tsv"))
+}
+}
+
+if (TRUE) {
+for (f in list.files(clustering.dir)) {
+  cat(f, "\n")
+
+  # clustering to use
+  clustering1 = read.tsv(paste0(clustering.dir, "/", f, "/clusters.tsv"))
+  clustering = clustering1[,2]
+  names(clustering) = rownames(clustering1)
+
+  p = compute.enrichment.diff.cutoffs.faster(
+    known.motifs.small, clustering)
+  p.corr = array(p.adjust(as.vector(p), method="fdr"),
+    dim=dim(p), dimnames=dimnames(p))
+
+  save(p, p.corr, file=paste0(output.dir, "/", f, ".Rdata"))
+}
 }
 
