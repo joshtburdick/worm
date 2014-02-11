@@ -3,7 +3,11 @@
 
 source("git/utils.r")
 
+clustering.dir = "git/cluster/hierarchical/"
+
 motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+output.dir = "git/cluster/motif/enrichOptimize/cutoff.optimize"
+system(paste("mkdir -p", output.dir))
 
 # for now, running this on all motifs
 known.motifs = {
@@ -60,8 +64,8 @@ compute.enrichment.1 = function(motif.name, clustering, m, upstream.size) {
   clusters = sort(unique(clustering))
   r = NULL
 
-print(clustering[1:10])
-print(upstream.size[1:10])
+# print(clustering[1:10])
+# print(upstream.size[1:10])
 
   # make sure gene names match
   g = intersect(names(clustering), names(upstream.size))
@@ -75,7 +79,6 @@ print(upstream.size[1:10])
 
   bp.per.cluster = c(by(upstream.size, clustering, sum))
 
-
   # count of motifs for each cluster
   motifs.per.cluster = rep(0, length(clusters))
   names(motifs.per.cluster) = clusters
@@ -86,7 +89,7 @@ print(upstream.size[1:10])
 
   for(cl in as.character(clusters)) {
 
-    write.status(cl)
+#    write.status(cl)
 
     # compute counts
     motifs.cluster = motifs.per.cluster[cl]
@@ -110,7 +113,6 @@ print(upstream.size[1:10])
   r
 }
 
-
 # Computes enrichment with several different cutoffs
 # for various things.
 compute.enrichment.diff.cutoffs = function(motif, clustering) {
@@ -118,39 +120,46 @@ compute.enrichment.diff.cutoffs = function(motif, clustering) {
   m = get.motif.counts(motif)
 
   # try various cutoffs
-  for (upstream.dist.kb in c(1:5))
+  for (upstream.dist.kb in c(1:3))
     for (conservation in c(0.5, 0.7, 0.9)) {
 
       # amount of upstream sequence present at that cutoff
       bp1 = upstream.cons.dist[[upstream.dist.kb]]
       upstream.bp = apply(bp1[ , colnames(bp1) >= conservation ], 1, sum)
 
-      for (motif.score in c(30, 33, 36, 39, 42)) {
+      for (motif.score in c(30, 35, 40)) {
 
-        cat(upstream.dist.kb, conservation, motif.score, "\n")
+        write.status(paste(motif, upstream.dist.kb,
+          conservation, motif.score))
 
         m1 = m[ m$upstream.dist >= -1000 * upstream.dist.kb &
           m$motif.cons >= conservation &
           m$motif.score >= motif.score , ]
-        m.counts = c(table(clusterin[m1$gene]))
+        m.counts = c(table(clustering[m1$gene]))
 
         r1 = compute.enrichment.1(motif, clustering, m.counts, upstream.bp)
         r = rbind(r, data.frame(r1, stringsAsFactors=FALSE))
       }
     }
+  r
 }
 
-motif = "MA0148.1"
+for (f in list.files(clustering.dir)) {
+  cat(f, "\n")
 
-m = get.motif.counts(motif)
-m = m[ m$motif.score >= 36 & m$motif.cons >= 0.5 & m$upstream.dist >= -1000 , ]
+  # clustering to use
+  clustering1 = read.tsv(paste0(clustering.dir, "/", f, "/clusters.tsv"))
+  clustering = clustering1[,2]
+  names(clustering) = rownames(clustering1)
 
+  r = NULL
+  for(m in known.motifs.small) {
+    r = rbind(r, compute.enrichment.diff.cutoffs(m, clustering))
+  }
 
-bp1 = upstream.cons.dist[[1]]
-bp = apply(bp1[ , colnames(bp1) >= 0.5 ], 1, sum)
+  r$p.corr = p.adjust(r$p, method="fdr")
+  r = r[ r$p.corr <= 0.05 & r$X.squared > 0 , ]
 
-m.counts = c(table(clustering[m$gene]))
-
-r = compute.enrichment.1("FIXME", clustering, m.counts, bp)
-
+  write.tsv(r, paste0(output.dir, "/", f, ".tsv"))
+}
 
