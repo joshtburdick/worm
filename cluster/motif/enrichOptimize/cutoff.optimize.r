@@ -113,6 +113,61 @@ compute.enrichment.1 = function(motif.name, clustering, m, upstream.size) {
   r
 }
 
+# Like the above, but just returns a vector of unadjusted p-values.
+# Args:
+#   motif.name - name of the motif
+#   clustering - the clustering to use, as a numeric vector
+#     indexed by gene name
+#   m - the number of motif occurences (as a numeric vector,
+#     indexed by cluster name)
+#   upstream.size - the size of the upstream regions for each
+#     gene (as a vector indexed by gene)
+# Returns: vector of p-values
+compute.enrichment.p.only = function(motif.name, clustering, m, upstream.size) {
+  clustering = clustering[ !is.na(clustering) ]
+
+  clusters = sort(unique(clustering))
+  p = rep(NA, length(clusters))
+  names(p) = clusters
+
+  # make sure gene names match
+  g = intersect(names(clustering), names(upstream.size))
+  clustering = clustering[ g ]
+  upstream.size = upstream.size[ g ]
+
+  # total region size for each cluster
+  bp.per.cluster = c(by(upstream.size, clustering, sum))
+
+  # count of motifs for each cluster
+  motifs.per.cluster = rep(0, length(clusters))
+  names(motifs.per.cluster) = clusters
+  motifs.per.cluster[names(m)] = m
+
+  motifs.total = sum(motifs.per.cluster)
+  bp.total = sum(bp.per.cluster)
+
+  for(cl in as.character(clusters)) {
+
+    # compute counts
+    motifs.cluster = motifs.per.cluster[cl]
+    motifs.background = motifs.total - motifs.cluster
+    bp.cluster = bp.per.cluster[cl]
+    bp.background = bp.total - bp.cluster
+
+    if (abs(motifs.cluster + motifs.background) > 0) {
+      # ??? should this be one-sided?
+      a = chisq.test(c(motifs.cluster, motifs.background),
+        p = c(bp.cluster, bp.background), rescale.p=TRUE)
+      p[cl] = a$p.value
+    }
+    else {
+      p[cl] = 1
+    }
+  }
+
+  p
+}
+
 # Computes enrichment with several different cutoffs
 # for various things.
 compute.enrichment.diff.cutoffs = function(motif, clustering) {
@@ -152,18 +207,18 @@ compute.enrichment.diff.cutoffs = function(motif, clustering) {
 # Returns: a large array of unadjusted p-values
 compute.enrichment.diff.cutoffs.faster = function(motifs, clustering) {
   clustering = clustering[ !is.na(clustering) ]
-  clusters = sort(unique(clustering))
+  clusters = as.character(sort(unique(clustering)))
 
   # array of p-values
   r = array(dim = list(length(motifs), length(clusters), 3, 3, 3),
     dimnames = list(motif = motifs,
       group = clusters,
       upstream.dist.kb = c(1, 2, 3),
-      conservation = c(0.5, 0.7, 0.9),
+      conservation = c(0, 0.5, 0.7, 0.9),
       motif.score = c(30, 35, 40)))
 
   # loop through the motifs
-  for (motif in motifs[1:3]) {
+  for (motif in motifs) {
     m = get.motif.counts(motif)
 
     # try various cutoffs
@@ -184,9 +239,9 @@ compute.enrichment.diff.cutoffs.faster = function(motifs, clustering) {
           gc()
           m.counts = c(table(clustering[m1$gene]))
 
-          r1 = compute.enrichment.1(motif, clustering, m.counts, upstream.bp)
+          p = compute.enrichment.p.only(motif, clustering, m.counts, upstream.bp)
           r[motif,,as.character(upstream.dist.kb),as.character(conservation),as.character(motif.score)] =
-            r1[, "p"]
+            p[clusters]
         }
       }
   }
