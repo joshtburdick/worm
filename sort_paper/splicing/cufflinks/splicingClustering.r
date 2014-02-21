@@ -1,5 +1,4 @@
 # Clusters splicing data.
-# XXX not working.
 
 source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
@@ -10,12 +9,10 @@ experimentNames = read.tsv("git/unmix/seq/quant/experimentNames.tsv")
 
 r = read.tsv("git/sort_paper/splicing/isoformFractionOfGene.tsv")
 
-
 descr = paste(r$gene_id, rownames(r))
 names(descr) = rownames(r)
 
 r = r[,8:51]
-
 
 colnames(r) = experimentNames[ colnames(r), "name" ]
 r = r[ , order(colnames(r)) ]
@@ -27,7 +24,9 @@ non.const.row = function(x) {
   !is.na(v) && (v > 0)
 }
 
-r = r[ apply(r, 1, non.const.row) , ]
+i = apply(r, 1, non.const.row)
+r = r[ i , ]
+descr = descr[ i ]
 
 # XXX
 # r1 = matrix(100*runif(6785*44), nrow=6785)
@@ -42,13 +41,13 @@ hr = hcluster(as.matrix(r),
 hc = hcluster(as.matrix(t(r)),
   method="correlation", link="complete", nbproc=7)
 
-clusters = cutree(hr, k=10)
+clusters = cutree(hr, k=50)
 names(clusters) = rownames(r)
-cluster.coloring = rep(hsv(c(1:5) / 6, 1, 0.7), 100)
+cluster.coloring = rep(hsv(c(1:5) / 6, 1, 0.7), 200)
 
 system(paste("mkdir -p", output.path))
 write.clusters.treeview(r, hr, hc,
   clusters, cluster.coloring, 
-  paste(output.path, "cluster", sep="/"), descr=rownames(r))
+  paste(output.path, "cluster", sep="/"), descr=descr)
 
 
