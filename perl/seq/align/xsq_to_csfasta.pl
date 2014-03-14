@@ -76,21 +76,21 @@ sub extract_xsq {
 sub extract_all {
 
   my $xsq_prefix = "/murrlab/seq/reads/Murray050912/xsq/Murray050912_Pool1Pool2_0";
-  foreach my $i (1..6) {
-    my $f = $xsq_prefix . $i . ".xsq";
-      print "running on $f\n";
-    extract_xsq($f, $output_dir);
-  }
+#  foreach my $i (1..6) {
+#    my $f = $xsq_prefix . $i . ".xsq";
+#      print "running on $f\n";
+#    extract_xsq($f, $output_dir);
+#  }
 
   my $p = "/murrlab/seq/reads/Murray_52831_092812/result/";
-  extract_xsq("$p/lane1/Murray_52831_092812_01.xsq", $output_dir);
-  extract_xsq("$p/lane2/Murray_52831_092812_02.xsq", $output_dir);
-  extract_xsq("/home/jburdick/xsq/Murray_52831_092812_03.edit.xsq",
-    $output_dir);
-  extract_xsq("/home/jburdick/xsq/Murray_52831_092812_04.edit.xsq",
-    $output_dir);
-  system("$p/lane5/Murray_52831_092812_05.xsq", $output_dir);
-  system("$p/lane6/Murray_52831_092812_06.xsq", $output_dir);
+#  extract_xsq("$p/lane1/Murray_52831_092812_01.xsq", $output_dir);
+#  extract_xsq("$p/lane2/Murray_52831_092812_02.xsq", $output_dir);
+#  extract_xsq("/home/jburdick/xsq/Murray_52831_092812_03.edit.xsq",
+#    $output_dir);
+#  extract_xsq("/home/jburdick/xsq/Murray_52831_092812_04.edit.xsq",
+#    $output_dir);
+  extract_xsq("$p/lane5/Murray_52831_092812_05.xsq", $output_dir);
+  extract_xsq("$p/lane6/Murray_52831_092812_06.xsq", $output_dir);
 }
 
 extract_all();
