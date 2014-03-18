@@ -19,7 +19,7 @@ enrichment = function(r, samples, pseudocount) {
 }
 
 cnd1.samples = c("cnd-1 12/14", "cnd-1 1/4", "cnd-1 8/19")
-pha4.samples = c("pha-4 12/9", "pha-4 5/9", "pha-4 9/1")
+pha4.samples = c("pha-4 12/9", "pha-4 9/1", "pha-4 5/9")
 
 # Computes how often an enrichment is reproduced.
 # Args:
@@ -71,7 +71,8 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
   er = enrich.reproducibility.all.pairs(en)
 
   plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n", main=main,
-    xlab="enrichment in first replicate", ylab="fraction replicated")
+    xlab="enrichment in first replicate",
+    ylab="fraction enriched in second replicate")
 
   for(j in 1:ncol(er$x)) {
     lines(er$x[,j], er$y[,j], col="#0000ff80")
