@@ -13,36 +13,58 @@
 
 \section{Estimating the sort matrix}
 
+In previous simulations, we assumed that the sort matrix was
+known exactly. However, in practice, we don't necessarily know
+exactly which cells were included in a given sorted fraction.
+For instance, we don't know exactly what stages of embryos are
+sorted, which cells are lost because of sorting, or how reporter
+intensities differ between microscopy and FACS sorting.
 
-Another way to phrase the problem is to let $X_{ij}$ represent
-a {\em proportion of the expression in a given cell}, rather than
-a proportion of the total expression in the embryo.
+\subsection{Notation}
 
 Suppose that
 
-$S_{si}$ is the fraction (relative to the whole embryo)
-of cell $i$ in fraction $s$,
+$V_i$ is the volume of cell $i$
 
-$X_{ij}$ is the fraction of gene $j$ in cell $i$, and
+$S_{si}$ is the proportion of cell $i$ in sorted fraction $s$
 
-$B_{sj}$ is the total expression of gene $j$ in fraction $s$.
+$X_{ij}$ is the proportion of gene $j$ in cell $i$
 
-Here, $S$ and $X$ are unknown; we model them with normal
+$B_{sj}$ is the total expression of gene $j$ in sorted fraction $s$
+
+\vspace{4mm}
+
+Note that $V$, $S$, and $X$ are all relative to the entire embryo sample.
+This is a change in units (previously, we were measuring $X$ as
+the proportion of a gene's expression which was in a given cell.)
+
+$V$, $S$ and $X$ are unknown; we model them with normal
 distributions.\footnote{The fact that so many things are proportions makes it tempting
 to use something like Dirichlet distributions; however, the variances
-for several of these may be different (we may know that some cells
+for several of these may be different -- we may know that some cells
 are definitely in a fraction, but others we may think are possibly 
 in the fraction, and possibly not.}
 
-$B$, on the other hand, is known. There is some uncertainty in its
-measurement, but noise in RNA-seq experiments is arguably better understood
-than which cells are going to included in cell sorting, or the relative
-sizes of different cells.
+$B$, on the other hand, we consider mostly known. There is some
+uncertainty in its measurement, but noise in RNA-seq experiments
+is arguably better understood than which cells are going to be
+included in cell sorting, or the relative sizes of different cells.
 
-For now, we assume that $B$ is known {\em precisely}. Thus, 
+\subsection{Constraints}
 
+We now list constraints needed to phrase the problem in the same
+constrained linear form as before (although potentially as a larger
+problem.) All the variables listed before must be positive.
 
 \subsection{Modelling cell volume}
+
+In the above, we haven't explicitly included the effect of cell volume.
+However, several of the variables in the above are related: we may know
+that a given cell expresses several sort markers strongly, but that cell
+may not be included in the sorting process.
+
+Presumably, predictions that ``cells are missing'' should correspond to
+a posterior with $V_i \approx 0$.
 
 Suppose that for each cell $i$ we have an estimate $V_i$ of the mean and
 variance of its volume. If we have a variable for each cell's volume, then
@@ -56,8 +78,40 @@ as $S_{si} = 0$.) These are ``hard'' constraints, for better or worse;
 we could add some variance, but if it's constant, it won't scale with
 the volume.
 
-Presumably, predictions that ``cells are missing'' should correspond to
-solutions with $V_i \approx 0$.
+
+
+
+\subsection{Modelling which cells are sorted}
+
+
+
+
+
+
+
+\section{Simulating / testing this framework}
+
+
+Questions we address:
+
+How much does incorrect assumptions about cell volume affect accuracy?
+(``Missing cells'' is considered a special case with volume zero.)
+
+Can we infer correct cell volumes / missing cells?
+
+
+
+\subsection{The example organism}
+
+We wish to test these ideas using the existing EP solver. However, it
+seems that this phrasing of the problem requires solving for expression
+in all cells at once. Therefore, we first test using a scaled-down example;
+if this works, then we can see if the EP solver can be modified to handle
+the actual data.
+
+The fictional organism has 31 cells, and develops in an invariant lineage
+(a binary tree.) We assume that we have measured expression in
+
 
 
 
@@ -67,9 +121,8 @@ solutions with $V_i \approx 0$.
 
 This may not be relevant.
 
-\subsection{Including mixture proportions}
+\subsection{Connection to non-negative matrix factorization}
 
-In practice, we may not know the ``sort matrix'' $A$ precisely.
 Let $A$ be the sort matrix, $X$ be the matrix of per-cell expression, and
 $B$ be the matrix of expression data. We are essentially trying to factor
 $AX=B$, with $A, X$, and $B$ non-negative.
@@ -80,9 +133,6 @@ the dimensions of $X$ are larger than $B$. Also, we have some
 prior information about
 the matrix $A$, from the microscopy data.
 We'd like to use this to constrain our estimate of $A$.
-
-Side note: covariance or correlation is somewhat related to
-the product of variables.
 
 \subsection{The EP problem, using Gaussians}
 
@@ -136,6 +186,20 @@ p(A, x|\alpha) & \propto & t_M(A) t_A(x) \prod_i t_i(x)
 
 Sampling from this seems painful, as it seems to require sampling all of
 the $x_i$, and $A$, simultaneously.
+
+
+\subsection{Dirichlet, take 2}
+
+Suppose we model each cell $x_i$ as a Dirichlet, and the mixture as a Dirichlet.
+Also, we model the mixture for each fraction $j$ as a Dirichlet.
+
+\begin{eqnarray}
+x_i & \sim & \mathrm{Dirichlet}(\mathbf{1}) \\
+
+\end{eqnarray}
+
+
+
 
 
 \end{document}
