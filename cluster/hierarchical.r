@@ -12,6 +12,7 @@ system("mkdir -p git/cluster/hierarchical")
 
 # The read ratios.
 r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
+
 # r = r[c(1:500,19360:19369),]        # XXX for testing
 
 # Tests for a row not being constant.
@@ -21,10 +22,13 @@ non.const.row = function(x) {
 }
 
 r = r[ apply(r, 1, non.const.row) , ]
-
 r.sort.only = r[,c(1:23)]
-
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
+
+# Treat missing numbers as 0.
+# XXX this is arguably not ideal.
+r[ is.na(r) ] = 0
+r.sort.only[ is.na(r.sort.only) ] = 0
 
 # Get list of genes which have TransgenOme clones
 transgenome.genes = {
@@ -105,12 +109,14 @@ cor.dist = function(a) {
 h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
   # do clustering
-#  hr = hcluster(as.matrix(r.cluster),
-#    method="correlation", link="complete", nbproc=7)
-#  hc = hcluster(as.matrix(t(r)),
-#    method="correlation", link="complete", nbproc=7)
-  hr = hclust(cor.dist(r.cluster))
-  hc = hclust(cor.dist(t(r)))
+  hr = hcluster(as.matrix(r.cluster),
+    method="correlation", link="complete", nbproc=7)
+  hc = hcluster(as.matrix(t(r)),
+    method="correlation", link="complete", nbproc=7)
+
+  # XXX slower way
+#  hr = hclust(cor.dist(r.cluster))
+#  hc = hclust(cor.dist(t(r)))
 
   # ignore the column ordering
   hc$order = sort(hc$order)
@@ -139,7 +145,7 @@ print(class(clusters[1:5]))
       sep="\t", row.names=TRUE, col.names=NA)
 
     # adding "number of cluster" annotation, whether each
-    # gene has a TransgenOme clone, and the short
+    # gene has a TransgeneOme clone, and the short
     # "functional description" from Wormbase
     fd1 = func.descr[ rownames(r) ]
     fd1[ is.na(fd1) ] = ""
