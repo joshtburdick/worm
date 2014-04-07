@@ -43,7 +43,6 @@ pdf("git/sort_paper/plot/enrichmentInSortFractions.pdf",
 
 sort.marker.enrichment = sort(get.sort.marker.enrichment())
 
-
 par(mar=c(7,4,4,2)+0.1)
 barplot(sort.marker.enrichment, space=0.5, las=2,
   main="Enrichment of sort marker in sorted fraction",
@@ -53,6 +52,10 @@ barplot(sort.marker.enrichment, space=0.5, las=2,
 legend("topleft", c("promoter fusion", "protein fusion"),
   fill=c("#c00000", "#80ff80"))
 abline(h=0)
-
+abline(h=2, col="#00000060")
 dev.off()
+
+cat("mean enrichment, by whether something is a promoter fusion:\n")
+is.promoter.fusion = names(sort.marker.enrichment) %in% promoter.fusion
+print(by(sort.marker.enrichment, is.promoter.fusion, mean))
 
