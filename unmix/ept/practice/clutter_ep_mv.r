@@ -48,43 +48,39 @@ ep.update = function(m, y) {
     # 3.(a): "old" posteriors for data terms (the "...\i" term)
     old.v = 1 / ( 1/m$v.x - 1/m$v[i] )
     old.m = m$m.x + (old.v / m$v[i]) * (m$m.x - m$m[,i])
-print(c(i, m$v.x, old.v, old.m))
+print(c(i, m$v.x, old.v))
 
     # 3.(b) (as in ADF): update estimates of m.x and v.x
 #    r = 1 - (1/z) * m$w * dmnorm(y[,i],
 #      rep(m$m.0, m$d), sqrt(m$v.0) * diag(m$d))
     # ??? do this in log-space?
-    l.clutter = m$w * dmnorm(y[,i], rep(0, m$d), 100 * diag(m$d))
+    l.clutter = m$w * dmnorm(y[,i], m$m.0, m$v.0 * diag(m$d))
     l.signal = (1 - m$w) * dmnorm(y[,i], old.m, (old.v + 1) * diag(m$d))
     z = l.clutter + l.signal
     r = l.signal / (l.clutter + l.signal)
 
-print(c(i,z,r))
+cat("l.clutter =", l.clutter, "   l.signal =", l.signal, "\n")
 
     m$m.x = old.m + old.v * r * (y[,i] - old.m) / (old.v + 1)
     m$v.x = old.v - r * (old.v^2) / (old.v+1) +
-      r * (1-r) * (old.v^2) * sum((y[,i] - old.m)^2) / (m$d * ((old.v+1)^2))
-    z_i = (1 - m$w) * dmnorm(y[,i], old.m, (old.v+1) * diag(m$d)) +
-      m$w * dmnorm(y[,i], m$m.0, m$v.0 * diag(m$d))
-cat("z_i =", z_i, "\n")
+      r * (1-r) * (old.v^2) * (sum(y[,i] - old.m)^2) / (m$d * ((old.v+1)^2))
+
+cat("new v =", m$v.x, "\n")
+
+#    z.i = (1 - m$w) * dmnorm(y[,i], old.m, (old.v+1) * diag(m$d)) +
+#      m$w * dmnorm(y[,i], m$m.0, m$v.0 * diag(m$d))
+
+# cat("z_i =", z_i, "\n")
 
     # 3.(c): update this term approximation
     m$v[i] = 1 / (1 / m$v.x - 1 / old.v)
-print(c(i, m$v.x, m$v[i]))
-print(old.m)
+# print(c(i, m$v.x, m$v[i]))
+# print(old.m)
+cat("updated m$v[i] =", m$v[i], "\n")
 
-#    if (is.finite(m$v[i])) {
     m$m[,i] = old.m + ((m$v[i] + old.v) / old.v) * (m$m.x - old.m)
-cat("m$m[,i] =", m$m[,i], "\n")
-cat("old.m = ", old.m, "\n")
-cat("m$v[i] =", m$v[i], "   old.v =", old.v, "\n")
-    m$s[i] = log(z_i) - (m$d/2) * log(2 * pi * m$v[i]) -
+    m$s[i] = log(z) - (m$d/2) * log(2 * pi * m$v[i]) -
       dmnorm(m$m[,i], old.m, (m$v[i] + old.v) * diag(m$d), log=TRUE)
-#    }
-#    else {    FIXME implement this
-      # XXX if a data point has zero likelihood, ignore it
-#      m$s[i] = 0
-#    }
   }
 
   m
@@ -101,8 +97,8 @@ ep.log.evidence = function(m, y) {
 
 
 # Constructs a toy data set.
-clutter.y = matrix(rnorm(200, sd=10), nrow=2)
-signal.y = matrix(rnorm(200), nrow=2) + 5
+clutter.y = matrix(rnorm(100, sd=10), nrow=2)
+signal.y = matrix(rnorm(100), nrow=2) + 1.23456789
 y = cbind(clutter.y, signal.y)
 # y = y[,sample(10)]
 
