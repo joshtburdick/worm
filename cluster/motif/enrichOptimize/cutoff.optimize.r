@@ -1,6 +1,9 @@
 # Optimizes cutoffs to maximize number of motifs
 # significantly enriched.
 
+# FIXME: alter this to avoid "chi-squared may be inaccurate"
+# warnings?
+
 source("git/utils.r")
 
 clustering.dir = "git/cluster/hierarchical/"
@@ -158,7 +161,13 @@ compute.enrichment.p.only = function(motif.name, clustering, m, upstream.size) {
       # ??? should this be one-sided?
       a = chisq.test(c(motifs.cluster, motifs.background),
         p = c(bp.cluster, bp.background), rescale.p=TRUE)
-      p[cl] = a$p.value
+      # only include enrichments
+      if (a$observed[1] > a$expected[1]) {
+        p[cl] = a$p.value
+      }
+      else {
+        p[cl] = 1
+      }
     }
     else {
       p[cl] = 1
@@ -223,7 +232,7 @@ compute.enrichment.diff.cutoffs.faster = function(motifs, clustering) {
 
     # try various cutoffs
     for (upstream.dist.kb in c(1:3))
-      for (conservation in c(0.5, 0.7, 0.9)) {
+      for (conservation in c(0, 0.5, 0.7, 0.9)) {
 
         # amount of upstream sequence present at that cutoff
         bp1 = upstream.cons.dist[[upstream.dist.kb]]
