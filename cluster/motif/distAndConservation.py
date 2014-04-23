@@ -3,14 +3,16 @@
 # gene it's upstream of (and the distance to that gene),
 # and the conservation at that motif.
 
+import os
+import re
 import subprocess
 import sys
 
 # where to write results
-outputDir = "distAndConservation/"
+outputDir = "distAndConservation/5kb/"
 
-# where bigWig files of motif locations are
-motifBigWigPath = "/murrlab/seq/igv/motif/meme/"
+# where .bam files of motif locations are
+motifBamPath = "/murrlab/seq/igv/motif/known/"
 
 # bigWig file of conservation
 # XXX probably should rename chromosomes in this
@@ -18,7 +20,7 @@ conservationBigWig = "/murrlab/seq/igv/conservation/ce10.phastCons7way.bw"
 
 # BED file containing the locations of the upstream regions
 # (presumably one per gene, not filtered by conservation)
-upstreamBed = "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed"
+upstreamBed = "/home/jburdick/gcb/git/tf/motif/motifCount/regions/upstream_5kb_WS220.bed";
 
 # paths to various tools (??? just put these in PATH?)
 bedtoolsPath = "/home/jburdick/bin/x86_64/"
@@ -31,15 +33,14 @@ def nameMotifs(inputBedFile, outputBedFile):
   i = 0
   for line in inFile:
     s = line.split("\t")
-    # widen intervals slightly
-    a = int(s[1]) - 1
+    a = int(s[1])
     b = int(s[2])
     # also rename chromosome slightly
     chr = "chr" + s[0]
     if s[0] == "MtDNA":
       chr = "chrM"
     outFile.write(chr + "\t" + str(a) + "\t" + str(b) +
-      "\t" + str(i) + "\n")
+      "\t" + str(i) + "\t" + s[4] + "\t" + s[5] + "\n")
 #"\t0\t+\t" +
 #      str(a) + "\t" + str(b) + "\t0\t1\t1\t0\n")
     i = i + 1
@@ -65,12 +66,12 @@ def renameChromosomes(inputBedFile, outputBedFile):
 # Side effects: writes a file in outputDir, with columns FIXME
 def computeMotifDistAndConservation(name):
 
-  # first, unpack motif bigWig to a bigBed file
-  subprocess.call([kentToolsPath + "/bigWigToBedGraph",
-    motifBigWigPath + "/" + name + ".bw",
-    "tmpMotif1.bed"])
+  # first, unpack motif .bam to a bigBed file
+  subprocess.call([bedtoolsPath + "/bedtools", "bamtobed",
+    "-i", motifBamPath + "/" + name + ".bam"],
+    stdout=open("tmpMotif1.bed", "w"))
 
-  # give each line in this a unique name
+  # give each line in this a unique name (and change chromosome names)
   nameMotifs("tmpMotif1.bed", "tmpMotif2.bed")
 
   # then, compute conservation at those locations
@@ -102,11 +103,16 @@ def computeMotifDistAndConservation(name):
 
 subprocess.call(["mkdir", "-p", outputDir])
 
-# computeMotifDistAndConservation("FOXB1_full")
+# computeMotifDistAndConservation("FOXB1_DBD_3")
 
 # get list of motifs to include
-motifs = subprocess.check_output("cut -f1 /home/jburdick/gcb/git/cluster/hierarchical/hier.200.clusters/uniqueKnownMotifEnrichment_5kb_0.5cons.tsv | tail --lines=+2 | sort | uniq",
-  shell=True).split("\n")
+# motifs = subprocess.check_output("cut -f1 /home/jburdick/gcb/git/cluster/hierarchical/hier.200.clusters/uniqueKnownMotifEnrichment_5kb_0.5cons.tsv | tail --lines=+2 | sort | uniq",
+#   shell=True).split("\n")
+
+# nope, running it on everything
+motifs = [ f.replace(".bam", "")
+  for f in os.listdir(motifBamPath)
+  if re.match(".*.bam$", f) ]
 
 for m in motifs:
   if (m != ""):
