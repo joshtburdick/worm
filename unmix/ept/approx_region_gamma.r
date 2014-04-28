@@ -35,7 +35,7 @@ m2mv = function(x) {
 # Args:
 #   x - gamma distributions (as natural parameters)
 #   A, b - these give constraints on the sums of x
-# Returns: moment-matched shiz-niz
+# Returns: moment-matched estimate
 gamma.conditional.approx.mm = function(x, A, b) {
   # number of constraints
   n = length(b)
@@ -44,8 +44,8 @@ gamma.conditional.approx.mm = function(x, A, b) {
   x1 = gamma.conditional.approx(x, A, b)
 
   # incorporate constraint, using a weighted combination of moments
-  x2.moments = ((n-1) * mv2m(gamma.n2mv(x)) + mv2m(gamma.n2mv(x1))) / n
-#  x2.moments = ((n-1) * mv2m(gamma.n2mv(x)) + mv2m(gamma.n2mv(x1))) / n
+#  x2.moments = (mv2m(gamma.n2mv(x)) + mv2m(gamma.n2mv(x1))) / 2
+  x2.moments = ((n-1) * mv2m(gamma.n2mv(x)) + mv2m(gamma.n2mv(x1))) / 2
 
   # return that, converted to natural parameters
   gamma.mv2n(m2mv(x2.moments))
@@ -159,13 +159,13 @@ r.gca = gamma.conditional.approx(x0, A0, 1)
 # this seems fairly plausible
 
 A1 = rbind(c(1,1,0), c(0,1,1))
-r1 = approx.region.gamma(A1, c(1,1), max.iters = 6)
+r1 = approx.region.gamma(A1, c(1,1), max.iters = 200)
 
 A2 = rbind(
   c(1,1,1,1,1,0),
   c(0,0,0,1,1,1))
 rownames(A2) = c("ceh-6", "hlh-1")
 colnames(A2) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
-r2 = approx.region.gamma(A2, c(1,1), max.iters=200)
+r2 = approx.region.gamma(A2, c(1,1), max.iters=100)
 
 
