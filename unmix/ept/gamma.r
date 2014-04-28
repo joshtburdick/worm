@@ -114,7 +114,7 @@ gamma.conditional.approx.1 = function(x) {
 # given constraints on their expected sums.
 # Args:
 #   x - natural parameters of gamma distributions
-#   A, b - these give the constraint that A * x = b
+#   A, b - these give the constraints that A * x = b
 # Returns: x, but conditional on the constraint
 gamma.conditional.approx = function(x, A, b) {
 
@@ -157,6 +157,8 @@ gamma.conditional.approx = function(x, A, b) {
 #   x - natural parameters of gamma distributions
 #   A, b - these give the exact constraint that A * x = b
 # Returns: x, conditional on the constraint
+# XXX this isn't currently working.
+if (FALSE) {
 gamma.conditional.approx = function(x, A, b) {
 
   # convert to mean and variance?
@@ -170,6 +172,7 @@ gamma.conditional.approx = function(x, A, b) {
 
 
 
+}
 }
 
 # The density function for the gamma, conditional on vars summing to 1.
