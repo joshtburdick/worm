@@ -44,13 +44,6 @@ cat("max. genes in any individual sample =",
 r.sort.only.averaged = r.sort.only.averaged[ max.expr >= 1, ]
 r.sort.only.averaged[ is.na(r.sort.only.averaged) ] = 0
 
-# number of fractions a given gene is enriched / depleted in
-num.fractions.enriched.depleted.old = {
-  n = apply( abs(r.sort.only.averaged) >= log2(3), 1, sum)
-  n = n[n>0]
-  n
-}
-
 num.fractions.enriched.depleted = {
   n = apply( abs(r.sort.only.averaged) >= 2, 1, sum)
   n = n[n>0]
@@ -59,12 +52,26 @@ num.fractions.enriched.depleted = {
 
 cat("number of genes enriched/depleted in at least one fraction =",
   length(num.fractions.enriched.depleted), "\n")
-pdf("git/sort_paper/plot/numEnrichedInFractions.pdf")
+# pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
+#   width=7.5, height=5)
+
+
+if (TRUE) {
+  # log-scale version of this
+  counts = table(num.fractions.enriched.depleted)
+  barplot(log10(counts), yaxt="n",
+    main="Number of fractions in which a gene\nis enriched or depleted",
+    xlab="Number of fractions", ylab="Count",
+    col="grey", cex.main=1.5, cex.axis=0.9, cex.lab=1.2)
+  axis(2, labels = c(1,10,100,1000), at=c(0,1,2,3))
+  abline(h=0)
+} else {
 hist(num.fractions.enriched.depleted,
-  main="Number of fractions a gene is enriched/depleted in",
-  xlab="number of fractions",
+  main="Number of fractions in which a gene\nis enriched or depleted",
+  xlab="Number of fractions",
   breaks=max(num.fractions.enriched.depleted)+1, col="grey")
-dev.off()
+}
+# dev.off()
 
 cat("table of number of fractions enriched/depleted:\n")
 show(table(num.fractions.enriched.depleted))
