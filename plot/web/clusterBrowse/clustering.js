@@ -6,7 +6,7 @@ goog.require('goog.math.Matrix');
 
 
 // Reads in a table written in CDT format.
-function readCDT(url) {
+function readCDT_old(url) {
   var xmlHttp = null;
 
   // get entire table, and split by line
@@ -90,7 +90,7 @@ function standardizeRows(x) {
 /* Calculates correlation of each gene with a given gene.
   Args:
     selectedIndex - index of gene to center from
-  Returns: list with i and foo. */
+  Returns: list with i and p. */
 function calcCorrelations(selectedIndex) {
 
   var xSelected = new goog.math.Matrix( xStandardized.getSize().width, 1 );
