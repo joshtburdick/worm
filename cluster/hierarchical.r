@@ -22,6 +22,9 @@ non.const.row = function(x) {
 }
 
 r = r[ apply(r, 1, non.const.row) , ]
+
+reads.for.clustering = r  # in case other files shadow this
+
 r.sort.only = r[,c(1:23)]
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
 
@@ -69,27 +72,9 @@ renumber.clusters.sorted = function(cl, ordering) {
   r
 }
 
-# Does hierarchical clustering, and saves TreeView files.
-# Args:
-#   r - data matrix
-#   r.cluster - the data, weighted for clustering
-#   method - which distance metric
-#   link - which clustering method
-# Modified from ctc::hclust2treeview() .
-# Returns: row and column clustering
-deprecated.hcluster.treeview = function(r, r.cluster, method = "correlation", link = "complete") {
-  nbproc = 7
-
-  hr <- hcluster(r.cluster, method = method, link = link, nbproc = nbproc)
-
-  # XXX column clustering is arbitrary
-  hc <- hcluster(t(r), method = method, link = link, nbproc = nbproc)
-  hc$order = sort(hc$order)
-
-  list(hr=hr, hc=hc)
-}
 
 # definition of correlation, which skips missing values
+# XXX possibly not used, as it's fairly slow
 cor.dist = function(a) {
   a = as.dist( 1 - cor(t(as.matrix(a)), use="na.or.complete") )
 #  a[ is.na(a) ] = 2
@@ -136,6 +121,7 @@ h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
     clusters = cutree(hr, k=num.clusters)
 print(clusters[1:5])
 print(class(clusters[1:5]))
+# browser()
     # sort clusters, in numerically increasing order
     # (just for convenience)
     clusters = renumber.clusters.sorted(clusters, hr$order)
@@ -158,58 +144,21 @@ print(class(clusters[1:5]))
       clusters, cluster.coloring, 
       paste(output.path.1, "cluster", sep="/"), descr=descr)
 
-    # use handmade dendrogram
+    # XXX also save the row dendrogram, as it may be
+    # useful for plotting
+    save(hr, clusters,
+      file=paste0(output.path.1, "/dendrogram.Rdata"))
+
+    # use handmade dendrogram for columns
     system(paste("cp git/cluster/dummy_atr_file.tsv ",
       output.path.1, "/cluster.atr", sep=""))
   }
 }
 
-# attempt at simpler alternative method
-if (FALSE) {
-  # do clustering
-  hr = hcluster(as.matrix(r),
-    method="correlation", link="complete", nbproc=7)
-  hc = hcluster(as.matrix(t(r)),
-    method="correlation", link="complete", nbproc=7)
-  hc$order = sort(hc$order)
-
-  clusters = cutree(hr, k=20)
-  names(clusters) = rownames(r)
-  cluster.colors = rep(rainbow(12), 100)
-
-  basefile = "git/cluster/temp"
-  write.clusters.treeview(as.matrix(r), hr, hc,
-    clusters, cluster.colors, basefile)
-  # for now, just removing the array clustering, which
-  # will cause TreeView to throw an error message, but at
-  # least doesn't shuffle the columns.
-  # FIXME: copy in a dummy array clustering
-  unlink(paste(basefile, ".atr", sep=""))
-}
-
+# Does clustering with various numbers of clusters.
 if (TRUE) {
   n.clusters = c(50,100,150,200,250,300)
   h.cluster(r[rownames(r.sort.only),], r.sort.only, "hier", n.clusters)
   h.cluster(r, r, "hier.ts", n.clusters)
 }
-
-# do clustering, and save results (deprecated)
-if (FALSE) {
-  cluster1 = hcluster.treeview(r,
-    "git/cluster/hierarchical/cluster1",
-    method="correlation", link="complete")
-  save(cluster1, file="git/cluster/hierarchical/cluster1.Rdata")
-
-  # also, cluster using just the sorted data
-  cluster2 = hcluster.treeview(as.matrix(r.sort.only),
-    "git/cluster/hierarchical/cluster2",
-    method="correlation", link="complete")
-  save(cluster2, file="git/cluster/hierarchical/cluster2.Rdata")
-}
-
-
-# for practice
-# r1 = r[c(19160:19354),]
-# z = hcluster(r1, method="correlation", nbproc=1)
-
 
