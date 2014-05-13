@@ -1,0 +1,3 @@
+select a, a->Reporter_product, a->Driven_by_gene, a->Strain, a->Construction
+from a in class Transgene
+where a->Public_name like "stIs105*"
