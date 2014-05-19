@@ -12,13 +12,11 @@ motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
 output.dir = "git/cluster/motif/enrichOptimize/cutoff.optimize"
 system(paste("mkdir -p", output.dir))
 
-# for now, running this on all motifs
+# running this on the filtered (non-redundant) motifs
 known.motifs = {
   r = list.files(motif.gene.dir)
   sub("_upstreamMotifCons.tsv.gz", "", r)
 }
-
-# no, actually on the filtered motifs
 motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 known.motifs.small =
   intersect(known.motifs, motif.filter$canonical.name)
