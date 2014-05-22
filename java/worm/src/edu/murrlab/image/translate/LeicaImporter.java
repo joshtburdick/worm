@@ -59,7 +59,7 @@ public class LeicaImporter {
 	// String jobID = null;   probably not used
 	
 	/** The XY position strings, set by getImageNames(). */
-	Set<String> xyPosition = new TreeSet<String>();
+	Vector<String> xyPosition = new Vector<String>();
 	
     private ServiceFactory factory;
 
@@ -112,35 +112,12 @@ public class LeicaImporter {
 			Hashtable<String, Object> h = reader.getSeriesMetadata();
 			String imageName = (String) h.get("Image name");
 			
-			// increment count of "images with this job ID"
-			/*
-			String j = getJobID(imageName);
-			Integer n = count.get(j);
-			if (n != null)
-				count.put(j, n.intValue() + 1);
-			else
-				count.put(j, 1);
-			*/
-			
 			// record the XY position (used for separating out
 			// images from different embryos)
 			String xy = getXY(imageName);
-			if (xy != null)
+			if (xy != null && !xyPosition.contains(xy))
 				xyPosition.add( xy );
 		}
-			
-		// find largest sequence name
-		/*
-		int max = 0;
-		for(Integer c : count.values())
-			if (c > max)
-				max = c;
-		for(String k : count.keySet())
-			if (count.get(k) == max) {
-				this.jobID = k;
-				return;
-			}
-		*/
 	}
 	
 	/** Writes out all of the series. */
@@ -190,12 +167,13 @@ public class LeicaImporter {
 			Hashtable<String, Object> h = reader.getSeriesMetadata();
 			String imageName = (String) h.get("Image name");
 			
-			// if this is part of the sequence, write it
+			// if this is part of the appropriate sequence, write it
+			// ("names of things to skip" is similar to what's in
+			// LeicaTifRename.pl)
 			if (!imageName.contains("Sequence/Image") &&
 					!imageName.contains("Sequence/AF") &&
 					!imageName.contains("AF Job") &&
 					!imageName.contains("DriftAF") &&
-//					imageName.startsWith(jobID) &&
 					xy.equals( getXY(imageName) )) {
 				System.out.println("writing image " + imageName + "   XY = " + getXY(imageName));
 				imageList.println(t + "\t" + imageName);
@@ -219,14 +197,22 @@ public class LeicaImporter {
 			int series, int t) throws IOException, FormatException, ServiceException {
 		reader.setSeries(series);
 
+		// in order to reverse the z-numbering, first
+		// find the maximum z of any plane
+		int maxZ = 0;
+		for(int i = 0; i < reader.getImageCount(); i++) {
+			int z = meta.getPlaneTheZ(series, i).getValue();
+			if (z > maxZ)
+				maxZ = z;
+		}
+		
 		for(int i = 0; i < reader.getImageCount(); i++) {
 			
 			// get channel and plane info
 			int channel = meta.getPlaneTheC(series, i).getValue();
-			int plane = meta.getPlaneTheZ(series, i).getValue();
 			
-			// original, presumably slower version of this
-			//			byte[] img = reader.openBytes(i);
+			// note that this reverses the z-stacks
+			int plane = maxZ - meta.getPlaneTheZ(series, i).getValue();
 
 			// all of this is to avoid re-allocating the byte buffer
 			// XXX note that this assumes one byte per pixel
@@ -257,26 +243,6 @@ public class LeicaImporter {
 		
 		int sizeX = reader.getSizeX();
 		int sizeY = reader.getSizeY();
-
-		/* One way of saving TIFs, just using JDK. However, it
-		 * is slow, and doesn't support LZW compression, so
-		 * it's currently not used.
-		BufferedImage b = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_BYTE_GRAY);
-		WritableRaster wr = b.getRaster();
-		int[] data1 = new int[ data.length ];
-		for(int i=0; i<data.length; i++)
-			data1[i] = data[i];
-		wr.setPixels(0,  0,  sizeX,  sizeY, data1);
-
-		// specifying compression
-		TIFFEncodeParam param = new TIFFEncodeParam();
-		// FIXME: COMPRESSION_LZW isn't supported
-		param.setCompression(TIFFEncodeParam.COMPRESSION_DEFLATE);
-		
-		// this is what actually stores the file
-	    RenderedOp op = JAI.create("filestore", b,
-                filename, "TIFF", param);
-        */
 		
 		// XXX this is somewhat complicated; it's based on 
 		// loci-tools' components/bio-formats/utils/MinimumWriter.java
@@ -285,7 +251,11 @@ public class LeicaImporter {
 	    	      FormatTools.getPixelTypeString(FormatTools.UINT8), sizeX, sizeY, 1, 1, 1, 1);
 	    meta.setPixelsPhysicalSizeX(new PositiveFloat(1.0), 0);
 	    meta.setPixelsPhysicalSizeY(new PositiveFloat(1.0), 0);
-
+	    
+	    // storing in little-endian order (as that's what the Perl script
+	    // does; although it may not matter)
+	    meta.setPixelsBinDataBigEndian(Boolean.FALSE, 0, 0);
+	    
    		ImageWriter writer = new ImageWriter();
    		writer.setMetadataRetrieve(meta);
    		writer.setCompression(TiffWriter.COMPRESSION_LZW);
@@ -323,8 +293,12 @@ public class LeicaImporter {
 	 * @param imageName  e.g., "Sequence/A 0_S 0_U 0_V 0_X 0_Y 0_Job 1_002"
 	 * @return in this case, "X 0_Y 0" */
 	private String getXY(String imageName) {
-		Pattern p = Pattern.compile(".*/A \\d+_S \\d+_U \\d+_V \\d+_(X \\d_Y \\d)_.*");
+		// ??? arguably this pattern could be written a bit differently, to specificially
+		// match either, e.g., "U 1" or "U11"
+		Pattern p = Pattern.compile(".*/A ?\\d+_S ?\\d+_U ?\\d+_V ?\\d+_(X ?\\d_Y ?\\d)_.*");
 		Matcher m = p.matcher(imageName);
+		if (!m.matches())
+			System.err.println("failed to parse " + imageName);
 		return (m.matches() ? m.group(1) : null);
 	}
 
@@ -358,6 +332,7 @@ public class LeicaImporter {
 	public static void main(String[] args) throws Exception {
 		// XXX print errors to console, or a log file?
 		// org.apache.log4j.BasicConfigurator.configure();
+
 		if (args.length != 1) {
 			System.err.println("imports Leica images");
 			System.err.println("Usage: leica_import.pl file.lif");
