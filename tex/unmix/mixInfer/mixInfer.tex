@@ -4,6 +4,7 @@
 \usepackage[cm]{fullpage}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
 \graphicspath{
 {/home/jburdick/gcb/work/svnroot/trunk/src/}
 {/home/jburdick/gcb/}
@@ -20,72 +21,133 @@ For instance, we don't know exactly what stages of embryos are
 sorted, which cells are lost because of sorting, or how reporter
 intensities differ between microscopy and FACS sorting.
 
+
 \subsection{Notation}
 
-Suppose that
+First, we define some variables:
 
-$V_i$ is the volume of cell $i$
+\begin{itemize}
 
-$S_{si}$ is the proportion of cell $i$ in sorted fraction $s$
+\item Expression: $X_{ij}$ is the expression of gene $i$ in cell $j$
 
-$X_{ij}$ is the proportion of gene $j$ in cell $i$
+\item Sorting: $S_{fj}$ is the proportion of cell $j$ in sorted fraction $f$
 
-$B_{sj}$ is the total expression of gene $j$ in sorted fraction $s$
+\item Volume: $V_j$ is the volume of cell $j$
 
-\vspace{4mm}
+\end{itemize}
 
-Note that $V$, $S$, and $X$ are all relative to the entire embryo sample.
+Here, $X$, $S$, and $V$ are all relative to the entire embryo sample.
 This is a change in units (previously, we were measuring $X$ as
 the proportion of a gene's expression which was in a given cell.)
 
-$V$, $S$ and $X$ are unknown; we model them with normal
-distributions.\footnote{The fact that so many things are proportions makes it tempting
-to use something like Dirichlet distributions; however, the variances
-for several of these may be different -- we may know that some cells
-are definitely in a fraction, but others we may think are possibly 
-in the fraction, and possibly not.}
-
-$B$, on the other hand, we consider mostly known. There is some
-uncertainty in its measurement, but noise in RNA-seq experiments
-is arguably better understood than which cells are going to be
-included in cell sorting, or the relative sizes of different cells.
+Note that all of these variables are constrained to be positive.
 
 \subsection{Constraints}
 
-We now list constraints needed to phrase the problem in the same
-constrained linear form as before (although potentially as a larger
-problem.) All the variables listed before must be positive.
+All the variables listed above must be positive.
+We now list constraints needed to phrase the problem as a
+constrained linear system (although potentially {\em much} larger than
+before; we ignore this efficiency issue for now.)
 
-\subsection{Modelling cell volume}
+\subsubsection{The expression data}
 
-In the above, we haven't explicitly included the effect of cell volume.
-However, several of the variables in the above are related: we may know
-that a given cell expresses several sort markers strongly, but that cell
-may not be included in the sorting process.
+We know that the total expression of all the genes in
+a cell add up to that cell's volume:
 
-Presumably, predictions that ``cells are missing'' should correspond to
-a posterior with $V_i \approx 0$.
+\[
+\sum_i X_{ij} = V_j
+\]
 
-Suppose that for each cell $i$ we have an estimate $V_i$ of the mean and
-variance of its volume. If we have a variable for each cell's volume, then
-we can incorporate this as a ``soft'' constraint. We also have the constraint
-that $\sum_i V_i = 1$.
+\color{red}
 
-We can sort of encode the assumption that ``all of a cell $i$ is included
-in a sort fraction $s$'' by adding a constraint that $S_{si} = V_i$
-(or, trivially, ``none of a cell $i$ is included in a sort fraction $s$''
-as $S_{si} = 0$.) These are ``hard'' constraints, for better or worse;
-we could add some variance, but if it's constant, it won't scale with
-the volume.
+INCORRECT STUFF
+
+Suppose we have measured that the expression of a gene $i$ in sorted
+fraction $f$ is $a$ (measured as a proportion; so 1 ppm would correspond
+to $a = 10^{-6}$.) Then
+
+\[
+\sum_j X_{ij} = a S_{fi}
+\]
+
+Note that this constraint assumes that the expression data
+is known exactly. This is incorrect; there is certainly
+uncertainty in its measurement. However, noise in RNA-seq experiments
+may be known more precisely than which cells are going to be
+included in cell sorting, or the relative volumes of
+different cells.
+
+\color{black}
+
+\subsubsection{The sort matrix}
+
+We could encode the fact that a given sorted fraction $f$ always,
+or never,
+includes a cell $j$ by adding constraints
+
+\[
+S_{fj} = V_j \hspace{5pt} {\textrm or} \hspace{5pt} S_{fj} = 0
+\]
+
+respectively. However, estimating these entries is a principal point
+of this model. We could add a noisy constraint that
+$S_{fj} \sim \mathcal{N}(0, \sigma)$, but this wouldn't scale with $V_j$.
 
 
+One way to encode this is by using a prior which is no longer diagonal,
+but includes covariance. If we write, for example
 
+\[
+\begin{bmatrix}
+V_j
+S_{fj}
+\end{bmatrix}
+\sim \mathcal{N}(
+\begin{bmatrix}
+0 \\
+0
+\end{bmatrix}
+,
+\begin{bmatrix}
+1 & -0.5 \\
+-0.5 & 1 
+\end{bmatrix}
+)
+\]
 
-\subsection{Modelling which cells are sorted}
+then $S_{fj}$ will be ``pulled toward'' $V_j$, but not actually
+constrained to be equal to it.
 
+(We could probably use a similar method to encode noise in the
+read measurements.)
 
+\subsubsection{Constraints on volume}
 
+In the (fairly common) case in which we have matched positive and negative
+sorted samples, which we'll call $f^+$ and $f^-$, we have
 
+\[
+S_{f^+j} + S_{f^-j} = V_j
+\]
+
+The fact that this is exact seems like a relatively safe assumption:
+in a given FACS experiment, a particular cell presumably ended up
+in one tube or the other.
+This generalizes to double-sorted fractions.
+
+Since both $S_{f^+j}$ and $S_{f^-j}$ are constrained to be positive,
+this implies that they are both less than $V_j$. If we have sort fractions
+without a negative control, then presumably we need to add a constraint
+
+\[
+S_{fj} \le V_j
+\]
+
+Lastly, the volumes of the cells all should add up to 1:
+
+\[
+\sum_j V_j = 1
+\]
 
 
 
@@ -134,42 +196,19 @@ prior information about
 the matrix $A$, from the microscopy data.
 We'd like to use this to constrain our estimate of $A$.
 
-\subsection{The EP problem, using Gaussians}
 
-We are trying to estimate marginals of the distribution of $x$, given the
-constraints that $Ax = b$ and $x \ge 0$. We can express these constraints
-as ``indicator functions'':
-
-\begin{eqnarray}
-t_A(x) & = & [Ax = b] \\
-t_i(x) & = & [x_i \ge 0]
-\end{eqnarray}
-
-Their product is the (improper) probability distribution whose marginals
-we are estimating:
-
-\begin{eqnarray}
-p(x) & \propto & t_A(x) \prod_i t_i(x)
-\end{eqnarray}
-
-EP is applicable when we're approximating a product of terms. We approximate each of the terms with
-Gaussians
-$\tilde{t}_i(x)$ and $\tilde{t}_A(x)$ (although none of these
-terms, individually, is at all Gaussian.) 
-
-\begin{eqnarray}
-q(x) & \propto & \tilde{t}_A(x) \prod_i \tilde{t}_i(x)
-\end{eqnarray}
-
-As in Cseke and Heskes, rather than updating each term individually,
-we update all of the $\tilde{t}_i(x)$ terms in parallel, and then factor in
-the linear constraint $\tilde{t}_A(x)$.
 
 
 \subsection{Using a Dirichlet prior}
 
 Erkkila {\em et al} use a Dirichlet prior on $A$, which seems reasonable. Trying to do
 this, we add a term $t_M(x)$, which encodes the Dirichlet prior $\alpha$.
+
+\footnote{The fact that so many things are proportions makes it tempting
+to use something like Dirichlet distributions; however, the variances
+for several of these may be different -- we may know that some cells
+are definitely in a fraction, but others we may think are possibly 
+in the fraction, and possibly not.}
 
 \begin{eqnarray}
 t_M(A) & = & \mathrm{Dirichlet}(A|\alpha) \\
@@ -186,17 +225,6 @@ p(A, x|\alpha) & \propto & t_M(A) t_A(x) \prod_i t_i(x)
 
 Sampling from this seems painful, as it seems to require sampling all of
 the $x_i$, and $A$, simultaneously.
-
-
-\subsection{Dirichlet, take 2}
-
-Suppose we model each cell $x_i$ as a Dirichlet, and the mixture as a Dirichlet.
-Also, we model the mixture for each fraction $j$ as a Dirichlet.
-
-\begin{eqnarray}
-x_i & \sim & \mathrm{Dirichlet}(\mathbf{1}) \\
-
-\end{eqnarray}
 
 
 
