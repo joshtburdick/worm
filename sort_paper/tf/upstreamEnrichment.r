@@ -55,23 +55,30 @@ for(i in 1:5)
 #     (as a numeric vector indexed by gene)
 # Returns: a vector of statistics
 compute.enrichment.1 = function(gene.in.cluster, motif.count, upstream.size) {
+  
+  motifs.cluster = sum(motif.count[ gene.in.cluster ], na.rm=TRUE)
+  motifs.background = sum(motif.count[ ! gene.in.cluster ], na.rm=TRUE)
+  bp.cluster = sum( upstream.size[ gene.in.cluster ], na.rm=TRUE)
+  bp.background = sum( upstream.size[ ! gene.in.cluster ], na.rm=TRUE)
 
   # compute counts
-  r = c("motifs.cluster" = sum(motif.count[ gene.in.cluster ], na.rm=TRUE),
-    "motifs.background" = sum(motif.count[ ! gene.in.cluster ], na.rm=TRUE),
-    "bp.cluster" = sum( upstream.size[ gene.in.cluster ], na.rm=TRUE),
-    "bp.background" = sum( upstream.size[ ! gene.in.cluster ], na.rm=TRUE),
+  r = c(enrichment =
+    (motifs.cluster / motifs.background) / (bp.cluster / bp.background),
     chisq = NA, p = 1, p.corr = NA)
 
-  # do the chi-square test; on error, just set the p-value to 1
-  tryCatch({
-    a = chisq.test(c(r["motifs.cluster"], r["motifs.background"]),
-      p = c(r["bp.cluster"], r["bp.background"]), rescale.p=TRUE)
-    r["chisq"] = a$statistic
-    r["p"] = a$p.value
-  }, error = function(e) r["p"] = 1,
+  # only include enrichments
+  if (!is.na(r["enrichment"]) && r["enrichment"] > 1) {
+
+    # do the chi-square test; on error, just set the p-value to 1
+    tryCatch({
+      a = chisq.test(c(motifs.cluster, motifs.background),
+        p = c(bp.cluster, bp.background), rescale.p=TRUE)
+      r["chisq"] = a$statistic
+      r["p"] = a$p.value
+    }, error = function(e) r["p"] = 1,
     warning = function(e) r["p"] = 1)
 
+  }
   r
 }
 
@@ -90,8 +97,7 @@ compute.enrichment.diff.cutoffs = function(motifs, get.counts, clusters,
     upstream.dist.kb.cutoff, conservation.cutoff, score.cutoff) {
 
   # array of results
-  stat.names = c("motifs.cluster", "motifs.background",
-    "bp.cluster", "bp.background", "chisq", "p", "p.corr")
+  stat.names = c("enrich", "chisq", "p", "p.corr")
   r = array.from.dimnames(list(motif = motifs,
     group = as.character(names(clusters)),
     upstream.dist.kb = upstream.dist.kb.cutoff,
@@ -140,7 +146,7 @@ find.cluster.enrichment.motifs = function() {
   output.dir = "git/sort_paper/tf/motif/"
   system(paste("mkdir -p", output.dir))
 
-  for (f in list.files(clustering.dir)) {
+  for (f in c("hier.300.clusters")) {    # list.files(clustering.dir)) {
     cat(f, "\n")
 
     # clustering to use
@@ -161,5 +167,5 @@ find.cluster.enrichment.motifs = function() {
   }
 }
 
-find.cluster.enrichment.motifs()
+# find.cluster.enrichment.motifs()
 
