@@ -1,0 +1,159 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[cm]{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\graphicspath{
+{/home/jburdick/gcb/git/unmix/ept/tests/sort_sampling/}
+}
+\title{Unmixing, and estimating the sort matrix}
+\author{Josh Burdick}
+\begin{document}
+\maketitle
+
+One of the biggest differences between my simulations of unmixing, and
+the actual practice, is that although we have some idea what the sort
+matrix will be, we don't know it precisely. This can lead to cases in
+which, if we use a sort matrix defined by the imaging data, there isn't a
+feasible solution.
+
+If we could specify the sort matrix as a prior, and then infer it along with
+the expression, this might not be a problem. It seems like the expression data
+contains some information about how the sort fractions overlap. For instance,
+John noticed that many genes are enriched in the {\tt pha-4} and
+{\tt pros-1} sort fractions; these genes are known to be pharyngeal gland genes.
+Presumably, even if we didn't know where those genes are expressed, if we see
+genes enriched in two or more fractions, then it's likely that those sort markers
+overlap in at least {\em some} cells.
+
+Thus, here is an attempt at a model which estimates both the sort matrix, and
+expression (with a prior on the sort matrix.)
+
+\section{A model for estimating the sort matrix}
+
+Define matrices as follows:
+
+{\bf Sort matrix}: $A_{i,c}$ is the fraction of sample $i$ which is
+composed of cell $c$.
+
+{\bf Expression}: $X_{c,j}$ is the (unknown) expression of gene $j$
+in cell $c$.
+
+{\bf Measurements}: $B_{i,j}$ is the measured expression in sample $i$
+of gene $j$ (for now, I'm assuming it's an exact measurement.)
+
+All entries of these matrices are non-negative, and
+each row of each of these matrices sums to 1. We know that 
+
+\[
+AX = B
+\]
+
+Previously, I was assuming that $A$ is known, in which case unmixing amounts
+to estimating $X$.
+
+However,
+if $A$ is also unknown, then we are essentially trying to factor
+$AX=B$, with $A, X$, and $B$ non-negative. This is reminiscent of non-negative matrix factorization (NNMF), but
+there are important differences. First, in our situation,
+$X$ has {\em larger} dimensions than $B$ --- usually NNMF is used for dimensionality
+reduction. Also, we have some
+(imperfect) information about the sort matrix
+from the microscopy data, which we'd like to encode in 
+a prior on $A$.
+
+\cite{erkkila2010} assumes a Dirichlet prior on each row of $A$, which seems reasonable.
+(However, their approach is designed for overdetermined systems.)
+
+Does this seem like a reasonable model for the problem?
+
+\section{Ways of doing inference}
+
+I'll now describe two possible approaches to doing inference in this model.
+
+\subsection{Sampling}
+
+Previously, we estimated the possible range of $X$ by sampling. If $Z$ is the nullspace
+of $A$ (that is $AZy = 0$, for all $y$), then if $x$ is a solution of $Ax=b$, $x + Zy$ is also
+a solution of $Ax=b$. We choose a random direction, and then go a random amount in that
+direction, stopping when we hit an $x \ge 0$ constraint. (This is the sampling I used
+earlier.)
+
+In this case, solving for $X$ is underdetermined. However,
+if we try to use a similar strategy to
+update $A$, given $X$ and $B$, then it's an overdetermined system.
+
+\subsubsection{Ways of updating $A$}
+
+Can we simultaneously update $A$ and $X$? By which I mean, if we perturb $A$ using some
+proposal distribution, and this maps $X$ to another solution of $AX=B$,
+is that legitimate for
+Gibbs sampling? If we could do this, reversibly, then we could incorporate the prior
+using the Metropolis algorithm.
+
+It's pretty easy to think of reversible proposal distributions for $A$. We could, for instance,
+multiply each entry of A by an $e^{\mathcal{N}(0,\epsilon)}$ variable, then rescale each row to add
+up to 1. However,
+after we do this, it's almost certainly the case that $AX \ne B$.
+
+An intuitive way to update $X_{t+1}$ is to set it to the solution of
+$A_{t+1} X_{t+1} = B$ which is nearest to $X_t$. 
+
+\subsubsection{Results of sampling}
+
+I tried implementing this, on a very toy problem (seven cells, three sort fractions,
+and ten genes), for 1000 samples. It seems that the entries of $x$ get very large,
+and entries of $A$ tend toward 0 or 1.
+(I think that constraining rows of $X$ so that they add up to 1 might improve this.)
+
+
+\includegraphics{marginals1.pdf}
+
+Thus, the sampling of $A$ gets ``stuck'' (if the update didn't
+succeed after 100 tries, I just left $A$ as it was.)
+
+\includegraphics[scale=0.7]{numARetries1.pdf}
+
+
+Alternatively, I tried just updating $A$ (and updating $X$ to the nearest
+solution, but {\em not} sampling $X$ in the plane of $AX=B$.)
+When I do this, the sampler doesn't get stuck, but the marginals look 
+slightly odd (of course, this is only 1000 samples):
+
+\includegraphics{marginals.pdf}
+
+\includegraphics[scale=0.7]{numARetries.pdf}
+
+\subsection{Phrasing this as a linear model}
+
+Since linear models, even with constraints, tend to be tractable (and I've spent so
+much time thinking about them), it seems worth trying to phrase
+this as a (possibly large) linear model.
+
+It seems like this involves multiplying things together, and so using covariance might
+be helpful. For instance, for a given gene, we have $Ax = b$. We don't know $A$ or $x$
+exactly, but (by assumption) we do know $b$ exactly. 
+
+Let $A_{i,-}$ be one row of the sort matrix $A$.
+If we consider one row of this constraint, we have
+
+\[
+A_{i,-}x = b_i
+\]
+
+This is reminiscent of correlation. I have been trying to write this as some sort
+of multivariate normal distribution, but haven't been able to.
+
+\section{Conclusion}
+
+I've ignored {\em many} issues in this, including computational cost,
+mixing time, and (probably most importantly) whether it's an appropriate model.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+
+\end{document}
+
