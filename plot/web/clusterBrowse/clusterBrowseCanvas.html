@@ -3,8 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Cluster browser</title>
-
-    <script src="closure-library/closure/goog/base.js"></script>
+    <script src="../js/closure-library/closure/goog/base.js"></script>
     <script src="../js/util.js"></script>
     <script src="../js/vectorMath.js"></script>
     <script src="clustering.js"></script>
@@ -14,9 +13,11 @@
 <body onload=" clusterBrowseInit()">
 Genes to center on: <input type="text" id="genes" value="pha-4" 
 onkeypress="if (event.keyCode==13) { updateClicked(); }" />
-    Minimum expression: <input type="text" id="minExpr" value="FIXME not yet implemented" />
+<!--
+    Minimum expression: <input type="text" id="minExpr" value="FIXME not yet implemented" /> -->
     <input type="button" value="Update" id="update" onClick="updateClicked()" />
 <div id="heatmap" width=1200 height=2000>
 </div>
 </body>
 </html>
+

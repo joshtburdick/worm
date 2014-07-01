@@ -53,7 +53,7 @@ function showClustersAsTable(a, r) {
 function showClusters() {
 
 
-  a = readCDT("cluster.cdt");
+  a = readTSV("cluster.cdt");
   var x1 = standardizeRows(a.x);
 
   document.getElementById("clusterTable").innerHTML

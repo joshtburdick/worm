@@ -1,5 +1,7 @@
 // Draws browsable clusters.
 
+goog.provide('clusterBrowseCanvas');
+
 goog.require('goog.Uri');
 goog.require('goog.color');
 goog.require('goog.dom');
@@ -103,7 +105,7 @@ function drawClusters(g, a, p) {
     1000, 2000);  // FIXME shouldn't be hardcoded
 
   // where to put the actual heatmap
-  heatmapBounds = new goog.math.Rect(250, 150, 950, 1800);
+  heatmapBounds = new goog.math.Rect(100, 150, 800, 1800);
 
   // draw various labels
   drawArrayLabels(g, new goog.math.Rect(
@@ -181,7 +183,7 @@ console.log("loc = " + loc.toString());
   if (!(labelBounds.contains(loc)))
     return;
 
-  i = Math.trunc( (loc.y - heatmapBounds.top) / cellSize );
+  i = Math.floor( (loc.y - heatmapBounds.top) / cellSize );
   if (i<0) i=0;
 
   console.log("mouse clicked on " + a.geneName[ p[i] ]);
@@ -212,6 +214,7 @@ console.log("in clusterBrowseInit()");
 
   // read in the data, and standardize (mean-center) it
   a = readCDT("cluster.cdt");
+
   xStandardized = a.x.map( vectorMath.standardize );
 
 console.log("standardized rows");
@@ -271,4 +274,6 @@ function updateClicked() {
   uri.setParameterValue("gene", geneField.value);
   location.search = uri;
 }
+
+
 
