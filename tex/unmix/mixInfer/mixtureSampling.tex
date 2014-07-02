@@ -107,15 +107,8 @@ I tried implementing this, on a very toy problem (seven cells, three sort fracti
 and ten genes), for 1000 samples. It seems that the entries of $x$ get very large,
 and entries of $A$ tend toward 0 or 1.
 (I think that constraining rows of $X$ so that they add up to 1 might improve this.)
-
-
-\includegraphics{marginals1.pdf}
-
 Thus, the sampling of $A$ gets ``stuck'' (if the update didn't
 succeed after 100 tries, I just left $A$ as it was.)
-
-\includegraphics[scale=0.7]{numARetries1.pdf}
-
 
 Alternatively, I tried just updating $A$ (and updating $X$ to the nearest
 solution, but {\em not} sampling $X$ in the plane of $AX=B$.)
