@@ -1,6 +1,9 @@
 # Counts of the number of genes enriched in
 # particular FACS-sorted samples.
 
+library("grid")
+library("ggplot2")
+
 source("git/utils.r")
 
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
@@ -9,12 +12,12 @@ r = read.tsv("git/cluster/readRatios.tsv")
 
 r.sort.only = r[,c(1:23)]
 
-r.sort.only.averaged = cbind(r.sort.only[,c(1:4,8:11,15:21)],
-  "cnd-1" = apply(r.sort.only[,c(5:7)], 1, mean),
-  "pha-4" = apply(r.sort.only[,c(5:7)], 1, mean),
-  "singlets" = apply(r.sort.only[,c(5:7)], 1, mean))
+r.sort.only.averaged = cbind(r.sort.only[,c(7:21)],
+  "cnd-1" = apply(r.sort.only[,c(1:3)], 1, mean),
+  "pha-4" = apply(r.sort.only[,c(4:6)], 1, mean),
+  "singlets" = apply(r.sort.only[,c(22:23)], 1, mean))
 
-rpm.facs = rpm[ , c(1:23,38:54,65:68) ]
+rpm.facs = rpm[ , c(1:21,36:54,65:68) ]
 
 # max. expression of each gene in some sample
 max.expr = apply(rpm.facs, 1, max)
@@ -52,11 +55,11 @@ num.fractions.enriched.depleted = {
 
 cat("number of genes enriched/depleted in at least one fraction =",
   length(num.fractions.enriched.depleted), "\n")
-# pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
-#   width=7.5, height=5)
+pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
+  width=7.5, height=5)
 
 
-if (TRUE) {
+if (FALSE) {
   # log-scale version of this
   counts = table(num.fractions.enriched.depleted)
   barplot(log10(counts), yaxt="n",
@@ -66,12 +69,37 @@ if (TRUE) {
   axis(2, labels = c(1,10,100,1000), at=c(0,1,2,3))
   abline(h=0)
 } else {
-hist(num.fractions.enriched.depleted,
-  main="Number of fractions in which a gene\nis enriched or depleted",
-  xlab="Number of fractions",
-  breaks=max(num.fractions.enriched.depleted)+1, col="grey")
+# version with subgraph
+#hist(num.fractions.enriched.depleted,
+#  main="Number of fractions in which a gene\nis enriched or depleted",
+#  xlab="Number of fractions",
+#  breaks=max(num.fractions.enriched.depleted)+1, col="grey")
+#     subplot( hist(rnorm(100)), 15, 1000)
+
+
+#Any old plot
+#a_plot <- ggplot(cars, aes(speed, dist)) + geom_line()
+
+#A viewport taking up a fraction of the plot area
+vp <- viewport(width = 0.6, height = 0.6, x = 0.7, y = 0.7)
+
+     set.seed(5689)
+     movies <- movies[sample(nrow(movies), 1000), ]
+     # Simple examples
+#     qplot(rating, data=movies, geom="histogram")
+#     qplot(rating, data=movies, weight=votes, geom="histogram")
+#  a_plot <- ggplot(movies, aes(x = rating)) + geom_histogram()
+
+a_plot <- ggplot(data.frame(num=num.fractions.enriched.depleted),
+  aes(x=num)) + geom_histogram(binwidth=1) + theme_bw()
+
+#Just draw the plot twice
+print(a_plot)
+print(a_plot + coord_trans(y="sqrt"), vp = vp)
+
+
 }
-# dev.off()
+dev.off()
 
 cat("table of number of fractions enriched/depleted:\n")
 show(table(num.fractions.enriched.depleted))
