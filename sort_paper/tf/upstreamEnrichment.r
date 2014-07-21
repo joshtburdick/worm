@@ -24,6 +24,9 @@ motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 known.motifs.small =
   intersect(known.motifs, motif.filter$canonical.name)
 
+# XXX for testing
+# known.motifs.small = "RFX2_DBD"
+
 # Gets the counts of one motif upstream of all genes.
 get.motif.counts = function(m) {
 
@@ -46,6 +49,8 @@ for(i in 1:5)
     read.tsv(paste0("git/tf/motif/conservation/cons_hist_WS220_",
       i, "kb_upstream.tsv.gz"))
 
+
+
 # Does a chi-squared test for a clustering.
 # Args:
 #   gene.in.cluster - the clustering to use, as a logical vector indexed by gene name
@@ -55,16 +60,30 @@ for(i in 1:5)
 #     (as a numeric vector indexed by gene)
 # Returns: a vector of statistics
 compute.enrichment.1 = function(gene.in.cluster, motif.count, upstream.size) {
-  
+
+  # XXX note some hackery to deal with different gene names
+#  cl1 = intersect(names(gene.in.cluster), names(motif.count))
+#  mc1 = motif.count[cl1]
+#  motifs.cluster = sum(mc1[ cl1 ])
+#  motifs.background = sum(mc1[ !cl1 ])
+
   motifs.cluster = sum(motif.count[ gene.in.cluster ], na.rm=TRUE)
   motifs.background = sum(motif.count[ ! gene.in.cluster ], na.rm=TRUE)
-  bp.cluster = sum( upstream.size[ gene.in.cluster ], na.rm=TRUE)
-  bp.background = sum( upstream.size[ ! gene.in.cluster ], na.rm=TRUE)
+
+  bpc = upstream.size[ names(gene.in.cluster) ]
+  bp.cluster = sum( bpc[ gene.in.cluster ], na.rm=TRUE)
+  bp.background = sum( bpc[ ! gene.in.cluster ], na.rm=TRUE)
 
   # compute counts
-  r = c(enrichment =
+  r = c(motifs.cluster = motifs.cluster,
+    motifs.background = motifs.background,
+    bp.cluster = bp.cluster,
+    bp.background = bp.background,
+    enrichment =
     (motifs.cluster / motifs.background) / (bp.cluster / bp.background),
     chisq = NA, p = 1, p.corr = NA)
+
+# browser()   # XXX for testing
 
   # only include enrichments
   if (!is.na(r["enrichment"]) && r["enrichment"] > 1) {
@@ -97,13 +116,27 @@ compute.enrichment.diff.cutoffs = function(motifs, get.counts, clusters,
     upstream.dist.kb.cutoff, conservation.cutoff, score.cutoff) {
 
   # array of results
-  stat.names = c("enrich", "chisq", "p", "p.corr")
+  stat.names = c("motifs.cluster", "motifs.background",
+    "bp.cluster", "bp.background", "enrich", "chisq", "p", "p.corr")
   r = array.from.dimnames(list(motif = motifs,
     group = as.character(names(clusters)),
     upstream.dist.kb = upstream.dist.kb.cutoff,
     conservation = conservation.cutoff,
     motif.score = score.cutoff,
     stat = stat.names))
+
+  # cache of upstream conservation at different cutoffs,
+  # indexed first by upstream distance, then conservation
+  upstream.cons.at.cutoff = NULL
+  for(upstream.dist.kb in 1:5) {
+    for(conservation in c(0, 0.5, 0.7, 0.9)) {
+      bp1 = upstream.cons.dist[[upstream.dist.kb]]
+      upstream.bp =
+        apply(bp1[ , colnames(bp1) >= conservation ], 1, sum)
+      upstream.bp = upstream.bp[ names(clusters[[1]]) ]
+      upstream.cons.at.cutoff[[as.character(upstream.dist.kb)]][[as.character(conservation)]] = upstream.bp
+    }
+  }
 
   # loop through the motifs
   for (motif in motifs) {
@@ -114,8 +147,13 @@ compute.enrichment.diff.cutoffs = function(motifs, get.counts, clusters,
       for (conservation in conservation.cutoff) {
 
         # amount of upstream sequence present at that cutoff
+        # FIXME cache this
+if (FALSE) {
         bp1 = upstream.cons.dist[[upstream.dist.kb]]
         upstream.bp = apply(bp1[ , colnames(bp1) >= conservation ], 1, sum)
+        upstream.bp = upstream.bp[ names(clusters[[1]]) ]
+}
+        upstream.bp = upstream.cons.at.cutoff[[as.character(upstream.dist.kb)]][[as.character(conservation)]]
 
         # loop through motif score cutoffs, and count motifs at that cutoff
         for (motif.score in score.cutoff) {
@@ -125,7 +163,9 @@ compute.enrichment.diff.cutoffs = function(motifs, get.counts, clusters,
           m1 = m[ m$upstream.dist >= -1000 * upstream.dist.kb &
             m$motif.cons >= conservation &
             m$motif.score >= motif.score , ]
-          motif.counts = c(table(m1$gene))
+          mc1 = c(table(m1$gene))
+          motif.counts = rep(0, length(names(clusters[[1]])))
+          motif.counts[ names(mc1) ] = mc1
           gc()
 
           for(cl in as.character(names(clusters))) {
@@ -143,11 +183,11 @@ compute.enrichment.diff.cutoffs = function(motifs, get.counts, clusters,
 
 # Runs this on clustering for the motifs.
 find.cluster.enrichment.motifs = function() {
-  output.dir = "git/sort_paper/tf/motif/"
+  output.dir = "git/sort_paper/tf/motif/cluster.enrichment/"
   system(paste("mkdir -p", output.dir))
 
-  for (f in c("hier.300.clusters")) {    # list.files(clustering.dir)) {
-    cat(f, "\n")
+  for (f in list.files(clustering.dir)) {
+    cat(paste(f, date), "\n")
 
     # clustering to use
 #    clustering1 = read.tsv(paste0(clustering.dir, "/", f, "/clusters.tsv"))
@@ -167,5 +207,5 @@ find.cluster.enrichment.motifs = function() {
   }
 }
 
-# find.cluster.enrichment.motifs()
+find.cluster.enrichment.motifs()
 
