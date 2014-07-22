@@ -65,7 +65,9 @@ layout(matrix(c(1,2,3,4,4,5), nrow=2, byrow=TRUE),
   widths=c(1,1,3), heights=c(1,4))
 
 blue.yellow.colors =
-  c(hsv(2/3, 1, 128:0/128), hsv(1/6, 1, 1:128/128))
+#  c(hsv(2/3, 1, 128:0/128), hsv(1/6, 1, 1:128/128))
+# temporarily trying to match TreeView colors
+  c(hsv(194/360, 1, 128:0/128), hsv(60/360, 1, 1:128/128))
 
 # color bar for markers
 par(mar=c(4,2,7,6)+0.1)
