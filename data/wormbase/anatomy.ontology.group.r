@@ -1,6 +1,11 @@
 # Groups together all descendents of particular anatomy
 # ontology terms.
 
+library(Matrix)
+
+source("git/utils.r")
+source("git/data/name_convert.r")
+
 wb.anatomy = read.table(
   gzfile("data/wormbase/anatomyTerm.ws220.tsv.gz"),
   header=TRUE, sep="\t", quote="", as.is=TRUE)
@@ -9,25 +14,23 @@ wb.anatomy.ontology = read.table(
   gzfile("data/wormbase/anatomyOntology.ws220.tsv.gz"),
   header=TRUE, sep="\t", quote="", as.is=TRUE)
 
-
+# anatomy.term.to.name =
+#   by(wb.anatomy$Anatomy.Term, wb.anatomy$Anatomy.Term.ID,
+#     function(x) as.vector(x)[1])
+anatomy.term.to.name = wb.anatomy.ontology$Anatomy.Term
+names(anatomy.term.to.name) = wb.anatomy.ontology$Anatomy.Term.ID
+anatomy.term.to.name[ anatomy.term.to.name == "" ] =
+  wb.anatomy.ontology[ anatomy.term.to.name == "", "Anatomy.Term.ID" ]
 
 anatomy.term.parent = strsplit(wb.anatomy.ontology[,3], " \\| ")
 names(anatomy.term.parent) = wb.anatomy.ontology[,1]
 anatomy.term.parent =
   anatomy.term.parent[ sapply(anatomy.term.parent, length) > 0 ]
 
-if (FALSE) {
-ao.table = NULL
-for(a in names(anatomy.term.parent))
-  ao.table = rbind(ao.table,
-    data.frame(a, anatomy.term.parent[[a]], stringsAsFactors=FALSE))
-}
-
-# anatomy.term.child =
-#   by(ao.table[,1], ao.table[,2], function(x) unique(as.character(x)))
-
-# a = relation(graph=ao.table)
-
+# adapt anatomy ontology to be what hyperg.test.groups expects
+ao = data.frame(gene=rename.gene.name.vector(wb.anatomy$Gene.Public.Name),
+  group=wb.anatomy$Anatomy.Term.ID,
+  group.name=wb.anatomy$Anatomy.Term, stringsAsFactors=FALSE)
 
 # Converts a relation (in adjacency-list form) to a logical matrix.
 relation.to.matrix = function(r) {
@@ -56,34 +59,30 @@ cat(sum(r), " ")
   r
 }
 
-# Computes a transitive closure. This is essentially a sparse
-# version of Floyd-Warshall. (Deprecated: using "relation" instead.)
-# (No, maybe not.)
-transitive.closure.list = function(r) {
-
-  print(object.size(r))
-
-  # function which adds things onto a list
-  closure.step = function(x) {
-    a = unique(c(x, r[[x]], sapply(r[[x]], function(y) r[[y]])))
-    a = a[ !is.null(a) ]
-    a
-  }
-
-  r1 = sapply(names(r), closure.step)
-
-  # are we done?
-  if (length(c(r1, recursive=TRUE)) == length(c(r, recursive=TRUE)))
-    r
-  else
-    # no; make recursive call
-    transitive.closure.list(r1)
-}
-
-# foo = by(c(1:10), c(1,1,1,2,2,2,2,3,3,3), c, simplify=FALSE)
-
-# foo = transitive.closure.list(anatomy.term.child)
-
 a = relation.to.matrix(anatomy.term.parent)
 a1 = refl.trans.closure.matrix(a)
+
+# compute list of genes in each anatomy ontology group
+ao.group.l = vector("list", ncol(a1))
+for(j in 1:ncol(a1)) {
+  g = colnames(a1)[j]
+
+  # human-readable name for this term (if available)
+  group.name = anatomy.term.to.name[ g ]
+  if (is.na(group.name))
+    group.name = g
+
+  write.status(paste(j, g, group.name))
+  g1 = rownames(a1)[ a1[,j] ]
+  genes = unique( ao[ ao$group %in% g1, "gene" ] )
+  if (length(genes) > 0) {
+    ag = data.frame(gene = genes, group = g, group.name = group.name,
+      row.names = genes, stringsAsFactors = FALSE)
+    ao.group.l[[j]] = ag     # ao.group = rbind(ao.group, ag)
+  }
+}
+ao.group = do.call("rbind", ao.group.l)
+# ao.group$group.name = anatomy.term.to.name[ ao.group$group ]
+
+save(ao, ao.group, file="git/data/wormbase/anatomy.ontology.group.Rdata")
 
