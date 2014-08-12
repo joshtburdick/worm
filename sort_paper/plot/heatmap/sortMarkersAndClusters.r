@@ -58,11 +58,13 @@ marker.on.off[ m1 , ] = m.leaf[ m1 , ]
 h = hclust(dist(t(cluster.mean[1:20,])))
 
 pdf("git/sort_paper/plot/heatmap/sortMarkersAndClusters.pdf",
-  width=16, height=8)
+  width=8, height=16)
 # png("git/sort_paper/plot/heatmap/sortMarkersAndClusters.png",
 #   width=1200, height=600)
-layout(matrix(c(1,2,3,4,4,5), nrow=2, byrow=TRUE),
-  widths=c(1,1,3), heights=c(1,4))
+# layout(matrix(c(1,2,3,4,4,5), nrow=2, byrow=TRUE),
+#   widths=c(1,1,3), heights=c(1,4))
+layout(matrix(c(1,3,2,3,4,5), nrow=3, byrow=TRUE),
+  widths=c(1,3), heights=c(1,1,3))
 
 blue.yellow.colors =
 #  c(hsv(2/3, 1, 128:0/128), hsv(1/6, 1, 1:128/128))
@@ -81,12 +83,6 @@ image(as.matrix(-128:128/128), col=blue.yellow.colors,
   xaxt="n", yaxt="n", useRaster=TRUE,
   main="Enrichment measured by RNA-seq")
 axis(1, label=c("depleted", "no difference", "enriched"), at=c(0,0.5,1))
-
-# clustering dendrogram
-par(mar=c(0,4,0.1,0))
-plclust(h, labels=FALSE, axes=FALSE,
-  sub="", xlab="", ylab="", hang=-1)
-
 # ??? brighten image a bit?
 # marker.on.off[ marker.on.off >= 0.5 ] = 1
 
@@ -108,23 +104,30 @@ names(a) = lin.node.names
 plot.segments.per.cell(a, main="", root="P0", times=c(0,550),
     lwd=1.5, yaxt="n", add=TRUE)
 
-label.panel("a)", gp=gpar(fontsize=14, col="black"))
+# label.panel("a)", gp=gpar(fontsize=14, col="black"))
 
+
+# clustering dendrogram
+if (TRUE) {
+par(mar=c(0,4,0.1,0))
+plclust(h, labels=FALSE, axes=FALSE,
+  sub="", xlab="", ylab="", hang=-1)
+}
 
 # the actual clustered expression
-par(mar=c(2.1,6.4,0,2.4))
-image(scale.interval.to.unit(t(cluster.mean[,h$order]), c(-1,1)),
+# par(mar=c(2.1,6.4,0,2.4))
+image(scale.interval.to.unit((cluster.mean[,h$order]), c(-1,1)),
   useRaster=TRUE, 
   xaxt="n", yaxt="n", zlim=c(0,1),
   col=blue.yellow.colors)
-label.panel("b)", gp=gpar(fontsize=14, col="black"))
+# label.panel("b)", gp=gpar(fontsize=14, col="black"))
 
 # label the samples
 sample.labels = rownames(cluster.mean)
 sample.labels = sub("t\\.00", "", sample.labels)
 sample.labels = sub("t\\.0", "", sample.labels)
 sample.labels = sub("t\\.", "", sample.labels)
-axis(2, at=0:33/33, labels=sample.labels,
+axis(3, at=0:33/33, labels=sample.labels,
   las=2, tick=FALSE, line=-0.7)
 
 mtext("Time (minutes)", side=2, adj=0.87, line=5.5, cex=1.3)
