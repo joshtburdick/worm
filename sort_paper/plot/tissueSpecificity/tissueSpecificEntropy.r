@@ -1,5 +1,6 @@
 # Measuring how tissue-specific expression is.
 
+source("git/utils.r")
 source("git/unmix/ept/gamma.r")
 source("git/sort_paper/plot/tissueSpecificity/geneGroups.r")
 
@@ -37,60 +38,95 @@ pdf("git/sort_paper/plot/tissueSpecificity/tissueSpecificEntropy.pdf",
   width=7.5, height=10)
 par(mfrow=c(3,2))
 
+# Empirical version of a distribution.
+# Args:
+#   a - a vector of numbers
+#   bucket.size - how to quantize those numbers
+# Returns: a function which approximates the distribution of a
+empirical.dist = function(a, bucket.size = 0.2) {
+
+  # the probabilities (indexed by bucket)
+  p = table(as.character(floor( a / bucket.size )))
+  p = p / sum(p)
+
+  function(x) {
+    i = as.character(floor( x / bucket.size ))
+    ifelse(i %in% names(p), p[i], 0)
+  }
+}
+
+# Picks a "matched set" of numbers from one set, with distribution
+# similar to another set of numbers.
+# Args:
+#   a - named vector of numbers, whose distribution we want to match
+#   b - named vector of numbers, which we will choose from
+#   bucket.size - the bucket size
+# Returns: vector of n names of elements of b, whose distribution
+#   should be similar to that of a
+pick.matched = function(a, b, bucket.size = 0.2) {
+  f = function(x) as.character(floor( x / bucket.size ))
+
+  buckets = by(names(b), f(b), function(x) c(as.character(x)))
+
+  pick.matched = function(y) {
+    sample(buckets[[f(y)]], 1)
+  }
+
+  sapply(a, pick.matched)
+}
+
 for(group in names(gene.groups)) {
-  cat(group)
+  write.status(group)
+
+  # scatterplot of expression and tissue specificity
+  plot(max.expr[ gene.groups[[group]] ],
+    tissue.spec.entropy[ gene.groups[[group]] ],
+    main = group,
+    xlab="Maximum log2(rpm+1)",
+    ylab="Entropy (bits)",
+    pch=183, font=5, col="#0000ff80")
+
+  plot.new()
 
   # first, stats for all the genes in this group
   x1 = max.expr[ gene.groups[[group]] ]
   h = hist(x1,
-    freq=TRUE, main=paste("Expression of", group), cex.main=1.5,
+    freq=TRUE, main=paste("Expression of", group), cex.main=1.4,
     xlab="Maximum log2(rpm+1)",
     col="lightgrey", breaks=40)
 
-  # moment-matched gamma (we'll use this later)
-  g = gamma.mv2s( rbind(m = mean(x1), v = var(x1)) )
-  par(new=TRUE)
-  plot(0:1000 / 10,
-    length(x1) * dgamma(0:1000/10, shape=g["a",], scale=g["b",]),
-    xlim=range(x1),
-    main="", xlab="", ylab="", xaxt="n", yaxt="n",
-    type="l", lwd=2, col="#0000ff80")
-
   # the tissue-specific entropy for this
   e = tissue.spec.entropy[ gene.groups[[group]] ]
-  hist(e, freq=TRUE, main=paste("Entropy of", group), cex.main=1.5,
+  hist(e, freq=TRUE, main=paste("Entropy of", group), cex.main=1.4,
     xlab="Entropy (bits)", xlim=c(0,log2(ncol(r))),
     col="lightgrey", breaks=30)
   mtext(paste("mean =", signif(mean(e), 2),
     "  median =", signif(median(e), 2),
     "  n =", length(e)))
 
-  # pick a matched set of protein-coding genes
-  p = dgamma(max.expr[ gene.groups[["protein-coding"]] ],
-      shape=g["a",], scale=g["b",])
-  mg = sample(gene.groups[["protein-coding"]],
-    length(gene.groups[[group]]), replace=TRUE,
-    prob = p)
+if (TRUE) {
+  # pick a set of protein-coding genes with similar
+  # expression levels
+  mg = pick.matched(max.expr[ gene.groups[[group]] ],
+    max.expr[ gene.groups[["protein-coding"]] ], bucket.size=0.2)
 
   # same things, for matched protein-coding genes
   # first, stats for all the genes in this group
   x1 = max.expr[ mg ]
   hist(x1,
-    freq=TRUE, main="Expression of matched\nprotein-coding genes",
-    cex.main=1.5, xlab="Maximum log2(rpm+1)",
+    freq=TRUE, main="Expression of matched protein-coding genes",
+    cex.main=1.4, xlab="Maximum log2(rpm+1)",
     col="lightgrey", breaks=40)
 
   # the tissue-specific entropy for this
   e = tissue.spec.entropy[ mg ]
-  hist(e, freq=TRUE, main="Entropy of matched\nprotein-coding genes",
-    cex.main=1.5, xlab="Entropy (bits)", xlim=c(0,log2(ncol(r))),
+  hist(e, freq=TRUE, main="Entropy of matched protein-coding genes",
+    cex.main=1.4, xlab="Entropy (bits)", xlim=c(0,log2(ncol(r))),
     col="lightgrey", breaks=30)
   mtext(paste("mean =", signif(mean(e), 2),
     "  median =", signif(median(e), 2),
     "  n =", length(e)))
-
-  plot.new()
-  plot.new()
+}
 }
 
 dev.off()
