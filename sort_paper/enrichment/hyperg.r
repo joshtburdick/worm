@@ -1,5 +1,7 @@
 # Utilities for computing hypergeometric enrichment.
 
+library(Matrix)
+
 # Hypergeometric test for enrichment.
 # Args:
 #   g - set of genes
@@ -60,7 +62,7 @@ hyperg.test.groups = function(groups, gene.list, num.genes) {
 #     (e.g. cluster)
 #   num.genes - the assumed total number of genes
 # Returns: a data frame of results
-# XXX somewhat slow
+# XXX somewhat slow and deprecated
 hyperg.test.groups.many = function(groups, gene.set, num.genes) {
   gene.set = gene.set[ !is.na(gene.set$set) , ]
 
@@ -78,7 +80,69 @@ hyperg.test.groups.many = function(groups, gene.set, num.genes) {
   r
 }
 
+# Converts a table to a logical matrix.
+table.to.logical.matrix = function(i, j) {
+  R = 1:length(unique(i))
+  C = 1:length(unique(j))
+  names(R) = sort(unique(i))
+  names(C) = sort(unique(j))
 
+  a = Matrix(FALSE, nrow=length(R), ncol=length(C))
+  rownames(a) = names(R)
+  colnames(a) = names(C)
 
+  a[ cbind(R[i],C[j]) ] = TRUE
+
+  a
+}
+
+# Faster version of this, using matrices.
+# Args:
+#   groups - a data frame of, e.g., anatomy terms, with
+#     columns "gene", "group", and "group.name"
+#   gene.set - a data.frame with columns "gene" and "set"
+#     (e.g. cluster)
+#   num.genes - the assumed total number of genes
+# Returns: an array of results
+hyperg.test.groups.many.faster = function(groups, gene.set, num.genes) {
+
+  # XXX avoid problems with cluster names which are numbers
+  gene.set$set = as.character(gene.set$set)
+
+  # mapping of groups to human-readable name (assumes that a given
+  # anatomy term always has the same human-readable name)
+  # XXX this is "non-normalized" ??? make this an arg.?
+  group.to.name =
+    by(groups$group.name, groups$group,
+    function(x) as.vector(x)[1])
+
+  a = table.to.logical.matrix(groups$group, groups$gene)
+  b = table.to.logical.matrix(gene.set$gene, gene.set$set)
+  group.sizes = apply(a, 1, sum)
+  cluster.sizes = apply(b, 2, sum)
+
+  genes = intersect(colnames(a), rownames(b))
+  counts = a[,genes] %*% b[genes,]
+
+  r = array(NA, dim=c(nrow(counts), ncol(counts), 5),
+    dimnames = list(group=rownames(counts), cluster=colnames(counts),
+    stat=c("num.in.group", "num.in.cluster", "num.intersect", "p", "p.corr")))
+
+  for(group in rownames(counts))
+    for(cl in colnames(counts)) {
+write.status(paste(group, cl))
+      num.in.group = group.sizes[group]
+      num.in.cluster = cluster.sizes[cl]
+      p = phyper(counts[group,cl]-1, num.in.group,
+        num.genes-num.in.group, num.in.cluster, lower.tail=FALSE)
+      r[ as.character(group) , as.character(cl) , ] =
+        c(num.in.group, num.in.cluster, counts[group,cl], p, NA)
+  }
+
+  r[,,"p.corr"] = p.adjust(r[,,"p"], method="fdr")
+
+#  list(a = a, b = b, counts = counts, r = r)
+  r
+}
 
 
