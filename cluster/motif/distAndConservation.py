@@ -110,12 +110,13 @@ subprocess.call(["mkdir", "-p", outputDir])
 #   shell=True).split("\n")
 
 # nope, running it on everything
-motifs = [ f.replace(".bam", "")
-  for f in os.listdir(motifBamPath)
-  if re.match(".*.bam$", f) ]
+#motifs = [ f.replace(".bam", "")
+for f in os.listdir(motifBamPath)
+  if re.match(".*.bam$", f)
 
-for m in motifs:
-  if (m != ""):
+#for m in motifs:
+#  if (m != ""):
     print("motif: " + m)
     computeMotifDistAndConservation(m)
+
 
