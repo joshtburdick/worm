@@ -56,9 +56,9 @@ function showClusters() {
   a = readTSV("cluster.cdt");
   var x1 = standardizeRows(a.x);
 
-  document.getElementById("clusterTable").innerHTML
-    = "here are <b>clusters</b> "  +
-      showClustersAsTable(a, 0);
+//  document.getElementById("clusterTable").innerHTML
+//    = "here are <b>clusters</b> "  +
+//      showClustersAsTable(a, 0);
 
 
 }
