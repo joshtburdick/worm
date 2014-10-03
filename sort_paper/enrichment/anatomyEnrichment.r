@@ -169,7 +169,7 @@ colnames(cl1) = c("gene", "set")
 foo = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
 }
 
-compute.cluster.enrichment()
+# compute.cluster.enrichment()
 
 # sort.fraction.anatomy.enrichment()
 
