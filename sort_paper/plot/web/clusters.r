@@ -2,6 +2,7 @@
 
 library("hwriter")
 
+source("git/data/name_convert.r")
 source("git/utils.r")
 source("git/tf/motif/motifName.r")
 source("git/plot/web/html.r")
@@ -32,6 +33,22 @@ for(j in c(12:51)) {
   x[ , j ] = as.numeric( x[ , j ])
 }
 
+# for comparing cluster centers and TF expression profiles
+cluster.means = read.tsv(
+  paste0("git/sort_paper/cluster/centroids/", clustering.name, "_means.tsv"))
+cluster.means = cluster.means[,1:23]      # ??? convert to a matrix?
+
+rr = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
+rr = rr[,1:23]
+
+# correlation of each cluster with known TFs
+wtf = read.csv("data/tf/wTF2.1.csv", as.is=TRUE)
+tf1 = unique(rename.gene.name.vector(
+  union(wtf$Sequence.name.variant, wtf$Gene.public.name)))
+# only consider genes which have at least some reads
+tf2 = intersect(tf1, x[,3])
+tf.cluster.cor = cor(t(cluster.means), t(rr[tf2,]))
+
 # enriched anatomy terms and other expression clusters
 ao.enriched = read.tsv(paste0(
   "git/sort_paper/enrichment/summary/anatomyEnrichment/",
@@ -50,6 +67,12 @@ chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
   clustering.name, ".tsv"))
 colnames(chip.enriched)[1] = "experiment"
 chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
+
+# make ChIP factor names lower case (to help match them with
+# motif names), and otherwise tweak them
+i = tolower(chip.enriched$factor) %in% rownames(rr)
+chip.enriched$factor[i] = tolower( chip.enriched$factor[i] )
+chip.enriched$factor = sub("LIN-15B", "lin-15", chip.enriched$factor)
 
 # information about orthologs
 motif.ortholog = read.table("git/tf/motif.ortholog.2.tsv",
@@ -71,6 +94,9 @@ orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
     return(unique(as.character(x))) 
   }
 )
+
+source("git/sort_paper/plot/web/hughesMotif.r")
+
 
 # Utility to convert numbers to colors.
 # Args:
@@ -143,6 +169,37 @@ go.enriched.table = function(a) {
   hwrite(results)
 }
 
+# Annotates a list of TFs associated with a given cluster.
+tf.list.annotate = function(tf, cl) {
+
+  # compute correlation
+  r2 = rep(NA, length(tf))
+  names(r2) = tf
+  g = intersect(tf, colnames(tf.cluster.cor))
+  r2[g] = signif(tf.cluster.cor[cl,g], 2)
+  r2 = r2[ order(abs(r2), decreasing=TRUE) ]
+
+  # the full list
+  full.list = paste(names(r2), ifelse(is.na(r2), " ", paste0("(", r2, ") ")), collapse="") 
+
+  # just a shorter list
+  r2a = r2
+  r2a[ abs(r2a) <= 0.5 ] = NA
+  a = paste(names(r2a), ifelse(is.na(r2a), "", paste0("(", r2a, ")")))
+
+  shorter.list =
+    if (length(a) <= 19)
+      paste(a, collapse=" ")
+    else
+      paste(paste(a[1:20], collapse=" "), "and", length(a) - 20, "others", collapse=" ")
+
+  if (length(a) == 0)
+    ""
+  else
+    paste(shorter.list,
+      paste0("<br><span title=\"", full.list, "\">[full list]</span>"))
+}
+
 # HTML for a table of enriched motifs.
 motif.table = function(a) {
   if (nrow(a) == 0)
@@ -152,24 +209,30 @@ motif.table = function(a) {
 
   a$logo = sapply(a$motif,
     function(m) paste0("<img src=\"../motifSvg/", m, ".svg\" ",
-      "alt=\"Logo for motif ", m, "\" width=\"120px\" height=\"27px\">"))
+      "title=\"Logo for motif ", m, "\" width=\"120px\" height=\"27px\">"))
   a$enrich = round(a$enrich, 2)
   a$p.corr = signif(a$p.corr, 2)
-  a$ortholog = sapply(a$motif,
-    function(m) {
-      g = orthologs.by.motif[[ m ]]
-      # if there are many TFs, show the entire list as alt text
-      if (length(g) > 21) {
-        all.g = paste(g, collapse=" ")
-        g = c(g[1:20], paste("and", length(g)-20, "others"))
 
-        paste(paste(g, collapse=" "),
-          paste0("<br><span title=\"", all.g, "\">[full list]</span>"))
-      }
-      else {
-        paste(g, collapse=" ")
-      }
-    })
+  # original version of this
+  if (FALSE) {
+    a$ortholog = sapply(a$motif,
+      function(m) {
+        g = orthologs.by.motif[[ m ]]
+        # if there are many TFs, show the entire list as alt text
+        if (length(g) > 21) {
+          all.g = paste(g, collapse=" ")
+          g = c(g[1:20], paste("and", length(g)-20, "others"))
+
+          paste(paste(g, collapse=" "),
+            paste0("<br><span title=\"", all.g, "\">[full list]</span>"))
+        }
+        else {
+          paste(g, collapse=" ")
+        }
+      })
+  }
+  a$ortholog = sapply(a$motif,
+    function(m) tf.list.annotate(orthologs.by.motif[[m]], cl))
 
   a = a[ , c("motif", "logo", "ortholog", "motifs.cluster", "enrich", "p.corr") ]
 
@@ -185,6 +248,22 @@ motif.table = function(a) {
   hwrite(a, row.names=FALSE)
 }
 
+# HTML for the TFs most correlated with a given cluster centroid.
+correlated.tf.html = function(cl) {
+  r2 = signif(sort(tf.cluster.cor[cl,], decreasing=TRUE), 2)
+  if (length(r2) > 50) {
+    n = length(r2)
+    r2 = r2[c(1:25, (n-24):n)]
+  }
+
+  r = data.frame(TF=names(r2),
+    Correlation = r2)
+  colnames(r) = sapply(
+    c("Transcription factor", "Correlation"),
+    function(a) paste0("<b>", a, "</b>"))
+
+  hwrite(r, row.names=FALSE)
+}
 
 # HTML for a table of ChIP terms.
 chip.table = function(a) {
@@ -275,16 +354,19 @@ write.cluster = function(x, cl) {
   h = paste0(
     "<h2>Cluster ", cl, "</h2>",
     "<h3>Expression</h3>", expr.table(x1),
-    "<h3>Anatomy terms enriched</h3>",
-    enriched.table(ao.enriched[ ao.enriched$cluster==cl , ],
-      function(ao)
-        paste0("http://www.wormbase.org/db/get?name=",
-        ao, ";class=Anatomy_term")),
+
     "<h3>Phenotypes enriched</h3>",
     enriched.table(phenotype.enriched[ phenotype.enriched$cluster==cl , ],
       function(a)
         paste0("http://www.wormbase.org/db/get?name=",
         a, ";class=Phenotype")),
+
+    "<h3>Anatomy terms enriched</h3>",
+    enriched.table(ao.enriched[ ao.enriched$cluster==cl , ],
+      function(ao)
+        paste0("http://www.wormbase.org/db/get?name=",
+        ao, ";class=Anatomy_term")),
+
     "<h3>GO terms enriched</h3>",
     go.enriched.table(go.enriched[ go.enriched$cluster==cl , ]),
     "<h3>Expression clusters enriched</h3>",
@@ -292,8 +374,16 @@ write.cluster = function(x, cl) {
       function(ao)
         paste0("http://www.wormbase.org/db/get?name=",
         ao, ";class=Expression_cluster")),
+
+    "<h3>Hughes motifs enriched</h3>",
+    hughes.motif.table(hughes.motif.enriched[hughes.motif.enriched$group == cl,]),
+
     "<h3>Motifs enriched</h3>",
     motif.table(motif.enriched[motif.enriched$group == cl,]),
+
+    "<h3>Correlated (and anti-correlated) transcription factors</h3>",
+    correlated.tf.html(cl),
+
     "<h3>ChIP peaks enriched</h3>",
     chip.table(chip.enriched[chip.enriched$group == cl,])
   )
@@ -308,7 +398,7 @@ write.cluster = function(x, cl) {
     cl, ".html"))
 }
 
-# for(cl in c(1,2,3,52,286)) {
+# for(cl in c(1,2,3,30,52,245,266,286)) {
 for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
