@@ -127,3 +127,68 @@ motifs.enriched.in.groups = function(motif.count.dir, clusters, motifs=NULL) {
   r
 }
 
+# Does a large number of chi-square tests.
+# All its args can be vectors of the same length; you may want to
+# reshape from array to vector, and back, to use these.
+# Args:
+#   motifs.cl, motifs.bg - # of motifs in cluster and background
+#   bp.cl, bp.bg - # of base pairs in cluster and background
+# Returns: matrix with one row per entry of each of these, and
+#   one column for each of the statistics
+chisq.test.many = function(motifs.cl, motifs.bg, bp.cl, bp.bg) {
+  n = length(motifs.cl)
+
+  # array of results
+  r = matrix(nrow=n, ncol=8)
+  colnames(r) = stat.names
+  r[ , "motifs.cluster" ] = motifs.cl
+  r[ , "motifs.background" ] = motifs.bg
+  r[ , "bp.cluster" ] = bp.cl
+  r[ , "bp.background" ] = bp.bg
+
+  motifs = motifs.cl + motifs.bg
+  bp = bp.cl + bp.bg
+
+  # expected number of motifs in cluster
+  e = motifs * (bp.cl / bp)
+
+  r[ , "enrich" ] = motifs.cl / e
+  r[ , "chisq" ] = ((motifs.cl - e) ^ 2 + (motifs.bg - e) ^ 2) / e
+  r[ , "p" ] = pchisq(r[ , "chisq" ], 1, lower.tail=FALSE)
+  
+  r
+}
+
+# Faster version of the above (or an attempt at this.)
+# Args:
+#   cl - the clustering, as a vector of integers (or strings),
+#     indexed by gene
+#   motif.count - array of motif counts
+#   upstream.bp - array of upstream counts
+# Returns: array of results
+motifs.enriched.in.group.2 = function(cl, motif.count, upstream.bp) {
+  cl.names = names(cl)
+  cl = as.character(cl)
+  names(cl) = cl.names
+
+  clusters = sort(unique(cl))
+
+  motif.count = motif.count[names(cl),,,]
+  upstream.bp = upstream.bp[names(cl),,]
+  # count motifs by cluster (foreground and background)
+  motifs.cluster =
+    aperm(apply(motif.count, c(2,3,4), function(x) by(x, cl, sum)), c(2,3,4,1))
+  motifs.total = apply(motifs.cluster, c(1,2,3), sum)
+  motifs.background = as.vector(motifs.total) - motifs.cluster
+
+  # add up amount of upstream sequence (foreground and background)
+  bp.cluster = aperm(apply(upstream.bp, c(2,3),
+    function(x) by(x, cl, sum)), c(2,3,1))
+  bp.total = apply(bp.cluster, c(1,2), sum)
+  bp.background = as.vector(bp.total) - bp.cluster
+
+  list(motifs.cluster = motifs.cluster, motifs.total = motifs.total,
+    motifs.background = motifs.background,
+    bp.cluster = bp.cluster, bp.background = bp.background)
+}
+
