@@ -149,11 +149,13 @@ chisq.test.many = function(motifs.cl, motifs.bg, bp.cl, bp.bg) {
   motifs = motifs.cl + motifs.bg
   bp = bp.cl + bp.bg
 
-  # expected number of motifs in cluster
+  # expected number of motifs in cluster, and background
   e = motifs * (bp.cl / bp)
+  e.bg = motifs * (bp.bg / bp)
 
   r[ , "enrich" ] = motifs.cl / e
-  r[ , "chisq" ] = ((motifs.cl - e) ^ 2 + (motifs.bg - e) ^ 2) / e
+  r[ , "chisq" ] = ((motifs.cl - e) ^ 2) / e +
+    ((motifs.bg - e.bg) ^ 2) / e.bg
   r[ , "p" ] = pchisq(r[ , "chisq" ], 1, lower.tail=FALSE)
   
   r
@@ -175,10 +177,12 @@ motifs.enriched.in.group.2 = function(cl, motif.count, upstream.bp) {
 
   motif.count = motif.count[names(cl),,,]
   upstream.bp = upstream.bp[names(cl),,]
+
   # count motifs by cluster (foreground and background)
   motifs.cluster =
     aperm(apply(motif.count, c(2,3,4), function(x) by(x, cl, sum)), c(2,3,4,1))
   motifs.total = apply(motifs.cluster, c(1,2,3), sum)
+  # aperm() was used so that this works
   motifs.background = as.vector(motifs.total) - motifs.cluster
 
   # add up amount of upstream sequence (foreground and background)
@@ -187,8 +191,14 @@ motifs.enriched.in.group.2 = function(cl, motif.count, upstream.bp) {
   bp.total = apply(bp.cluster, c(1,2), sum)
   bp.background = as.vector(bp.total) - bp.cluster
 
-  list(motifs.cluster = motifs.cluster, motifs.total = motifs.total,
+  # compute chi-squared scores (again, using aperm() gymnastics)
+  r1 = chisq.test.many(as.vector(aperm(motifs.cluster, c(4,1,2,3))),
+    as.vector(aperm(motifs.background, c(4,1,2,3))),
+    rep(as.vector(aperm(bp.cluster, c(3,1,2))), 3),
+    rep(as.vector(aperm(bp.background, c(3,1,2))), 3))
+
+  list(motifs.cluster = motifs.cluster,
     motifs.background = motifs.background,
-    bp.cluster = bp.cluster, bp.background = bp.background)
+    bp.cluster = bp.cluster, bp.background = bp.background, r1 = r1)
 }
 
