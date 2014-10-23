@@ -84,45 +84,32 @@ sub get_region_seq {
   return $s;
 }
 
-# Reads in annotation for all genes.
-# XXX not that it matters, but this seems a bit slow; deprecated.
-sub read_annotation_gff {
-  my($gene_gff) = @_;
-  my %feature_by_gene = ();
-
-  my $gffio = Bio::Tools::GFF->new(-file => $gene_gff,
-    -gff_version => 2);
-
-  while (my $feature = $gffio->next_feature()) {
-    my @ids = $feature->get_tag_values("gene_id");
-    my $gene = $ids[0];
-#    my $transcript_id = $feature->get_tag_values("transcript_id")[0];
-    print "$gene\n";
-# print (join " ", $feature->get_tag_values . "\n";
-#    push @{ $feature_by_gene{$feature->seq_id} }, $feature;
-  }
-
-  $gffio->close();
-
-  return \%feature_by_gene;
-}
-
-
 # Formats selected parts of a primer result as a table.
 sub format_results {
-  my($results) = @_;
+  my($results, $name) = @_;
 
-  my @a = ();
-  foreach my $i (0..$results->number_of_results) {
+  # field names to use
+  my %h = %{ $results->primer_results(1) };
+  my @fields1 = qw/PRIMER_LEFT_SEQUENCE PRIMER_LEFT_TM PRIMER_RIGHT_SEQUENCE PRIMER_RIGHT_TM/;
 
+  # XXX could use a library for set difference
+  my %h1 = map {$_ => 1} @fields1;
+  my @fields2 = sort (grep {not $h1{$_}} (keys %h));
+  my @fields = (@fields1, @fields2);
 
+  my @a = [ ("gene", "i", @fields) ];
 
+  foreach my $i (0..($results->number_of_results-1)) {
+    my %h = %{ $results->primer_results($i) };
+    push @a, [ ($name, $i, map { $h{$_}; } @fields) ];
   }
 
   return @a;
 }
 
 # Designs primers for one gene.
+# Returns: list of refs. to lists.
+#   The first row is headers.
 sub design_primers {
   my($gene) = @_;
 
@@ -138,29 +125,23 @@ sub design_primers {
 #    -outfile => "primer3.tmp");
 
   # hack to add the sequence "by hand"
-  print $primer3->no_param_checks(1);
+  $primer3->no_param_checks(1);
   $primer3->add_targets('SEQUENCE_TEMPLATE' => $s);
 
 #  print join " ", %{ $primer3->arguments };
 
   my $results = $primer3->run;
 
-  print "There were ", $results->number_of_results, " primers\n";
-
-
+  return format_results($results, $gene);
 }
 
 
-
-# while (<>) {
-#   chomp;
-#   my($gene) = split /\t/;
-# 
-# }
-
 # my @a = keys(%feature_by_gene);
 # print $a[123];
-design_primers("Y66C5A.1");
+my @r = design_primers("Y66C5A.1");
 
-
+foreach (@r) {
+  print join "\t", @{ $_ };
+  print "\n";
+}
 
