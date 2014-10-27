@@ -156,8 +156,8 @@ sub design_primers_1 {
 sub run_bowtie2 {
 
   system("bowtie2 $bwt -f $output_dir/primers.fa " .
-    " --very-sensitive " .
-#    " -D 20 -R 3 -N 1 -L 5 -i S,1,0.50 " .
+#    " --very-sensitive " .
+    " -D 20 -R 3 -N 1 -L 5 -i S,1,0 --mp 2,2 " .
     "| samtools view -bS - | samtools sort - $output_dir/primers");
   system("samtools index $output_dir/primers.bam");
 
