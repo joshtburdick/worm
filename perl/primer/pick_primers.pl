@@ -31,6 +31,11 @@ my $genome_fasta = Bio::DB::Fasta->new(
 # Bowtie2 index of genome (for checking uniqueness by mapping them)
 my $bwt = "/home/jburdick/data/seq/Caenorhabditis_elegans/Ensembl/WS220/Sequence/Bowtie2Index/genome";
 
+# same, for Tophat2
+my $tophat_bwt = $bwt;
+my $tophat_gtf = "/home/jburdick/gcb/git/data/seq/genes_tophat_WS220.gtf";
+my $tophat_transcriptome_dir = "/var/tmp/data/tophat2/WS220_bt2/";
+
 # end config section
 
 # create output directory
@@ -60,10 +65,12 @@ my %feature_by_gene = %{ read_annotation_bed($gene_bed_file) };
 # Gets sequence for a set of regions.
 # Args:
 #   bed_ref - the regions, as a ref to a list of BED-format fields
-#   spacer_size - number of N's to put between regions
-# Returns: the sequence, as a string, with N's in between regions
+#     (presumably these are adjacent exons)
+# Returns: two lists:
+# - the sequence, as a list of strings, one per region
+# - the junctions to include
 sub get_region_seq {
-  my($bed_ref, $spacer_size) = @_;
+  my($bed_ref) = @_;
   my @bed = @$bed_ref;
   my $chr = $bed[0];
   $chr =~ s/chr//;
@@ -77,22 +84,24 @@ sub get_region_seq {
   my $s = undef;
 
   # loop through the blocks
+  my @r = ();
+  my @junctions = ();
+  my $offset = 0;     # for tracking junctions
   foreach my $i1 (0..($n-1)) {
     # for minus strand, loop through in reverse order
     my $i = $strand eq "+" ? $i1 : (($n-1) - $i1);
     my $a1 = $a + $block_starts[$i];
     my $b1 = $a1 + $block_sizes[$i];
     my $s1 = $strand eq "+" ?
-      $genome_fasta->seq($chr, $a1 => $b1) :
-      $genome_fasta->seq($chr, $b1 => $a1);
-    if (defined $s) {
-      $s = $s . (join "", "N" x $spacer_size) . "\n" . $s1;
-    } else {
-      $s = $s1;
+      $genome_fasta->seq($chr, $a1+1 => $b1) :
+      $genome_fasta->seq($chr, $b1 => $a1+1);
+    push @r, $s1;
+    if ($i1 > 0) {
+      push @junctions, $offset;
     }
+    $offset += length($s1);
   }
-
-  return $s;
+  return (\@r, \@junctions);
 }
 
 # Processes the primer results.
@@ -132,61 +141,108 @@ sub design_primers_1 {
   my($gene) = @_;
   print "$gene\n";
 
+  # FIXME: this should only include adjacent exons common to
+  # all known transcripts
   my $bed_line = $feature_by_gene{$gene};
   if (not defined $bed_line) {
     return undef;
   }
-  my $s = get_region_seq($bed_line, 30);
-  $s =~ s/\n//g;
+  my($exons_ref, $junctions_ref) = get_region_seq($bed_line, 30);
+  my $s = join "", @$exons_ref;
 
-  my $primer3 = Bio::Tools::Run::Primer3->new;
+  my $primer3 = Bio::Tools::Run::Primer3->new(-outfile => "primer3.tmp");
 
   # hack to add the sequence "by hand"
   $primer3->no_param_checks(1);
-  $primer3->add_targets('SEQUENCE_TEMPLATE' => $s);
+  $primer3->add_targets('SEQUENCE_TEMPLATE' => $s,
+    'SEQUENCE_OVERLAP_JUNCTION_LIST' => (join ' ', @$junctions_ref),
+    'PRIMER_MIN_TM' => 65,
+    'PRIMER_OPT_TM' => 68,
+    'PRIMER_MAX_TM' => 71,
+    'PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION' => 8,
+    'PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION' => 8,
+    'PRIMER_PRODUCT_SIZE_RANGE' => '50-75 75-100 100-125 125-200');
 
   my $results = $primer3->run;
 }
 
-# Runs Bowtie on the .fa file, and counts how many times
+# Runs Bowtie2 on the .fa file, and counts how many times
 # each primer matched.
 # Side effects: writes out a .bam file
 # Returns: ref to a hash, indexed by primer name, of matches
 #  of each primer (currently the CIGAR strings.)
-sub run_bowtie2 {
+sub align_primers {
 
-  system("bowtie2 $bwt -f $output_dir/primers.fa " .
+#  system("bowtie2 $bwt -f $output_dir/primers.fa " .
 #    " --very-sensitive " .
-    " -D 20 -R 3 -N 1 -L 5 -i S,1,0 --mp 2,2 " .
-    "| samtools view -bS - | samtools sort - $output_dir/primers");
-  system("samtools index $output_dir/primers.bam");
+#    " -D 20 -R 3 -N 1 -L 5 -i S,1,0 --mp 2,2 " .
+#    "| samtools view -bS - | samtools sort - $output_dir/primers");
 
-  my %h = ();
-  open IN, "samtools view $output_dir/primers.bam |" || die;
+  # trying Tophat2
+  system("tophat2 " .
+    " --GTF $tophat_gtf " .
+    " --transcriptome-index $tophat_transcriptome_dir/ " .
+    " --transcriptome-only --b2-very-sensitive " .
+    " --segment-length 10 --min-anchor-length 3 " .
+    " --min-coverage-intron 1 " .
+    " --output-dir $output_dir/tophat2 " .
+    " $tophat_bwt $output_dir/primers.fa ");
+  system("samtools index $output_dir/tophat2/accepted_hits.bam");
+
+  # things to keep track of for each alignment
+  my %loc = ();
+  my %cigar = ();
+  open IN, "samtools view $output_dir/tophat2/accepted_hits.bam |" || die;
   while (<IN>) {
     chomp;
     my @a = split /\t/;
-    my $s = $h{$a[0]};
+
+    # store the locations
+    push @{ $loc{$a[0]} }, $a[3];
+
+    # and the cigar strings
+    my $s = $cigar{$a[0]};
     $s = defined $s ? "$s " . $a[5] : $a[5];
-    $h{$a[0]} = $s;
+    $cigar{$a[0]} = $s;
   }
   close IN;
 
-  return \%h;
+  my %r = ('loc' => \%loc, 'cigar' => \%cigar);
+  return \%r;
 }
 
 # Writes out the results.
 sub write_summary {
-  my($outfile, $header_r, $primer_results, $bowtie_results) = @_;
+  my($outfile, $header_r, $primer_results, $align_results) = @_;
   my @r = @$primer_results;
 
   open OUT, ">$outfile" || die;
-  print OUT (join "\t", (@$header_r, "Bowtie_LEFT", "Bowtie_RIGHT")) . "\n";
+  print OUT (join "\t", (@$header_r,
+    "align_LEFT", "align_RIGHT")) . "\n";
   foreach (@$primer_results) {
     my @a = @$_;
-    my $bowtie_left = $bowtie_results->{ $a[0] . "_" . $a[1] . "_L"};
-    my $bowtie_right = $bowtie_results->{ $a[0] . "_" . $a[1] . "_R"};
-    print OUT (join "\t", (@a, $bowtie_left, $bowtie_right)) . "\n";
+
+    # get genomic size
+    # FIXME: this isn't including the CIGAR string size
+    my @align_left =
+      @{ $align_results->{'loc'}->{ $a[0] . "_" . $a[1] . "_L"} };
+    my @align_right =
+      @{ $align_results->{'loc'}->{ $a[0] . "_" . $a[1] . "_R"} };
+    my $approx_genomic_size = "";
+    if (@align_left == 1 && @align_right == 1) {
+      $approx_genomic_size = abs($align_left[0] - $align_right[0]);
+    }
+
+    # get number of mismatches for each
+    my $cigar_left =
+      $align_results->{'cigar'}->{ $a[0] . "_" . $a[1] . "_L"};
+    my $cigar_right =
+      $align_results->{'cigar'}->{ $a[0] . "_" . $a[1] . "_R"};
+    if (not defined $cigar_left) { $cigar_left = ""; }
+    if (not defined $cigar_right) { $cigar_right = ""; }
+
+    print OUT (join "\t", (@a,
+      $cigar_left, $cigar_right)) . "\n";
   }
   close OUT;
 }
@@ -213,6 +269,8 @@ while (<IN>) {
 
   my $p = design_primers_1($gene);
   next if not defined $p;
+  next if $p->number_of_results() < 1;
+
   my($header_r, $r, $fa) = process_results($p, $gene);
   @header = @$header_r;
   print FASTA $fa;
@@ -222,8 +280,8 @@ while (<IN>) {
 close IN;
 close FASTA;
 
-my $bowtie_results = run_bowtie2();
+my $align_results = align_primers();
 
 write_summary("$output_dir/primers.tsv",
-  \@header, \@results, $bowtie_results);
+  \@header, \@results, $align_results);
 
