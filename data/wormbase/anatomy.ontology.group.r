@@ -84,5 +84,8 @@ for(j in 1:ncol(a1)) {
 ao.group = do.call("rbind", ao.group.l)
 # ao.group$group.name = anatomy.term.to.name[ ao.group$group ]
 
-save(ao, ao.group, file="git/data/wormbase/anatomy.ontology.group.Rdata")
+ao.term.to.name = anatomy.term.to.name
+ao.subterm = a1
+save(ao, ao.group, anatomy.term.to.name, ao.subterm,
+  file="git/data/wormbase/anatomy.ontology.group.Rdata")
 
