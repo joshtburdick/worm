@@ -61,8 +61,7 @@ count.motifs.at.cutoffs =
             conservation, motif.score))
           upstream.dist.bp = -1000 * upstream.dist.kb
           m1 = m[ m$upstream.dist >= upstream.dist.bp &
-            m$motif.cons >= conservation &
-            m$motif.score >= motif.score , "gene" ]
+            m$motif.cons >= conservation , "gene" ]
           mc1 = c(table(m1))
           g = intersect(names(mc1), gene.names)
           motif.count[ , as.character(upstream.dist.kb),
