@@ -79,17 +79,23 @@ count.in.clusters = function(cl, motif.count, upstream.bp) {
 chip.expr.cor = function(chip.count, bp.count, cluster.lme) {
   r = NULL
 
+  # XXX not sure why this is happening
+  if (sum(chip.count)==0)
+    return(NULL)
+
   for(ud in dimnames(chip.count)[[2]])
     for(cons in dimnames(chip.count)[[3]])
       for(score in dimnames(chip.count)[[4]]) {
         peaks.per.kb = chip.count[,ud,cons,1] /
           (bp.count[,ud,cons] / 1e3)
-        s = summary(lm(cluster.lme ~ peaks.per.kb))
-        r = rbind(r, data.frame(upstream.dist = ud,
-          conservation = cons,
-          t = s$coefficients[2,3],
-          p = s$coefficients[2,4],
-          r.squared = s$r.squared))
+        if (any(peaks.per.kb > 0)) {
+          s = summary(lm(cluster.lme ~ peaks.per.kb))
+          r = rbind(r, data.frame(upstream.dist = ud,
+            conservation = cons,
+            t = s$coefficients[2,3],
+            p = s$coefficients[2,4],
+            r.squared = s$r.squared))
+        }
       }
   r
 }
@@ -101,6 +107,7 @@ chip.expr.cor.all = function(chip.dir, cluster.lme) {
   for(f in list.files(chip.dir)) {
     chip.experiment = sub(".Rdata$", "", f)
     write.status(chip.experiment)
+    motif.count = NULL
     load(paste0(chip.count.dir, f))
     n = count.in.clusters(cl, motif.count, upstream.region.size)
     r1 = cbind("chip.experiment"=chip.experiment,
