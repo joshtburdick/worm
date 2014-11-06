@@ -36,7 +36,7 @@ plot.lineage.small = function(gene, main, hue) {
 pdf("git/sort_paper/plot/figure/figure1.pdf",
   width=8, height=8)
 
-layout(matrix(c(1:10), nrow=5),
+layout(matrix(c(1:5,6,6,6,6,7), nrow=5),
   widths=c(2,1), heights=c(1,1,1,1,2))
 
 # plot the trees
@@ -55,7 +55,7 @@ x = x+rnorm(prod(dim(x)), mean=0, sd=0.2)
 x[x < 0] = 0
 x[x > 1] = 1
 
-par(mar=c(0,0,1,0) + 0.1)
+par(mar=c(0,2,1,1) + 0.1)
 image(x, col=hsv(0,0,128:0/128), useRaster=TRUE,
   xaxt="n", yaxt="n")
 
@@ -68,14 +68,20 @@ color.slice(0, 2, 0.1)
 color.slice(2, 3, 0.3)
 color.slice(3, 5, 0.7)
 
-plot.new()
-plot.new()
-plot.new()
-plot.new()
+par(mar=c(0,0,0,0))
+plot(1,1, type="n", xlim=c(0,4), ylim=c(0,4), bty="n",
+  main="", xlab="", ylab="", xaxt="n", yaxt="n")
+
+for(i in 0:3) {
+  j = i + 0.5
+  lines(c(-0.5,j,j), c(j,j,-0.5), xpd=TRUE)
+}
 
 x.p = m1 %*% x
 x.n = (1-m1) %*% x
 x.f = x.p / (x.p + x.n)
+
+x.f = x.f[4:1,]    # to simplify drawing tubes
 
 par(mar=c(0,1,1,0) + 0.1)
 image(x.f, col=hsv(0,0,128:0/128), useRaster=TRUE,
