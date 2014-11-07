@@ -5,11 +5,11 @@ source("git/utils.r")
 
 motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
 
-clusters = motifs.and.clusters = read.tsv(
-  "git/cluster/hierarchical/hier.200.clusters/clusters.tsv")
+clusters = read.tsv(
+  "git/cluster/hierarchical/hier.300.clusters/clusters.tsv")
 
 # p-values
-load("git/cluster/motif/enrichOptimize/cutoff.optimize.1/hier.200.clusters.Rdata")
+load("git/sort_paper/tf/motifEnrichment/hier.300.clusters.Rdata")
 
 # data for histogram of amount of upstream conservation
 upstream.cons.hist = read.tsv(gzfile(
@@ -23,7 +23,7 @@ compute.dist.conservation.wilcoxon = function() {
   r.conservation = NULL
 
   # find most significant p-value
-  min.p = apply(p.corr, c(1,2), min)
+  min.p = apply(enrich[,,,,,"p.corr"], c(1,2), min)
 
   for(i in 1:nrow(min.p)) {
     m = rownames(min.p)[i]
@@ -39,8 +39,8 @@ compute.dist.conservation.wilcoxon = function() {
 
     # loop through clusters that motif was associated with
     for(cl in colnames(min.p)[ which(min.p[i,] <= 0.05) ]) {
-      cl = motifs.and.clusters[i,"cluster"]
-      write.status(c(backspace.string, i, m, cl))
+#      cl = motifs.and.clusters[i,"cluster"]
+      write.status(paste(i, m, cl))
 
       # compute genes in this cluster
       r$in.cluster = clusters[r$gene,"cluster"]==cl
@@ -72,8 +72,6 @@ compute.dist.conservation.wilcoxon = function() {
 
   list(r.dist = r.dist, r.conservation = r.conservation)
 }
-
-
 
 if (TRUE) {
 r = compute.dist.conservation.wilcoxon()
