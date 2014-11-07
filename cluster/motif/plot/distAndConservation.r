@@ -7,16 +7,20 @@ output.dir = "git/cluster/motif/plot/distAndConservation/"
 
 motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
 
-clusters = motifs.and.clusters = read.tsv(
+# this will define which genes are in the cluster
+clusters = read.tsv(
   "git/cluster/hierarchical/hier.200.clusters/clusters.tsv")
 
-motifs.and.clusters = read.table(
-  "git/cluster/hierarchical/hier.200.clusters/uniqueKnownMotifEnrichment_5kb_0.5cons.tsv",
-  header=TRUE, as.is=TRUE)
+# p-values
+load("git/cluster/motif/enrichOptimize/cutoff.optimize/hier.200.clusters.Rdata")
+
+# motifs.and.clusters = read.table(
+#   "git/cluster/hierarchical/hier.200.clusters/uniqueKnownMotifEnrichment_5kb_0.5cons.tsv",
+#   header=TRUE, as.is=TRUE)
 
 # data for histogram of amount of upstream conservation
 upstream.cons.hist = read.tsv(gzfile(
-  "git/tf/motif/conservation/upstreamRegionsWS220_conservationHist.txt.gz"))
+  "git/tf/motif/conservation/cons_hist_WS220_5kb_upstream.tsv.gz"))
 
 # comparisons of upstream motif location and conservation
 dist.cons.wilcoxon = read.table(
@@ -70,8 +74,143 @@ get.num.bp.upstream = function(genes) {
   data.frame(bases = h$breaks, count = 250 * cumsum(h$counts))
 }
 
-# Plots all the graphs.
-plot.all = function(wilcox.results) {
+
+# Plots distribution of motifs upstream of genes.
+# Args:
+#   m - the motif
+#   cl - the cluster number
+#   enrich.p - the enrichment value for this cluster
+# Side effects: plots the graph in output.dir.
+plot.motif.loc.dist = function(m, cl, enrich.p) {
+  system(paste("mkdir -p", output.dir))
+
+  r = read.table(paste(motif.gene.dir, m, "_upstreamMotifCons.tsv.gz", sep=""),
+    as.is=TRUE)
+  colnames(r) = c("region.chr", "region.a", "region.b", "gene", "score",
+    "strand", "motif.chr", "motif.a", "motif.b", "motif.id",
+"motif.score", "motif.strand", "motif.cons")
+  r$upstream.dist = ifelse(r$strand=="+",
+    r$motif.a - r$region.b, r$region.a - r$motif.a)
+  # XXX this is presumably due to really long motifs near
+  # where a gene starts
+  r$upstream.dist[ r$upstream.dist > 0 ] = 0
+
+  r$in.cluster = clusters[r$gene,"cluster"]==cl
+  r = r[ !is.na(r$in.cluster) , ]
+
+  # XXX this can also affect these graphs
+  r = r[ r$motif.score >= 40 , ]
+
+  if (sum(r$in.cluster > 0)) {
+#      png(paste(output.dir, "/", m, " ", cl, ".png", sep=""),
+#        width=1050, height=1200)
+    pdf(paste(output.dir, "/", m, " ", cl, ".pdf", sep=""),
+      width=9, height=12)
+
+    mat = matrix(c(1,1,1,2,3,4,5,6,7,8,9,10,11,12,13), nrow=5, byrow=TRUE)
+    layout(mat, heights=c(0.5,1,1,1))
+
+    # add labels
+    par(mar=c(0,0,0,0) + 0.1)     # XXX
+    plot(0,0, xlim=c(-1,1), ylim=c(0,5), type="n", bty="n",
+      xaxt="n", yaxt="n", xlab="", ylab="")
+    text(0,3, paste("Motif", m, "near genes in cluster", cl), cex=2.5)
+#      text(0,0, "testing")
+    text(0,1, paste("Motif enrichment p =",
+      signif(enrich.p, 2)), cex=1.5)
+
+    par(mar=c(5,4,4,2)+0.1)
+
+    # par(mfrow=c(2,3))
+    r0 = r[ !r$in.cluster , ]
+    r1 = r[ r$in.cluster , ]
+
+    # numbers for motifs near genes in clusters
+    s = paste("Motif near genes in cluster")
+    plot(r1$upstream.dist, r1$motif.cons, col="#ff000040",
+      xlim=c(-5000,0), ylim=c(0,1),
+      pch=183, font=5,
+      main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
+    hist(r1$upstream.dist, col="#ff0000a0", xlim=c(-5000,0),
+      main=s, xlab="Location relative to TSS")
+    dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
+      dist.cons.wilcoxon$cluster==cl &
+      dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
+    mtext(paste("Wilcoxon p =", signif(dist.p,2) ), cex=0.8)
+    hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
+      main=s, xlab="Conservation (PhastCons)")
+    cons.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
+      dist.cons.wilcoxon$cluster==cl &
+      dist.cons.wilcoxon$number=="conservation", "p.fdr" ]
+    mtext(paste("Wilcoxon p =", signif(cons.p,2)), cex=0.8)
+
+    # similarly, numbers for motifs in other clusters
+    s = paste("Motif near genes not in cluster")
+    plot(r0$upstream.dist, r0$motif.cons, col="#0000ff40",
+      pch=183, font=5,
+      xlim=c(-5000,0), ylim=c(0,1),
+      main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
+    hist(r0$upstream.dist, col="#0000ffa0", xlim=c(-5000,0),
+      main=s, xlab="Location relative to TSS")
+    hist(r0$motif.cons, col="#0000ffa0", xlim=c(0, 1),
+      main=s, xlab="Conservation (PhastCons)")
+
+if (FALSE) {
+    # same, for all sequence upstream of genes near clusters
+    plot.new()
+
+    bp = get.num.bp.upstream(clusters[ clusters[ r$gene,"cluster"]==cl , "gene" ])
+    barplot(bp$count, col="#ff0000a0", space=0,
+      main="All sequence near genes in cluster",
+      xlab="Location relative to TSS", ylab="Frequency")
+    # XXX
+    par(new=TRUE)
+    plot(0,0, type="n", xlim=c(-5000,0), ylim=c(0,1), bty="n",
+      xaxt="n", yaxt="n", xlab="", ylab="")
+    axis(1, line=0.4)
+
+    cons = get.conservation.buckets(
+      clusters[ clusters[ r$gene,"cluster"]==cl , "gene" ])
+    barplot(cons$bases, col="#ff0000a0", space=0,
+      main="All sequence near genes in cluster",
+      xlab="Conservation (PhastCons)", ylab="Frequency")
+    # XXX
+    par(new=TRUE)
+    plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), bty="n",
+      xaxt="n", yaxt="n", xlab="", ylab="")
+    axis(1, line=0.4)
+
+    # and again, background numbers in all clusters
+    plot.new()
+
+    bp = get.num.bp.upstream(clusters[ clusters[ r$gene,"cluster"]!=cl , "gene" ])
+    barplot(bp$count, col="#0000ffa0", space=0,
+      main="All sequence near genes not in cluster",
+      xlab="Location relative to TSS", ylab="Frequency")
+    # XXX
+    par(new=TRUE)
+    plot(0,0, type="n", xlim=c(-5000,0), ylim=c(0,1), bty="n",
+      xaxt="n", yaxt="n", xlab="", ylab="")
+    axis(1, line=0.4)
+
+    cons = get.conservation.buckets(
+      clusters[ clusters[ r$gene,"cluster"]!=cl , "gene" ])
+    barplot(cons$bases, col="#0000ffa0", space=0,
+      main="All sequence near genes not in cluster",
+      xlab="Conservation (PhastCons)", ylab="Frequency")
+    # XXX
+    par(new=TRUE)
+    plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), bty="n",
+      xaxt="n", yaxt="n", xlab="", ylab="")
+    axis(1, line=0.4)
+}
+    dev.off()
+  }
+
+}
+
+# Plots all the graphs (deprecated.)
+plot.all.old = function(wilcox.results) {
   system(paste("mkdir -p", output.dir))
 
   for(i in 1:nrow(motifs.and.clusters)) {
@@ -79,123 +218,20 @@ plot.all = function(wilcox.results) {
     m = motifs.and.clusters[i,"motif"]
     cl = motifs.and.clusters[i,"cluster"]
 
-    r = read.table(paste(motif.gene.dir, m, "_upstreamMotifCons.tsv.gz", sep=""),
-      as.is=TRUE)
-    colnames(r) = c("region.chr", "region.a", "region.b", "gene", "score",
-      "strand", "motif", "motif.a", "motif.b", "motif.id", "motif.cons")
-    r$upstream.dist = ifelse(r$strand=="+",
-      r$motif.a - r$region.b, r$region.a - r$motif.a)
-    r$in.cluster = clusters[r$gene,"cluster"]==cl
-    r = r[ !is.na(r$in.cluster) , ]
+# FIXME
+# plot.motif.loc.dist(...)
 
-    if (sum(r$in.cluster > 0)) {
-#      png(paste(output.dir, "/", m, " ", cl, ".png", sep=""),
-#        width=1050, height=1200)
-      pdf(paste(output.dir, "/", m, " ", cl, ".pdf", sep=""),
-        width=9, height=12)
-
-      mat = matrix(c(1,1,1,2,3,4,5,6,7,8,9,10,11,12,13), nrow=5, byrow=TRUE)
-      layout(mat, heights=c(0.5,1,1,1))
-
-      # add labels
-      par(mar=c(0,0,0,0) + 0.1)     # XXX
-      plot(0,0, xlim=c(-1,1), ylim=c(0,5), type="n", bty="n",
-        xaxt="n", yaxt="n", xlab="", ylab="")
-      text(0,3, paste("Motif", m, "near genes in cluster", cl), cex=2.5)
-#      text(0,0, "testing")
-      text(0,1, paste("Motif enrichment p =",
-        signif(motifs.and.clusters[i,"p.fdr"], 2)), cex=1.5)
-
-      par(mar=c(5,4,4,2)+0.1)
-
-      # par(mfrow=c(2,3))
-      r0 = r[ !r$in.cluster , ]
-      r1 = r[ r$in.cluster , ]
-
-      # numbers for motifs near genes in clusters
-      s = paste("Motif near genes in cluster")
-      plot(r1$upstream.dist, r1$motif.cons, col="#ff000040", pch=20, 
-        xlim=c(-5000,0), ylim=c(0,1),
-        main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
-      hist(r1$upstream.dist, col="#ff0000a0", xlim=c(-5000,0),
-        main=s, xlab="Location relative to TSS")
-      dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
-        dist.cons.wilcoxon$cluster==cl &
-        dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
-      mtext(paste("Wilcoxon p =", signif(dist.p,2) ), cex=0.8)
-      hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
-        main=s, xlab="Conservation (PhastCons)")
-      cons.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
-        dist.cons.wilcoxon$cluster==cl &
-        dist.cons.wilcoxon$number=="conservation", "p.fdr" ]
-      mtext(paste("Wilcoxon p =", signif(cons.p,2)), cex=0.8)
-
-      # similarly, numbers for motifs in other clusters
-      s = paste("Motif near genes not in cluster")
-      plot(r0$upstream.dist, r0$motif.cons, col="#0000ff40", pch=20,
-        xlim=c(-5000,0), ylim=c(0,1),
-        main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
-      hist(r0$upstream.dist, col="#0000ffa0", xlim=c(-5000,0),
-        main=s, xlab="Location relative to TSS")
-      hist(r0$motif.cons, col="#0000ffa0", xlim=c(0, 1),
-        main=s, xlab="Conservation (PhastCons)")
-
-      # same, for all sequence upstream of genes near clusters
-      plot.new()
-
-      bp = get.num.bp.upstream(clusters[ clusters[ r$gene,"cluster"]==cl , "gene" ])
-      barplot(bp$count, col="#ff0000a0", space=0,
-        main="All sequence near genes in cluster",
-        xlab="Location relative to TSS", ylab="Frequency")
-      # XXX
-      par(new=TRUE)
-      plot(0,0, type="n", xlim=c(-5000,0), ylim=c(0,1), bty="n",
-        xaxt="n", yaxt="n", xlab="", ylab="")
-      axis(1, line=0.4)
-
-      cons = get.conservation.buckets(
-        clusters[ clusters[ r$gene,"cluster"]==cl , "gene" ])
-      barplot(cons$bases, col="#ff0000a0", space=0,
-        main="All sequence near genes in cluster",
-        xlab="Conservation (PhastCons)", ylab="Frequency")
-      # XXX
-      par(new=TRUE)
-      plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), bty="n",
-        xaxt="n", yaxt="n", xlab="", ylab="")
-      axis(1, line=0.4)
-
-
-      # and again, background numbers in all clusters
-      plot.new()
-
-      bp = get.num.bp.upstream(clusters[ clusters[ r$gene,"cluster"]!=cl , "gene" ])
-      barplot(bp$count, col="#0000ffa0", space=0,
-        main="All sequence near genes not in cluster",
-        xlab="Location relative to TSS", ylab="Frequency")
-      # XXX
-      par(new=TRUE)
-      plot(0,0, type="n", xlim=c(-5000,0), ylim=c(0,1), bty="n",
-        xaxt="n", yaxt="n", xlab="", ylab="")
-      axis(1, line=0.4)
-
-      cons = get.conservation.buckets(
-        clusters[ clusters[ r$gene,"cluster"]!=cl , "gene" ])
-      barplot(cons$bases, col="#0000ffa0", space=0,
-        main="All sequence near genes not in cluster",
-        xlab="Conservation (PhastCons)", ylab="Frequency")
-      # XXX
-      par(new=TRUE)
-      plot(0,0, type="n", xlim=c(0,1), ylim=c(0,1), bty="n",
-        xaxt="n", yaxt="n", xlab="", ylab="")
-      axis(1, line=0.4)
-
-      dev.off()
-    }
   }
+}
+
+plot.some = function() {
+  plot.motif.loc.dist("RFX2_DBD", 192, 1)
+
+
 }
 
 if (TRUE) {
 
-  plot.all()
+  plot.some()
 }
 
