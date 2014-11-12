@@ -61,8 +61,9 @@ add.rows = function(a, rows) {
 # Plots one of these heatmaps.
 # Args:
 #   f - name of file
+#   cluster.subset - list of clusters to include (optional)
 # Side effects: plots a heatmap.
-plot.stacked = function(f) {
+plot.stacked = function(f, cluster.subset = NULL) {
 
   anatomy.m = anatomy.info.matrix(f)
   go.m = gene.ontology.matrix(f)
@@ -92,11 +93,22 @@ plot.stacked = function(f) {
 
   # compute "row" ordering
   r = cbind(anatomy.m, cbind(go.m, cbind(motif.m, chip.m)))
+
+# browser()
+
   r[is.na(r)] = 0
   r[r > 1] = 1      # XXX deal with Infs
   cl = cl[ hclust(cor.dist(r))$order ]
 
   r = r[cl,]
+
+  # possibly subset this
+  if (!is.null(cluster.subset)) {
+    r = r[ rownames(r) %in% cluster.subset , ]
+  }
+
+  # only keep cases in which something is present
+  r = r[ , apply(r>0, 2, any) ]
 
 #  color.scale = hsv(2/3, 0:255/255, 0.75)
   color.scale = hsv(0, 0, 255:0/255)
@@ -156,6 +168,15 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
+# a subset of the clustering
+pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
+  width=5, height=10)
+par(mar=c(6,15,1,1))
+ao = anatomy.info.matrix("hier.300.clusters")
+plot.stacked("hier.300.clusters", rownames(ao))
+     # , as.character(c(1,2,30,52,79,223,286)))
+dev.off()
+
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
   width=16.5, height=14.5)
 par(mar=c(6,15,1,1))
@@ -169,13 +190,12 @@ plot.stacked("hier.300.clusters")
 
 dev.off()
 
+
+
+# things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
   width=4.5, height=6.8)
 par(mar=c(6,15,1,1))
-
 plot.stacked("facs")
-
 dev.off()
-
-
 
