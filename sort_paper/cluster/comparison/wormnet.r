@@ -60,6 +60,7 @@ compare.arc.clusters = function() {
 }
 
 
+x = read.tsv("git/cluster/readRatios.tsv")[,1:23]
 
 
 
