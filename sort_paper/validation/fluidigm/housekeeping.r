@@ -18,6 +18,7 @@ genes = grep("-", names(clustering), value=TRUE)
 # reads per million
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
 rpm = rpm[ genes, !grepl("^(HS|RNAi)", colnames(rpm)) ]
+lrpm = log10(1 + rpm)
 
 # the enrichments
 r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
@@ -25,35 +26,37 @@ r = r[ genes , ]
 r = r[ , c(1:23) ]
 
 # summary statistics for each gene
-mean.rpm = apply(rpm, 1, mean)
+mean.lrpm = apply(lrpm, 1, mean)
 sd.enrich = apply(r, 1, sd)
 
 # restrict to just genes with at least some mean RPM
-genes = names(mean.rpm)[ mean.rpm >= 1e2 ]
-mean.rpm = mean.rpm[genes]
+genes = names(mean.lrpm)[ mean.lrpm >= 2 ]
+mean.lrpm = mean.lrpm[genes]
 sd.enrich = sd.enrich[genes]
 
 # simple ranking based on these (smaller is better)
 # h.score = order(-mean.rpm) + 1000 * order(sd.enrich)
 h.score = sd.enrich # / log10(1+mean.rpm)
 
-names(h.score) = names(mean.rpm)
+names(h.score) = names(mean.lrpm)
 h.score = sort(h.score)
-n = 20
+n = 30
 g1 = names(h.score[1:n])
 
 # XXX
-g1[n] = "ama-1"
+g1 = c(g1, "ama-1")
+
+g1 = g1[ order(mean.lrpm[g1]) ]
 
 # statistics for just those genes
 r1 = r[ g1, ]
-lrpm1 = log10( 1 + rpm[ g1, ] )
+lrpm1 = lrpm[ g1, ]
 mean.lrpm1 = apply(lrpm1, 1, mean)
 
-h = runif(n)
+h = rep(c(0,1/3,2/3), 100)[1:n]
 
 pdf("git/sort_paper/validation/fluidigm/housekeeping.pdf",
-  width=10, height=6)
+  width=15, height=6)
 xlim = range(mean.lrpm1)
 enrich.max = max(abs(r1)) + 0.5
 ylim = c(-enrich.max, enrich.max)
@@ -69,6 +72,7 @@ for(i in 1:n) {
 
 abline(h=0, col="#00000060", lwd=2)
 text(mean.lrpm1, apply(r1, 1, max),
-  paste0("  ", g1), adj=c(0,0), col=hsv(h, 1, 0.8), srt=45)
+  paste0("  ", g1), adj=c(0,0.5), col=hsv(h, 1, 0.8),
+  cex=0.8, srt=90)
 dev.off()
 
