@@ -24,9 +24,10 @@ orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
   }
 )
 
-m1 = motif.ortholog[ , c("gene", "motif", "canonical.motif", "method") ]
+m1 = motif.ortholog[ , c("gene", "canonical.motif", "motif", "method") ]
 colnames(m1) = c("gene", "motif.id", "motif.name", "method")
 
+# using newer annotation
 hughes.motif = read.table("data/tf/hughes/TF_Information_all_motifs.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
@@ -35,7 +36,7 @@ m2 = hughes.motif[ hughes.motif$Motif_ID != "." ,
 m2[,4] = "Hughes"
 colnames(m2) = colnames(m1)
 
-motif.ortholog.3 = unique(rbind(m1, m2, stringsAsFactors=FALSE))
-
+motif.ortholog.3 = unique(rbind(m1, m2))
+motif.ortholog.3 = motif.ortholog.3[ order(motif.ortholog.3$gene) , ]
 write.tsv(motif.ortholog.3, "git/tf/motif.ortholog.3.tsv")
 
