@@ -28,7 +28,7 @@ m1 = motif.ortholog[ , c("gene", "canonical.motif", "motif", "method") ]
 colnames(m1) = c("gene", "motif.id", "motif.name", "method")
 
 # using newer annotation
-hughes.motif = read.table("data/tf/hughes/TF_Information_all_motifs.tsv",
+hughes.motif = read.table(gzfile("data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/TF_Information_all_motifs_plus.txt.gz"),
   sep="\t", header=TRUE, as.is=TRUE)
 
 m2 = hughes.motif[ hughes.motif$Motif_ID != "." ,
