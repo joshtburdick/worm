@@ -27,12 +27,15 @@ orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
 m1 = motif.ortholog[ , c("gene", "canonical.motif", "motif", "method") ]
 colnames(m1) = c("gene", "motif.id", "motif.name", "method")
 
-# using newer annotation
-hughes.motif = read.table(gzfile("data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/TF_Information_all_motifs_plus.txt.gz"),
+hughes.motif = read.table("data/tf/hughes/TF_Information_all_motifs.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
+# later, may use newer annotation...
+#hughes.motif = read.table(gzfile("data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/TF_Information_all_motifs_plus.txt.gz"),
+#  sep="\t", header=TRUE, as.is=TRUE)
+
 m2 = hughes.motif[ hughes.motif$Motif_ID != "." ,
-  c("TF_Name", "Motif_ID", "DBID.1", "MSource_Identifier")]
+  c("TF_Name", "Motif_ID", "DBID.1", "MSource_Identifier") ]
 m2[,4] = "Hughes"
 colnames(m2) = colnames(m1)
 
