@@ -86,6 +86,6 @@ ao.group = do.call("rbind", ao.group.l)
 
 ao.term.to.name = anatomy.term.to.name
 ao.subterm = a1
-save(ao, ao.group, anatomy.term.to.name, ao.subterm,
+save(ao, ao.group, ao.term.to.name, ao.subterm,
   file="git/data/wormbase/anatomy.ontology.group.Rdata")
 
