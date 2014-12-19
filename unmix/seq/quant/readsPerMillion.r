@@ -1,77 +1,107 @@
 # Total coverage for each sample.
 
-coverage.path = "git/unmix/seq/quant/rawCoverage/"
-output.path = "git/unmix/seq/quant/readsPerMillion/"
+coverage.path = "git/unmix/seq/quant/rawCoverage/WS220_20140111/"
+output.path = "git/unmix/seq/quant/readsPerMillion/WS220_20140111/"
 
-# Adds up coverage for each sample, across lanes.
+# Strip off lane number, if it's present, from some names.
+remove.lane.name = function(a) sub("^0._", "", a)
+
+# Adds up coverage for each gene in each sample, across lanes.
 # Uses column names, with the first three characters
-# stripped off, as the sample name.
+# potentially stripped off, as the sample name.
 # Args:
 #   r - read counts, as a matrix with column names like, e.g.,
 #     "04_cehm26"
 # Returns: a similar matrix, but with columns summed by
 #   sample name.
-total.per.sample = function(r) {
-#  sample.name = substr(colnames(r), 4, 1000)
-  sample.name = sub("^0._", "", colnames(r))   # more general version of this
+gene.total.per.sample = function(r) {
+  # strip off lane number, if it's present
+  sample.name = remove.lane.name(colnames(r))
   r1 = t(r)
   total.counts = by(r1, sample.name, function(x) apply(x, 2, sum))
   sapply(total.counts, c)
 }
 
+# Computes total reads per sample (based on the counts written by
+# "get_coverage.pl", which will be somewhat larger than the sum
+# over all genes.)
+# Args:
+#   rt - the read totals
+# Returns: 
+total.per.sample = function(rt, r) {
+  c(by(rt[,1], remove.lane.name(rownames(rt)), sum))
+}
+
 # Computes reads per million mapped reads.
-# FIXME this is reads per "million on the same strand", which
-# is arguably incorrect.
-reads.per.million = function(coverage) {
+# Args:
+#   coverage - the read coverage for each gene
+#   total.reads - the total number of mapped reads for each gene
+# Returns: list with
+#   rpm - reads per million of each gene
+#   rt - the adjusted read totals for each sample
+reads.per.million = function(coverage, total.reads) {
+
+  # the same, with rRNA and mitochondrial DNA subtracted out
+  genes.to.ignore = grep("^(rrn-|MTCE.)", rownames(coverage), value=TRUE) 
+  print(genes.to.ignore)
+  reads.to.ignore = apply(coverage[genes.to.ignore,], 2, sum)
   reads.per.fraction =
-    apply(coverage, 2, sum) - coverage["ribosomal_RNA",]
+    total.reads[ colnames(coverage) ] - reads.to.ignore[ colnames(coverage) ]
 
   reads.per.million = t( t(coverage) / (reads.per.fraction / 1e6) )
 
-  reads.per.million
+  g = setdiff(rownames(coverage), genes.to.ignore)
+  list(rpm = reads.per.million[ g, ], rt = reads.per.fraction)
 }
 
 # Writes reads per million for some sample.
-write.reads.per.million = function(coverage.file, output.file) {
+write.reads.per.million = function(coverage.file, output.basename) {
 
   coverage.file = paste(coverage.path, coverage.file, sep="/")
-  output.file = paste(output.path, output.file, sep="/")
 
-  cat(coverage.file, "", output.file, "\n")
+  cat(coverage.file, "\n")
   r = read.table(coverage.file, sep="\t", header=TRUE,
     row.names=1, check.names=FALSE)
-  rpm = reads.per.million(total.per.sample(r))
-  write.table(rpm, file=output.file, sep="\t",
-    row.names=TRUE, col.names=NA, quote=FALSE)
+  rt = read.table(
+    sub(".tsv.gz", ".totalReads.tsv", coverage.file),
+    header=TRUE, row.names=1, check.names=FALSE)
+
+  a = reads.per.million(gene.total.per.sample(r), total.per.sample(rt))
+  write.table(a$rpm, file=paste0(output.path, "/", output.basename, ".tsv"),
+    sep="\t", row.names=TRUE, col.names=NA, quote=FALSE)
+  write.table(a$rt, file=paste0(output.path, "/", output.basename, "_read_totals.tsv"),
+    sep="\t", row.names=TRUE, col.names=NA, quote=FALSE)
 }
 
 system(paste("mkdir -p", output.path))
 
-if (FALSE) {
-write.reads.per.million(
-  "rawCoverage_20110922.tsv.gz",
-  "readsPerMillion_20110922.tsv")
-write.reads.per.million(
-  "rawCoverage_20110922_as.tsv.gz",
-  "readsPerMillion_20110922_as.tsv")
+if (TRUE) {
 
 write.reads.per.million(
-  "rawCoverage_Murray_050912.tsv.gz",
-  "readsPerMillion_Murray_050912.tsv")
+  "Murray050912.tsv.gz",
+  "050912")
 write.reads.per.million(
-  "rawCoverage_Murray_050912_as.tsv.gz",
-  "readsPerMillion_Murray_050912_as.tsv")
+  "Murray050912_as.tsv.gz",
+  "050912_as")
 
 write.reads.per.million(
-  "rawCoverage_Murray_52831_092812.tsv.gz",
-  "readsPerMillion_092812.tsv")
+  "Murray092812.tsv.gz",
+  "092812")
 write.reads.per.million(
-  "rawCoverage_Murray_52831_092812_as.tsv.gz",
-  "readsPerMillion_092812_as.tsv")
+  "Murray092812_as.tsv.gz",
+  "092812_as")
+}
+
+if (TRUE) {
+write.reads.per.million(
+  "20110922.tsv.gz",
+  "20110922")
+write.reads.per.million(
+  "20110922_as.tsv.gz",
+  "20110922_as")
 }
 
 write.reads.per.million(
-  "rawCoverage_embryo_ts.tsv.gz",
-  "readsPerMillion_embryo_ts.tsv")
-
+  "embryo_ts.tsv.gz",
+  "embryo_ts")
 
