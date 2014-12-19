@@ -8,12 +8,20 @@ library("ctc")
 source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
 
-system("mkdir -p git/cluster/hierarchical")
+system("mkdir -p git/cluster/hierarchical_check")
+
+# Reads per million (not including the HS or RNAi data.)
+rpm = as.matrix(read.tsv("git/cluster/readsPerMillion.tsv"))
+rpm = rpm[ , grep("HS|RNAi", colnames(rpm), invert=TRUE, value=TRUE) ]
+
+# Log-transformed mean and max expression - used as a measure of
+# whether we saw something expressed in the FACS data.
+mean.expr = apply(log2(rpm+3), 1, mean) - 4
 
 # The read ratios.
 r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
 
-# r = r[c(1:500,19360:19369),]        # XXX for testing
+# r = r[c(1:8000),]        # XXX for testing
 
 # Tests for a row not being constant.
 non.const.row = function(x) {
@@ -26,6 +34,10 @@ r = r[ apply(r, 1, non.const.row) , ]
 reads.for.clustering = r  # in case other files shadow this
 
 r.sort.only = r[,c(1:23)]
+
+# maximum enrichment / depletion (just in the sorted fractions)
+max.enrichment.depletion = apply(abs(r.sort.only), 1, max)
+
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, non.const.row) , ]
 
 # Treat missing numbers as 0.
@@ -112,7 +124,7 @@ h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
   for (num.clusters in num.clusters.list) {
 
-    output.path.1 = paste("git/cluster/hierarchical/",
+    output.path.1 = paste("git/cluster/hierarchical_check/",
       output.name, ".", num.clusters, ".clusters", sep="")
 
     system(paste("mkdir -p ", output.path.1))
@@ -142,7 +154,7 @@ print(class(clusters[1:5]))
 
     write.clusters.treeview(as.matrix(r), hr, hc,
       clusters, cluster.coloring, 
-      paste(output.path.1, "cluster", sep="/"), descr=descr)
+      paste(output.path.1, "clusterUnannotated", sep="/"), descr=NULL) # descr)
 
     # XXX also save the row dendrogram, as it may be
     # useful for plotting
@@ -158,7 +170,20 @@ print(class(clusters[1:5]))
 # Does clustering with various numbers of clusters.
 if (TRUE) {
   n.clusters = c(50,100,150,200,250,300)
-  h.cluster(r[rownames(r.sort.only),], r.sort.only, "hier", n.clusters)
-  h.cluster(r, r, "hier.ts", n.clusters)
+
+  # XXX hacking around issues with cbind...
+  me.1 = data.frame("mean expr" = mean.expr[rownames(r.sort.only)],
+    "max change" = max.enrichment.depletion[rownames(r.sort.only)],
+    check.names=FALSE)
+  r.1 = r[rownames(r.sort.only),]
+  mean.expr.rso = cbind(me.1, r.1)
+  h.cluster(mean.expr.rso, r.sort.only, "hier", n.clusters)
+
+  # ... XXX and gene name differences
+  me.1 = data.frame("mean expr" = mean.expr[rownames(r)],
+    "max change" = max.enrichment.depletion[rownames(r)],
+    check.names=FALSE)
+  mean.expr.r = cbind(me.1, r)
+  h.cluster(mean.expr.r, r, "hier.ts", n.clusters)
 }
 
