@@ -1,7 +1,7 @@
 # Computes coverage from BAM files.
 
 # data.dir = "src/seq/coverage/lanes1and4/"
-base.path = "git/unmix/seq/quant/rawCoverage/"
+base.path = "git/unmix/seq/quant/rawCoverage/WS220_20140111/"
 
 compute.coverage = function(data.dir, output.file) {
   data.dir = paste(base.path, data.dir, sep="/")
@@ -19,16 +19,14 @@ compute.coverage = function(data.dir, output.file) {
     sep="\t", quote=FALSE, row.names=TRUE, col.names=NA)
 }
 
-if (FALSE) {
-compute.coverage("20110922/", "rawCoverage_20110922.tsv.gz")
-compute.coverage("20110922_as/", "rawCoverage_20110922_as.tsv.gz")
+compute.coverage("Murray050912/", "Murray050912.tsv.gz")
+compute.coverage("Murray050912_as/", "Murray050912_as.tsv.gz")
 
-compute.coverage("Murray_050912/", "rawCoverage_Murray_050912.tsv.gz")
-compute.coverage("Murray_050912_as/", "rawCoverage_Murray_050912_as.tsv.gz")
+compute.coverage("Murray092812/", "Murray092812.tsv.gz")
+compute.coverage("Murray092812_as/", "Murray092812_as.tsv.gz")
 
-compute.coverage("Murray_52831_092812/", "rawCoverage_Murray_52831_092812.tsv.gz")
-compute.coverage("Murray_52831_092812_as/", "rawCoverage_Murray_52831_092812_as.tsv.gz")
-}
+compute.coverage("20110922/", "20110922.tsv.gz")
+compute.coverage("20110922_as/", "20110922_as.tsv.gz")
 
-compute.coverage("embryo_ts/", "rawCoverage_embryo_ts.tsv.gz")
+compute.coverage("embryo_ts/", "embryo_ts.tsv.gz")
 
