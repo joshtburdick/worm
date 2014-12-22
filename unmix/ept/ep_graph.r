@@ -13,7 +13,7 @@
 make.model = function(vars, factors) {
   # XXX this admittedly looks pretty silly
   r = list(vars = vars, factors = factors)
-  class(x) = "epModel"
+#  class(x) = "epModel"
   r
 }
 
@@ -30,6 +30,7 @@ make.var.old = function(b, log.evidence) {
 }
 
 # Adds a scaled amount of some variable to another variable.
+# Possibly not used.
 # Args:
 #   x, y - lists of numeric variables (y should only have
 #     a subset of x's variables)
@@ -39,6 +40,20 @@ add.scaled = function(x, y, a) {
   for(i in names(y))
     x[[i]] = x[[i]] + a * y[[i]]
   x
+}
+
+# Adds in a message.
+message.add = function(x, y) {
+  for(i in names(y))
+    x[[i]] = x[[i]] + y[[i]]
+  x
+}
+
+# Subtracts out a message.
+message.subtract = function(x, y) {
+  for(i in names(y))
+    y[[i]] = x[[i]] - y[[i]]
+  y
 }
 
 # A factor is a list with:
@@ -93,36 +108,22 @@ update.ep = function(m) {
   for(i in 1:length(m$factors)) {
 
     # message to that factor
-    m.to = m$factors[[i]]$f$
+    m.to = message.subtract(m$vars, m$factors[[i]]$m)
 
-    # compute updated messages
-    m.from = m$factors[[i]]$f$update( m.to )
+    # compute updated messages from this factor
+    m.from = m$factors[[i]]$f$update(m.to)
 
     f1[[i]] = list(m = m.from, f = m$factors[[i]]$f)
-
-
   }
 
-
-  # accumulate messages to that factor
-
-
-
-  # get messages from each factor
-  f1 = sapply(m$factors, function(f)
-    for(i in 1:length(f$x)) {
-        f$to.f[[i]] = f$x[[i]]$b - f$from.f[[i]]
-      })
-
   # clear the variables
-  v1 = lapply(m$vars, function(v) { v$b = 0 * v$b; v })
+  v1 = lapply(m$vars, function(v) 0 * v)
 
   # send messages from each factor
-  
-
+  for(i in 1:length(f1)) {
+    v1 = message.add(v1, f1[[i]]$m)
+  }
 
   list(vars = v1, factors = f1)
 }
-
-
 
