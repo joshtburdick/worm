@@ -1,48 +1,20 @@
 # Attempt at a more general library for EP.
+# For now, avoiding object-oriented stuff.
 
 # A model is represented by a list with at least:
 #   vars - a named list of variables (the names should
 #     be unique)
 #   factors - a list of factors
+# Each factor has a list consisting of:
+#   m - the messages from the factor
+#   update - function which takes a named list of messages,
+#     and returns a named list of messages.
+#   (later, maybe add log-evidence.)
 
-# Makes a model.
-# Args:
-#   vars - list of variables (this is just a list of
-#     exponential-family variables)
-#   factors - list of factors (see make.factors())
-make.model = function(vars, factors) {
-  # XXX this admittedly looks pretty silly
-  r = list(vars = vars, factors = factors)
-#  class(x) = "epModel"
-  r
-}
 
-# XXX this is deprecated
-# A variable is a list with at least these elements:
-#   b - the total messages to this variable (as a matrix)
-#   observed - TRUE iff this variable is observed
-#   log.evidence - function which computes log-evidence
-# Makes a variable.
-make.var.old = function(b, log.evidence) {
-  r = list(b = b, observed = FALSE, log.evidence = log.evidence)
-#  attr(r, "class") = "ep.var"
-  r
-}
 
-# Adds a scaled amount of some variable to another variable.
-# Possibly not used.
-# Args:
-#   x, y - lists of numeric variables (y should only have
-#     a subset of x's variables)
-#   a - scalar
-# Returns: x + ay
-add.scaled = function(x, y, a) {
-  for(i in names(y))
-    x[[i]] = x[[i]] + a * y[[i]]
-  x
-}
-
-# Adds in a message.
+# Adds in a message. The variable names in y should
+# be a subset of the names in x.
 message.add = function(x, y) {
   for(i in names(y))
     x[[i]] = x[[i]] + y[[i]]
@@ -56,21 +28,13 @@ message.subtract = function(x, y) {
   y
 }
 
-# A factor is a list with:
-#   m - list of messages from this factor
-#   f - list of methods, including:
-#     update - function which, given messages to this factor,
-#       computes messages from this factor
-#     logEvidence - function which computes log-evidence for this factor
-
 # Constructs a factor with some set of methods.
 # Args:
 #   x - the variables connected to this factor
-#   f - list containing the "update" and "logEvidence" functions
-#     for this factor
+#   f - the "update" message for this factor
 make.factor = function(x, f) {
   # the messages start at the belief, but zeroed out
-  z = lapply(x, function(a) 0 * a$b )
+  z = lapply(x, function(y) 0 * y )
   names(z) = names(x)
 
   a = list(m = z, f = f)
@@ -84,8 +48,9 @@ eq.f = function(a) {
   a1 = a[[1]]
   a2 = a[[2]]
   
-  list(update = list(a2, a1),
-    logEvidence = logPartition(a1+a2) - (logPartition(a1) + logPartition(a2)))
+  m = list(a2, a1)
+  names(m) = names(a)
+  m
 }
 
 # Factor which constrains a variable (almost the same thing.)
