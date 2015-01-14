@@ -1,0 +1,69 @@
+	name	replicate
+ceh26n	pros-1 (-)	
+ceh27n	ceh-27 (-)	
+ceh6n	ceh-6 (-)	
+ceh6n_hlh_16n	ceh-6 (-) hlh-16 (-)	
+ceh6n_hlh_16p	ceh-6 (-) hlh-16 (+)	
+ceh6p_hlh_16n	ceh-6 (+) hlh-16 (-)	
+ceh6p_hlh_16p	ceh-6 (+) hlh-16 (+)	
+cehm26	pros-1 (+)	
+cehm27	ceh-27 (+)	
+cehm36m	ceh-36 (-)	
+cehm36p	ceh-36 (+)	
+cehm6	ceh-6 (+)	
+cnd1n1214	cnd-1 12/14 (-)	12/14
+cnd1n819	cnd-1 8/19 (-)	8/19
+cndm1_12_14	cnd-1 12/14 (+)	12/14
+cndm1m	cnd-1 1/4 (-)	1/4
+cndm1p1_4	cnd-1 1/4 (+)	1/4
+cndm1p8_19	cnd-1 8/19 (+)	8/19
+cndm1_singlets	cnd-1 singlets	
+cndm1_ungated	cnd-1 ungated	
+F21D5.9	F21D5.9 (+)	
+F21D59n	F21D5.9 (-)	
+ges1_1	RNAi ges-1	1
+ges1_2	RNAi ges-1	2
+ges1_3	RNAi ges-1	3
+hlhm16	hlh-16 (+)	
+HSceh32_1hr	HS ceh-32 1hr	
+HSceh32_6hr	HS ceh-32 6hr	
+HSceh36_1hr	HS ceh-36 1hr	
+HSceh36_6hr	HS ceh-36 6hr	
+HSelt1_1hr	HS elt-1 1hr	
+HSelt1_6hr	HS elt-1 6hr	
+HSpes1_1hr	HS pes-1 1hr	
+HSpes1_6hr	HS pes-1 6hr	
+HSpha4_1hr	HS pha-4 1hr	
+HSpha4_6hr	HS pha-4 6hr	
+irxm1	irx-1 (+)	
+lit1_1	RNAi lit-1	1
+lit1_2	RNAi lit-1	2
+lit1_3	RNAi lit-1	3
+lowInput	lowInput	
+mir57n	mir-57 (-)	
+mirm57	mir-57 (+)	
+mls2n	mls-2 (-)	
+mlsm2	mls-2 (+)	
+N2_229_1hr	HS N2 1hr	2/29
+N2_229_6hr	HS N2 6hr	2/29
+N2_317_1hr	HS N2 1hr	3/17
+N2_317_6hr	HS N2 6hr	3/17
+normalInput	normalInput	
+pal1n	pal-1 (-)	
+palm1	pal-1 (+)	
+pha4minus	pha-4 5/9 (-)	5/9
+pha4n91	pha-4 9/1 (-)	9/1
+pha4plus	pha-4 5/9 (+)	5/9
+pham4m	pha-4 12/9 (-)	12/9
+pham4p12_9	pha-4 12/9 (+)	12/9
+pham4p9_1	pha-4 9/1 (+)	9/1
+pham4_singlets	pha-4 singlets	
+pham4_ungated	pha-4 ungated	
+pop1_1	RNAi pop-1	1
+pop1_2	RNAi pop-1	2
+pop1_3	RNAi pop-1	3
+pop1_4	RNAi pop-1	4
+ttx3n	ttx-3 (-)	
+ttxm3	ttx-3 (+)	
+unc130n	unc-130 (-)	
+uncm130	unc-130 (+)	
