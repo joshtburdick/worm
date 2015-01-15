@@ -112,7 +112,7 @@ cat("\n")
   list(x = x1, b1 = b1, update.stats = update.stats)
 }
 
-if (FALSE) {
+if (TRUE) {
 # test data sets
 t1 = list(
   A = rbind(c(1,1,1,1,0),
@@ -120,6 +120,7 @@ t1 = list(
   b = rbind(c(0.5,0.5),
     c(0.8,0.2)))
 t1$A = t1$A / apply(t1$A, 1, sum)
+rownames(t1$A) = c("a", "b")
 
 x = matrix(sample(10), nrow=2)
 
