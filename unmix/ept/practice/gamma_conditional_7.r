@@ -34,13 +34,12 @@ gamma.cond.sum1 = function(x) {
 
 # Approximates marginals of
 #   x ~ Gamma(s_i, r_i) | Ax = b
-# by rescaling to the above form, solving, then
-# scaling back.
+# by rescaling to the above form, solving, then scaling back.
 # Args:
 #   A, b - these give the linear system
 #   x - gamma parameters of x (as natural parameters)
 # Returns: natural parameters of x | sum(x) = 1
-gamma.cond.1 = function(A, b, x) {
+gamma.cond.1 = function(A, b) function(x) {
 
   x.mv = gamma.n2mv(x)
 
@@ -78,8 +77,8 @@ test.unit.simplex = function(x) {
 }
 
 x1 = gamma.s2n(rbind(a=c(1,1,1), b=c(1,1,1)))
-r1 = gamma.cond.1(t(c(1,2,3)), 1, x1)
+r1 = gamma.cond.1(t(c(1,2,3)), 1)(x1)
 
 A3 = rbind(c(1,1,0), c(0,1,1))
-r3 = gamma.cond.1(A3, c(1,2), x1)
+r3 = gamma.cond.1(A3, c(1,2))(x1)
 
