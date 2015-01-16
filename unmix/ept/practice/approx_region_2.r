@@ -9,6 +9,10 @@ source("git/unmix/ept/gamma.r")
 
 # source("git/unmix/ept/matrix_inv_lemma.r")   XXX um, don't think I need this
 
+# trying this variant of the conditional thing ?
+# doesn't seem to work
+source("git/unmix/ept/practice/gamma_conditional_7.r")
+
 backspace = paste(rep("\b", 70), collapse="")
 
 # Moment-matches a normal, truncated at x >= 0,
@@ -260,7 +264,7 @@ approx.region.gamma.2 = function(A, b, b.var,
   for(iter in 1:max.iters) {
 #  print(gamma.n2mv(terms))
 
-    t.m = q - lc(t.m)
+    t.m = q - lc(t.m)   # lc(t.m)
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
     q.new = lcp(t.m)
@@ -302,8 +306,10 @@ approx.region.gamma.3 = function(A, b, b.var,
   lc = lin.constraint.gamma(A, b, b.var)
   lcp = lin.constraint.gamma.pos(A, b, b.var)
 
+  lcg = gamma.cond.1(A, b)
+
   # the posterior
-  q = lcp(t.m)
+  q = t.m
   t.c = q - t.m
 
   # convergence statistics
@@ -311,11 +317,14 @@ approx.region.gamma.3 = function(A, b, b.var,
 
   for(iter in 1:max.iters) {
 #  print(gamma.n2mv(terms))
-
+print(iter)
     t.m = q - t.c
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    q.new = lcp(t.m)
+#    q.new = lcp(t.m)
+# XXX trying new constraint code
+    q.new = lcg(t.m)
+
     t.c = q.new - t.m
 # print(q.new)
 
@@ -333,25 +342,26 @@ cat(backspace, signif(diff, 2), " ")
   }
 cat("\n")
 
-  mv = gamma.n2mv(q)    # lc(q))
+  mv = gamma.n2mv(q)
 
   list(m = mv["m",], v = mv["v",],
     t = gamma.n2mv( t.m ),
     update.stats = update.stats)
 }
 
-
+if (TRUE) {
 
 # XXX for practice
-n = 3
+n = 1000
 A = t(rep(1,n))
 t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
 lc = lin.constraint.gamma(A, 1, 0)
 
-r = approx.region.gamma.2(t(rep(1,3)), c(1), c(0))
+r = approx.region.gamma.3(A, c(1), c(0))
 
 A1 = matrix(c(1,0,0,1,1,1), nrow=2)
-r1 = approx.region.gamma.3(A1, c(1,1), c(0,0))
+r1 = approx.region.gamma.3(A1, c(1,3), c(0,0))
 
+}
 
