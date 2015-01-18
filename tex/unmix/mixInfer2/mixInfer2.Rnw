@@ -1,0 +1,59 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+
+\newcommand{\funname}[1]{\texttt{#1}}
+
+\title{More on unmixing}
+\author{Josh Burdick}
+
+\begin{document}
+\maketitle
+
+
+\section{Another way of estimating marginals}
+
+We have been treating unmixing as a constrained linear system
+
+\[
+Ax = b, x \ge 0
+\]
+
+and estimating the marginals of $x$. Previously, we used sampling
+and EP to estimate these. EP was much faster, but had convergence
+issues.
+
+I tried to alleviate the convergence problems by approximating the
+marginals using gamma distributions, rather than a multivariate
+normal distribution.
+
+The solutions to the above form a convex linear space. As such,
+if we can find the corners of that region, the boundaries between
+the corners are straight lines, and we can linearly transform the
+region to the standard unit simplex
+
+\[
+\sum y = 1, y \ge 0
+\]
+
+The moments of this are easy to find: each marginal distribution
+is $\mathrm{Beta}(m-1, 1)$ (where $m$ is the number of corners.)
+
+
+\subsection{Finding the corners}
+
+
+
+
+
+\funname{foo} = \Sexpr{42}.
+
+
+
+
+
+
+
+
+\end{document}
+
