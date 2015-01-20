@@ -62,7 +62,9 @@ enrich.reproducibility.all.pairs = function(en) {
   list(x = x, y = y)
 }
 
-plot.enrichment.reproducibility = function(r, samples, depletion, main) {
+# Plots enrichment reproducibility, with all the data on one graph.
+plot.enrichment.reproducibility.one.graph =
+    function(r, samples, depletion, main) {
 
   en = enrichment(r, samples, 3)
   if (depletion) {
@@ -70,9 +72,12 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
   }
   er = enrich.reproducibility.all.pairs(en)
 
+  par(mar=c(5,5,4,1)+0.1)
   plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n", main=main,
-    xlab="enrichment in first replicate",
-    ylab="fraction enriched in second replicate")
+    xlab="Enrichment in first replicate",
+    ylab="Fraction enriched in\nsecond replicate")
+#  mtext("Fraction enriched in\nsecond replicate",
+#    side=2, line=2, cex=0.9)
 
   for(j in 1:ncol(er$x)) {
     lines(er$x[,j], er$y[,j], col="#0000ff80")
@@ -81,9 +86,49 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
   abline(v = 2, col="#00000080")
 }
 
+# Plots enrichment reproducibility, broken down by
+# individual sample.
+plot.enrichment.reproducibility = function(r, samples, depletion, main) {
+  en = enrichment(r, samples, 3)
+  if (depletion) {
+    en = -en
+  }
+
+  n = length(samples)
+  all.mfe = c()
+  for(i in 1:n)
+    for(j in 1:n)
+      if (i!=j) {
+
+        er = enrich.reproducibility(en[,i], en[,j])
+
+        plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n", main=main,
+          xlab=paste(
+            ifelse(depletion, "Depletion in", "Enrichment in"),
+            samples[i]),
+          ylab=paste(
+            ifelse(depletion, "Fraction depleted in", "Fraction enriched in"), 
+            samples[j]))
+
+        lines(er$x, er$y, col="#0000ffff")
+        abline(v = 2, col="#00000080")
+
+        min.fraction.enriched = min( er$y[ er$x >= 2 ] )
+        all.mfe = c(all.mfe, min.fraction.enriched)
+        mtext(paste("min. fraction",
+          ifelse(depletion, "depleted", "enriched"),
+          "=", round(min.fraction.enriched, 2)), line=0.3, cex=0.7)
+      }
+
+  cat(paste0(main, ": mean min fraction enriched/depleted = ",
+    round(mean(all.mfe), 4), "\n"))
+
+}
+
+plot.separate.reproducibility.curves = function() {
 pdf("git/sort_paper/enrichment/cutoffOptimize.pdf",
-  width=7.5, height=7.5)
-par(mfrow=c(2,2))
+  width=6, height=8)
+par(mfrow=c(3,2))
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
   FALSE, "pha-4 enrichment")
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
@@ -93,5 +138,20 @@ plot.enrichment.reproducibility(readsPerMillion, cnd1.samples,
 plot.enrichment.reproducibility(readsPerMillion, cnd1.samples,
   TRUE, "cnd-1 depletion")
 dev.off()
+}
 
+# old version of this, which added a graph to a panel
+if (FALSE) {
+plot.enrichment.reproducibility.one.graph(readsPerMillion,
+  pha4.samples, FALSE, "pha-4 enrichment")
+# XXX
+# label.panel("c)", gp=gpar(fontsize=12, col="black"))
+plot.enrichment.reproducibility.one.graph(readsPerMillion,
+  pha4.samples, TRUE, "pha-4 depletion")
+plot.enrichment.reproducibility.one.graph(readsPerMillion,
+  cnd1.samples, FALSE, "cnd-1 enrichment")
+plot.enrichment.reproducibility.one.graph(readsPerMillion,
+  cnd1.samples, TRUE, "cnd-1 depletion")
+}
 
+plot.separate.reproducibility.curves()
