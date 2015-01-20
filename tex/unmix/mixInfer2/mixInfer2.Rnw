@@ -8,8 +8,23 @@
 \author{Josh Burdick}
 
 \begin{document}
+
 \maketitle
 
+<<intro,echo=TRUE>>=
+library("MASS")
+wd = getwd()
+setwd("../../../..")
+source("git/unmix/ept/practice/simplex_corner.r")
+source("git/unmix/ept/gamma.r")
+setwd(wd)
+setwd("../../../..")
+setwd("git/unmix/unmix_comp/src/")
+print(getwd())
+source("sampling/cdaCpp.r")
+setwd(wd)
+
+@
 
 \section{Another way of estimating marginals}
 
@@ -19,13 +34,15 @@ We have been treating unmixing as a constrained linear system
 Ax = b, x \ge 0
 \]
 
-and estimating the marginals of $x$. Previously, we used sampling
+This defines a space of solutions; we then chose $x$ uniformly
+at random from that space, and used that distribution as the range
+of possible levels of expression. Previously, we used sampling
 and EP to estimate these. EP was much faster, but had convergence
-issues.
-
-I tried to alleviate the convergence problems by approximating the
+issues. I tried to alleviate the convergence problems by approximating the
 marginals using gamma distributions, rather than a multivariate
-normal distribution.
+normal distribution. This is partly motivated by the fact that the
+actual marginals (from sampling) look more like gamma distributions
+than normal distributions.
 
 The solutions to the above form a convex linear space. As such,
 if we can find the corners of that region, the boundaries between
@@ -36,21 +53,67 @@ region to the standard unit simplex
 \sum y = 1, y \ge 0
 \]
 
-The moments of this are easy to find: each marginal distribution
-is $\mathrm{Beta}(m-1, 1)$ (where $m$ is the number of corners.)
+Note that this has the same number of ``corners'' as the original
+space, and this will be less than $n$ (the ``number of cells'', or
+length of $x$.) The moments of this are easy to find: if $m$ is
+the number of corners,
+then each marginal distribution
+has a $\mathrm{Beta}(m-1, 1)$ distribution.
 
+For now, in order to find the corners, we just maximize each 
+coordinate separately. This gives $n$ points, but only $m$ of them
+are unique. We just pick distinct points based on distance.
 
-\subsection{Finding the corners}
+Each maximization is a linear
 
+\subsection{Accuracy of that approximation}
 
+To validate this approach, we compare its marginals to those from
+sampling (at least on some toy examples.)
 
+First, we design a very toy problem:
 
+<<toy1,echo=TRUE>>=
+A = matrix(sample(0:5, 32, replace=TRUE), nrow=4)
+A
+x = sample(c(0,1,2,4,8), 8, replace=TRUE)
+x
+b = as.vector(A %*% x)
+b
+@
 
-\funname{foo} = \Sexpr{42}.
+We compute marginals using this method.
 
+<<infer1,echo=TRUE>>=
+x.infer = approx.region.simplex.transform(A,b)
+round(x.infer,2)
+round(as.vector(A %*% x.infer["m",]), 2)
+@
 
+So, at least the mean matches the constraints.
 
+<<sample1,echo=FALSE>>=
+x0 = x.infer["m",]
+x.sample = sample.cda(A, b, x0, 1e5, 100)
+@
 
+We then compare with sampling.
+By eye, the marginals estimated this way (in blue) fit the actual
+densities from sampling (in grey) fairly well.
+
+<<argCompare1,dev='pdf',fig.width=8,fig.height=4,echo=FALSE>>=
+par(mfrow=c(2,4))
+xlim=range(x.sample)
+x = xlim[2] * (c(0:100)/100)
+g = gamma.mv2s(x.infer)
+for(j in 1:8) {
+  hist(x.sample[,j], xlim=xlim, breaks=200, col="#00000010", border="#00000020")
+  par(new=TRUE)
+  plot(x, dgamma(x, shape=g[1,j], rate=g[2,j]), type="l",
+    col="#0000ff", lwd=2,
+    xlab="", ylab="", main="", xlim=xlim, xaxt="n", yaxt="n")
+}
+@
 
 
 
