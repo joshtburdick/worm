@@ -38,11 +38,18 @@ motif.enrich.hyperg.naive =
 # Args:
 #   motif.dir - directory containing motif counts
 #   cl - a clustering of genes
+#   motifs - optional subset of motifs to include
 # Returns: a data frame of enrichments
-enrich.test.many.motifs = function(motif.dir, cl) {
+enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
   cluster.names = sort(unique(as.character(cl)))
-  motif.files = list.files(motif.dir)
+  motif.files = list.files(motif.dir)    # [1:20]
   motif.names = sub(".Rdata$", "", motif.files)
+
+  # possibly filter list of motifs to include
+  if (!is.null(motifs)) {
+    motif.names = intersect(motif.names, motifs)
+  }
+  motif.files = intersect(motif.files, paste0(motif.names, ".Rdata"))
 
   # get a file of counts, and various dimensions
   load(paste0(motif.dir, "/", motif.files[1]))
@@ -55,7 +62,8 @@ enrich.test.many.motifs = function(motif.dir, cl) {
 
   # object to hold results
   a = list(motif = motif.names,
-    group = cluster.names, stat=c("p", "p.corr"))
+    group = cluster.names,
+    stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
   r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
 
   # loop through the motif files
@@ -72,12 +80,14 @@ enrich.test.many.motifs = function(motif.dir, cl) {
       sum.by.cluster = function(x) {
         c(by(x, cl, sum))
       }
-
       m.cluster = apply(motif.count, c(2:4), sum.by.cluster)
       m.total = apply(motif.count, c(2:4), sum)
       r1 = motif.enrich.hyperg(m.cluster, g.cluster,
         rep(m.total, each=length(g.cluster)), g.total)
 
+      r[motif.name,,"m.cluster",,,] = m.cluster
+      r[motif.name,,"g.cluster",,,] = g.cluster
+      r[motif.name,,"m.total",,,] = m.total
       r[motif.name,,"p",,,] = r1
     }
   }
@@ -85,5 +95,4 @@ enrich.test.many.motifs = function(motif.dir, cl) {
   r[,,"p.corr",,,] = p.adjust(r[,,"p",,,], method="fdr")
   r
 }
-
 
