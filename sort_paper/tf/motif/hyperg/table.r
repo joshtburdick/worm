@@ -47,35 +47,38 @@ most.significant.stats.1 = function(a) {
 
 
 
-
-# Given an array of enrichment results, converts it to a table,
-# then filters it to only include the most significant.
+# Given an array of enrichment results, gets information about
+# the most significant result.
 enrich.to.table = function(enrich) {
-  r = dcast(melt(enrich),
-    motif + group + upstream.dist + conservation + score ~ stat)
-  r = r[ order(r$p) , ]
-  r = r[ !duplicated(r[,c("motif","group")]) , ]
-  r
+  enrich1 = apply(enrich, c(1,2), most.significant.stats.1)
+  dcast(melt(enrich1), motif + group ~ Var1)
 }
 
 # Constructs a table of one set of results.
-results.table.small = function(name) {
+most.significant.results = function(name) {
 
   load(paste0(enrich.result.dir, "5kb/", name, ".Rdata"))
-  r1 = enrich.to.table.small(enrich)
+  r1 = enrich.to.table(enrich)
   r1$motif.name = motif.to.name[r1$motif]
 
   load(paste0(enrich.result.dir, "hughes_20141202/", name, ".Rdata"))
-  r2 = enrich.to.table.small(enrich)
+  r2 = enrich.to.table(enrich)
   r2$motif.name = hughes.motif.to.name[r2$motif]
 
   r = rbind(r1, r2)
-  r = r[ order(r$p) , ]
-  r2
-#  r1
+  colnames(r)[7] = "genes with motif in cluster"
+  colnames(r)[8] = "genes in cluster"
+  colnames(r)[9] = "genes with motif"
+  r = r[ order(r$p) , c(1,11,2:10) ]
+  r
 }
 
-# foo = results.table.small("facs")
-load(paste0(enrich.result.dir, "5kb/facs.Rdata"))
-enrich = enrich[1:5,1:5,,,,]
+r = most.significant.results("facs")
+system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+
+# load(paste0(enrich.result.dir, "5kb/facs.Rdata"))
+# enrich = enrich[1:5,1:5,,,,]
+
+# foo = enrich.to.table(enrich)
 
