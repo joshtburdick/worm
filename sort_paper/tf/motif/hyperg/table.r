@@ -5,17 +5,20 @@ library(reshape2)
 
 source("git/utils.r")
 
-# these are for getting more readable motif names
+# for getting more readable motif names
 motif.list = read.table("data/tf/meme/motifList.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
-motif.to.name = c(by(motif.list$name,
+motif.to.name.old = c(by(motif.list$name,
   motif.list$id,
   function(x) as.character(x)[1]))
 
-motif.ortholog = read.tsv(gzfile("git/tf/motif.ortholog.3.tsv.gz"))
-hughes.motif.to.name = c(by(motif.ortholog$motif.name,
+motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
+motif.to.name = c(by(motif.ortholog$motif.name,
   motif.ortholog$motif.id,
   function(x) as.character(x)[1]))
+
+
+
 
 enrich.result.dir = "git/sort_paper/tf/motif/hyperg/allResults/"
 
@@ -51,7 +54,10 @@ most.significant.stats.1 = function(a) {
 # the most significant result.
 enrich.to.table = function(enrich) {
   enrich1 = apply(enrich, c(1,2), most.significant.stats.1)
-  dcast(melt(enrich1), motif + group ~ Var1)
+  r = dcast(melt(enrich1), motif + group ~ Var1)
+  r$motif = as.character(r$motif)
+  r$group = as.character(r$group)
+  r
 }
 
 # Constructs a table of one set of results.
@@ -59,13 +65,15 @@ most.significant.results = function(name) {
 
   load(paste0(enrich.result.dir, "5kb/", name, ".Rdata"))
   r1 = enrich.to.table(enrich)
-  r1$motif.name = motif.to.name[r1$motif]
-
   load(paste0(enrich.result.dir, "hughes_20141202/", name, ".Rdata"))
   r2 = enrich.to.table(enrich)
-  r2$motif.name = hughes.motif.to.name[r2$motif]
-
   r = rbind(r1, r2)
+
+  # hopefully improve motif names
+  r$motif.name = r$motif
+  i = r$motif %in% names(motif.to.name)
+  r[ i , "motif.name" ] = motif.to.name[ r[ i , "motif" ] ]
+
   colnames(r)[7] = "genes with motif in cluster"
   colnames(r)[8] = "genes in cluster"
   colnames(r)[9] = "genes with motif"
@@ -75,7 +83,7 @@ most.significant.results = function(name) {
 
 r = most.significant.results("facs")
 system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+# write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
 
 # load(paste0(enrich.result.dir, "5kb/facs.Rdata"))
 # enrich = enrich[1:5,1:5,,,,]
