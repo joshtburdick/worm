@@ -11,7 +11,7 @@ library(limSolve)
 #   v - the (diagonal) variance
 #   A, b.var - these define the "Ax = N(b, b.var)" constraint
 #   b - also part of the constraint (separated out to avoid
-#     recomputing the pseudoinverse
+#     recomputing the pseudoinverse)
 #   m - the current mean
 # Returns: the updated mean
 mvnorm.cond.diag = function(v, A, b.var) {
@@ -62,15 +62,16 @@ pos.lsei = function(A, b.var=NULL) {
     b.var = rep(0, nrow(A))
   }
 
+  pseudoinverse.A = pseudoinverse(A)
+
   # function which takes a point to the nearest point
   # matching the constraints
   f = mvnorm.cond.diag(rep(1, ncol(A)), A, b.var)
 
   function(b, max.iters = 100, converge.tol = 1e-5) {
 
-
     # start with the "truncated pseudoinverse"
-    x = pseudoinverse(A) %*% b
+    x = pseudoinverse.A %*% b
     x[ x < 0 ] = 0
 
     update.stats = cbind(err = max(abs(A %*% x - b)),
@@ -83,23 +84,25 @@ pos.lsei = function(A, b.var=NULL) {
     err = max(abs(A %*% x - b))
 
     for(i in 2:max.iters) {
-cat(i, "")
       x1 = move.bounded(x, f(x, b))
       x1[x1 < 0] = 0
-      err1 = max(abs(A %*% x1 - b))
+      err1 = sum(abs(A %*% x1 - b))
+      amount.moved = max(abs(x1 - x))
       update.stats = rbind(update.stats,
         cbind(err = err1, amount.moved = max(abs(x1 - x))))
+# write.status(paste(i, err1, amount.moved))
       x = x1
 
+      # FIXME convergence test isn't working so much
       if (abs(err1) <= converge.tol) {
- cat("converged in", i, "\n")
-        return(x1)
+# cat("converged in", i, "\n")
+        return(list(x=x, update.stats = update.stats))
       }
       x = x1
       err = err1
     }
 
-    x
+    list(x=x, update.stats = update.stats)
   }
 }
 
