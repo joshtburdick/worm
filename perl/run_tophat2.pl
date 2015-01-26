@@ -15,6 +15,8 @@ my $output_dir = $ARGV[2];
 
 die if not (@ARGV + 0 == 3);
 
+print "[running on xsq file $xsq_file, writing to $output_dir]\n";
+
 # genome and transcriptome indices
 my $bwt_index = "/var/tmp/data/tophat2/WS220/genome";
 my $transcriptome_index = "/var/tmp/data/tophat2/WS220/transcriptome";
@@ -45,7 +47,10 @@ foreach my $f (<$csfasta_dir/Libraries/*/F3/reads/*.csfasta>) {
   $output_name =~ s/ /_/g;   # avoid spaces in names, as they cause issues
 
   rename_csfasta("$csfasta_dir/Libraries/$library_name/", $base_name, $csfasta_dir);
-  run_tophat2($csfasta_dir, "$output_dir/$output_name");
+#   run_tophat2($csfasta_dir, "$output_dir/$output_name");
+  system("/murrlab/jburdick/gcb/git/perl/seq/align/tophat_trim.pl " .
+    " $csfasta_dir $output_dir/$output_name ");
+
 }
 
 # removing csfasta directory; otherwise we run out of disk space

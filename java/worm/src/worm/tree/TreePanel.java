@@ -70,13 +70,18 @@ public class TreePanel extends JPanel implements Printable {
 	 * and text aren't scaled. */
 	AffineTransform at = new AffineTransform();
 	
+	Map<String, String> anatomyInfo = new HashMap<String, String>();
+	
+    /** The scale at which to print this. */
+    double printingScale = 0.1f;
+    
 	/** Constructor. */
 	public TreePanel() {
 		col = new float[3];
 		col[1] = 1;
 		col[2] = 0;
 
-		this.setBackground(Color.WHITE);
+		this.setBackground(new Color(250,250,250));    // now that we have three colors...
 	}
 	
 	/** Constructor, in which this is initialized with some signals.
@@ -282,7 +287,7 @@ public class TreePanel extends JPanel implements Printable {
 	    // attempting to scale this to fit the printable area
 	    g2d.translate(pf.getImageableX(), pf.getImageableY());
 //	    g2d.rotate(Math.PI/2, pf.getImageableX() / 2, pf.getImageableY() /2 );
-	    g2d.scale(0.14f, 0.14f);  // FIXME shouldn't be hardcoded
+	    g2d.scale(printingScale, printingScale);
 	    printAll(g);
 	
 	    return PAGE_EXISTS;

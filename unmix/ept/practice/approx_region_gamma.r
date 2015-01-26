@@ -4,6 +4,15 @@
 source("git/unmix/ept/gamma.r")
 
 
+# wrapper for this
+gca = function(x, A, b) {
+  x1 = array(x, dim=c(dim(x)[1], dim(x)[2], 1))
+  dimnames(x1)[[1]] = c("e1", "e2")
+  x2 = gamma.conditional.approx(x1, A, b)
+  x2[,,1]
+}
+
+
 # Approximates marginals with a gamma distribution.
 # Not focussing on efficiency here...
 # Args:
@@ -22,9 +31,9 @@ approx.region.gamma = function(A, b, num.iters=40) {
   term = gamma.mv2n(term)
 
   # prior
-  prior = 1 * gamma.mv2n(rbind(m=rep(10,ncol(A)), v=rep(100,ncol(A))))
+  prior = 1 * gamma.mv2n(rbind(m=rep(1,ncol(A)), v=rep(1,ncol(A))))
 
-  # the posterior
+  # the posterior  
   x = prior + apply(term, c(1,2), sum)
 
   # iterate
@@ -41,14 +50,38 @@ approx.region.gamma = function(A, b, num.iters=40) {
 
     # correct terms
     for(i in 1:nrow(A)) {
-      term[,,i] = term[,,i] + x1[,,i] - x
+      term[,,i] = term[,,i] + 1 * (x1[,,i] - x)
     }
 
     # update posterior    
     x = prior + apply(term, c(1,2), sum)
   }
-
   list(x = x, term = term)
+}
+
+# test of how this converges
+t1 = function() {
+  A = matrix(rgamma(1000, shape=1, scale=1), nrow=1)
+  b = 1
+  t0 = gamma.mv2n(rbind(m=rep(1,1000), v=rep(1,1000)))
+
+  q = gca(t0, A, b);  gamma.n2mv(q[,1:5]); t0 = q - t0
+  print(q)
+
+}
+
+# more trying to get a simple case of this working
+t2 = function() {
+  f = function(x) gca(x, t(c(1,2,4)), 1)
+
+#  q0 = gamma.mv2n(rbind(m=c(1,1,1), v=c(1,1,1)))
+  t0 = gamma.mv2n(rbind(m=c(1,1,1), v=c(1,1,1)))
+  q = f(t0)
+  for(i in 1:20) {
+    t0 = q - t0
+    q = f(t0)
+    print(gamma.n2mv(q))
+  }
 }
 
 
@@ -67,8 +100,6 @@ b2 = as.vector(A2 %*% x2)
 
 
 foo = approx.region.gamma(A2, b2)
-
-
 
 
 

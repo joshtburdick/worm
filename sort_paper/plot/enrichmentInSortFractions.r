@@ -47,12 +47,14 @@ sort.marker.enrichment =
     sort.marker.enrichment[6:17])
 
 par(mar=c(7,4,4,2)+0.1)
-barplot(sort.marker.enrichment, space=0.5, las=2,
-  main="Enrichment of sort marker\nin sorted fraction",
+x.axis.points = barplot(sort.marker.enrichment, space=0.5, las=2,
+#  main="Enrichment of sort marker\nin sorted fraction",
   ylab="Enrichment",
   col=ifelse(names(sort.marker.enrichment) %in% promoter.fusion,
     "#c00000", "#80ff80"), cex.main=1.2,
-    cex.axis=1.2, cex.lab=1.2)
+    cex.axis=1.2, cex.lab=1.2, xaxt="n")
+axis(1, at=x.axis.points, labels = names(sort.marker.enrichment),
+  las=2, lty=0, font=3)
 legend("topleft", c("promoter fusion", "protein fusion"),
   fill=c("#c00000", "#80ff80"))
 abline(h=0)

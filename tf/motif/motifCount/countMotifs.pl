@@ -4,24 +4,21 @@
 
 use strict;
 
+if (1) {
+  foreach my $i (1..5) {
+    count_motifs_chip("/media/disk2/jburdick/chip_bw/",
+      "regions/upstream_" . $i . "kb_WS220.bed",
+      "TF_chip_" . $i . "kb");
+    }
+}
+
 if (undef) {
-count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip");
 write_motif_counts("/murrlab/seq/igv/motif/meme/",
   "upstream_liftOver_WS220.bed",
   "./knownMotif_5kbUp.tsv", 3);
 write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
   "upstream_liftOver_WS220.bed",
   "./deNovoMotif_5kbUp.tsv", 3);
-}
-
-if (undef) {
-  write_motif_counts("/murrlab/seq/igv/motif/meme/",
-    "upstream_liftOver_WS220_0.5cons.bed",
-    "./knownMotif_5kbUp_0.5cons.tsv", 3);
-  write_motif_counts("/home/jburdick/tmp/meme_denovo_bw/",
-    "upstream_liftOver_WS220_0.5cons.bed",
-    "./deNovoMotif_5kbUp_0.5cons.tsv", 3);
-#  count_motifs_chip("/media/disk2/jburdick/chip_bw/", "TF_chip_0.5cons");
 }
 
 if (undef) {
@@ -61,10 +58,10 @@ if (undef) {
 # count_motifs("/murrlab/seq/igv/chip.TF/Fed-L1-stage-larvae/", "chip.TF_FedL1.tsv", 5);
 
 sub count_motifs_chip {
-  my($base_dir, $name) = @_;
+  my($base_dir, $regions_file, $output_dir) = @_;
   my @stages = `ls $base_dir/`;
 
-  system("mkdir -p TF_chip");
+  system("mkdir -p $output_dir");
   foreach my $stage (@stages) {
     chomp $stage;
     print "stage $stage\n";
@@ -73,8 +70,8 @@ sub count_motifs_chip {
 #      "regions/WS220_5000_bp_upstream.bed",
 #      "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
     write_motif_counts("$base_dir/$stage/",
-      "upstream_liftOver_WS220_0.5cons.bed",
-      "TF_chip/" . $name . "_" . $stage . "_5kbUp.tsv", 5);
+      $regions_file,
+      $output_dir . "/" . $stage . ".tsv", 5);
   }
 }
 

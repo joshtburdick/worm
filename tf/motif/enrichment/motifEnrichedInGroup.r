@@ -153,11 +153,19 @@ chisq.test.many = function(motifs.cl, motifs.bg, bp.cl, bp.bg) {
   e = motifs * (bp.cl / bp)
   e.bg = motifs * (bp.bg / bp)
 
-  r[ , "enrich" ] = motifs.cl / e
+#  XXX this seems to have been incorrect
+#  r[ , "enrich" ] = motifs.cl / e
+   r[ , "enrich" ] = (motifs.cl / motifs.bg) / (bp.cl / bp.bg)
+
   r[ , "chisq" ] = ((motifs.cl - e) ^ 2) / e +
     ((motifs.bg - e.bg) ^ 2) / e.bg
   r[ , "p" ] = pchisq(r[ , "chisq" ], 1, lower.tail=FALSE)
-  
+
+  # filter cases with small e, as chisq.test() does
+  low.data = e < 5 | e.bg < 5
+  r[ low.data, "chisq" ] = NA
+  r[ low.data, "p" ] = 1
+
   r
 }
 
@@ -173,7 +181,7 @@ motifs.enriched.in.group.2 = function(cl, motif.count, upstream.bp) {
   cl = as.character(cl)
   names(cl) = cl.names
 
-  clusters = sort(unique(cl))
+  clusters = as.character(sort(unique(cl)))
 
   motif.count = motif.count[names(cl),,,]
   upstream.bp = upstream.bp[names(cl),,]
@@ -191,14 +199,31 @@ motifs.enriched.in.group.2 = function(cl, motif.count, upstream.bp) {
   bp.total = apply(bp.cluster, c(1,2), sum)
   bp.background = as.vector(bp.total) - bp.cluster
 
-  # compute chi-squared scores (again, using aperm() gymnastics)
-  r1 = chisq.test.many(as.vector(aperm(motifs.cluster, c(4,1,2,3))),
-    as.vector(aperm(motifs.background, c(4,1,2,3))),
-    rep(as.vector(aperm(bp.cluster, c(3,1,2))), 3),
-    rep(as.vector(aperm(bp.background, c(3,1,2))), 3))
+  # more aperm() gymnastics
+  motifs.cluster = aperm(motifs.cluster, c(4,1,2,3))
+  motifs.background = aperm(motifs.background, c(4,1,2,3))
+  bp.cluster = aperm(bp.cluster, c(3,1,2))
+  bp.background = aperm(bp.background, c(3,1,2))
+
+  # compute chi-squared scores
+  r1 = chisq.test.many(as.vector(motifs.cluster),
+    as.vector(motifs.background),
+    rep(as.vector(bp.cluster), 3),
+    rep(as.vector(bp.background), 3))
+
+  # only keep enrichments
+  r1[ r1[,"enrich"] < 1, "p" ] = 1
+  r1[ r1[,"enrich"] < 1, "chisq" ] = NA
+
+  d = dimnames(motifs.cluster)
+  d[[5]] = stat.names
+  r = array(as.vector(r1), dim=c(dim(motifs.cluster), 8), dimnames=d)
 
   list(motifs.cluster = motifs.cluster,
     motifs.background = motifs.background,
-    bp.cluster = bp.cluster, bp.background = bp.background, r1 = r1)
+    bp.cluster = bp.cluster, bp.background = bp.background, r1 = r1, r = r)
 }
+
+
+
 

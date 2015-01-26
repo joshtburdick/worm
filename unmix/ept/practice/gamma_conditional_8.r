@@ -46,7 +46,7 @@ approx.region.gamma.1 = function(A, b) {
   dimnames(p)[[1]] = c("e1", "e2")
 
   # the prior
-  q0.shape = 2
+  q0.shape = 1
   q0.s = rbind(a = rep(q0.shape, ncol(A)), b = rep(1, ncol(A)))
   q0 = gamma.rescale.sum(gamma.s2n(q0.s), 1)
 
@@ -85,7 +85,7 @@ A1 = rbind(1:10 >= 7, 1:10 %% 3 != 0)
 b1 = c(0.5, 0.5)
 r1 = approx.region.gamma.1(A1, b1)
 
-if (FALSE) {
+if (TRUE) {
 set.seed(42)
 A2 = matrix(runif(100) >= 0.5, ncol=20)
 x2 = runif(20)

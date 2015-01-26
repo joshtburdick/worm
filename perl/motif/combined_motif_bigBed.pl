@@ -6,6 +6,9 @@
 # - a merged .bam file (which is fast, and smallish), and
 # - a .bigBed file (which is larger, but colorized)
 
+# FIXME: this should rename the "MA____"-style motif names
+# from JASPAR into something more readable.
+
 use strict;
 
 use Convert::Color;
@@ -18,22 +21,45 @@ my $output_base = "/murrlab/seq/igv/motif/known";
 my $genome_sizes = "/var/tmp/data/tophat2/WS220/genome_with_MtDNA.sizes";
 my $tmp_base = "/media/disk2/jburdick/motif_tmp";
 
+# Gets the list of unique motif names.
+sub get_motif_names {
+  my $collapsed_motif_list = "../../tf/motif/motifFilter.tsv";
+  my %h = ();
+
+  open IN, "<$collapsed_motif_list" || die;
+  $_ = <IN>;    # skip first line
+
+  # loop through the list of motifs, keeping canonical name
+  while (<IN>) {
+    chomp;
+    my @a = split /\t/;
+
+    # XXX for now, just skipping this motif; it's not clear
+    # why it doesn't have a .bam file
+    next if $a[2] eq "MA0199.1";
+
+    # skip de novo motifs
+    if (!($a[2] =~ /hier\./)) {
+      $h{ $a[2] } = 1;
+    }
+  }
+  close IN;
+
+  # return the keys, sorted ignoring case
+  return sort { lc($a) cmp lc($b) } (keys %h);
+}
+
+# get motif names
+my @motif_names = get_motif_names();
+
 print "[merging motifs...]\n";
-# system("cd $motif_dir; samtools merge $output_base.bam *.bam");
+my @motif_files = map { "$_.bam"; } @motif_names;
+
+system("cd $motif_dir; samtools merge $output_base.bam " . 
+  (join " ", @motif_files));
 system("samtools index $output_base.bam");
 
 exit(0);
-
-# get motif names
-my @motif_names = ();
-foreach my $f (<$motif_dir/*.bam>) {
-  die if not $f =~ /\/([^\/]+)\.bam/;
-  my $motif_name = $1;
-  push @motif_names, $motif_name;
-}
-
-# sort, ignoring case
-@motif_names = sort { lc($a) cmp lc($b) } @motif_names;
 
 # definition of how to color these
 my %motif_color = ();

@@ -15,7 +15,6 @@ system(paste("mkdir -p", output.dir))
 
 # names of experiments
 chip.names = list.files("git/cluster/chip/distAndConservation")
-chip.names = grep("rep1", chip.names, value=TRUE)
 chip.names = sub("_upstreamChipCons.tsv.gz", "", chip.names)
 
 # number of upstream bp with different levels of conservation
@@ -118,12 +117,12 @@ compute.enrichment.diff.cutoffs.faster = function(chip.names, clustering) {
   clusters = as.character(sort(unique(clustering)))
 
   # array of p-values
-  r = array(dim = list(length(chip.names), length(clusters), 3, 4, 4),
+  r = array(dim = list(length(chip.names), length(clusters), 3, 4, 1),
     dimnames = list(chip = chip.names,
       group = clusters,
       upstream.dist.kb = c(1, 2, 3),
       conservation = c(0, 0.5, 0.7, 0.9),
-      chip.score.quantile = c(0, 0.25, 0.5, 0.75)))
+      chip.score.quantile = c(0)))    # , 0.25, 0.5, 0.75)))
 
   # loop through the motifs
   for (chip in chip.names) {
@@ -137,16 +136,16 @@ compute.enrichment.diff.cutoffs.faster = function(chip.names, clustering) {
         bp1 = upstream.cons.dist[[upstream.dist.kb]]
         upstream.bp = apply(bp1[ , colnames(bp1) >= conservation ], 1, sum)
 
-        for (chip.score.quantile in c(0, 0.25, 0.5, 0.75)) {
+        for (chip.score.quantile in c(0)) {   # , 0.25, 0.5, 0.75)) {
           write.status(paste(chip, upstream.dist.kb,
             conservation, chip.score.quantile))
 
           # compute cutoff of chip score to use
-          chip.score.cutoff = quantile(m$chip.score, prob=chip.score.quantile)
+          # XXX omitting for now
+#          chip.score.cutoff = quantile(m$chip.score, prob=chip.score.quantile)
 
           m1 = m[ m$upstream.dist >= -1000 * upstream.dist.kb &
-            m$chip.cons >= conservation &
-            m$chip.score >= chip.score.cutoff , ]
+            m$chip.cons >= conservation , ]
           gc()
           m.counts = c(table(clustering[m1$gene]))
 

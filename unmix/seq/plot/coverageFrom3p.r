@@ -1,5 +1,8 @@
 # Plots coverage, as a function of distance (in transcript space)
 # from the 3-prime end.
+# Other possible ways to do this:
+# - SeqMonk
+# - RseQC
 
 library("rtracklayer")
 
@@ -62,7 +65,10 @@ get.3p.coverage = function(r, exon.loc, gene.loc, dist.3p) {
         gene.loc$space==chr & gene.loc$strand==strand , ]
       r1 = r[[ chr ]]
 
-      # find overlaps between exonic regions and genes
+      # We need to assign each exonic region to a gene.
+      # On the "+" strand, we want to pick the first gene
+      # overlapping a given exon, since presumably it has the
+      # nearest 3' end (and vice versa on the "-" strand).
       exon.gene.overlap = findOverlaps(exon.loc.1, gene.loc.1,
         select = ifelse(strand=="+", "first", "last"))
 
@@ -88,30 +94,6 @@ get.3p.coverage = function(r, exon.loc, gene.loc, dist.3p) {
   list(coverage.3p = coverage.3p, gene.length = gene.length)
 }
 
-# We need to assign each exonic region to a gene.
-# On the "+" strand, we want to pick the first gene
-# overlapping a given exon, since presumably it has the
-# nearest 3' end (and vice versa on the "-" strand).
-exon.plus = exon.loc[exon.loc$strand=="+",]
-exon.minus = exon.loc[exon.loc$strand=="-",]
-ov.plus = findOverlaps(exon.plus,
-  gene.loc[ gene.loc$strand == "+" , ], select="first")
-ov.minus = findOverlaps(exon.minus,
-  gene.loc[ gene.loc$strand == "-" , ], select="last")
-
-x = NULL
-for(chr in setdiff(names(ov.plus), "MtDNA")) {
-#  chr = "I"
-  write.status(chr)
-
-  # get indices of exonic region, grouped by gene
-  i = by(1:length(ov.plus[[chr]]), ov.plus[[chr]], c)
-
-  e1 = exon.plus[chr]$ranges
-  for(j in sample(i, 10))
-    x = c(x, e1[j,])
-
-}
 
 # by(1:length(ov.minus[[chr]]), ov.minus[[chr]], c)
 

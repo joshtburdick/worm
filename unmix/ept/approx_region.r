@@ -128,6 +128,9 @@ approx.region = function(A, b, b.var, prior.var=Inf,
   converge.tolerance = 1e-9, max.iters=100) {
   n = ncol(A)
 
+  # damping
+  alpha = 1
+
 #  debug.dir = "~/tmp/approx.region.debug"
   debug.dir = NULL
 
@@ -164,8 +167,9 @@ approx.region = function(A, b, b.var, prior.var=Inf,
 # print(as.vector(mm))
     # update terms.
     # one way to add damping. XXX not sure this is right.
-#    terms = 0.03 * (mm - q) + terms
-    terms = (mm - q) + terms
+    terms = terms + alpha * (mm - q)
+#    terms = (mm - q) + terms
+
     if (!is.null(debug.dir)) {
       system(paste("mkdir -p", debug.dir))
       ep.trace = list(terms=terms, terms.1=terms.1, q=q, mm=mm)
@@ -188,7 +192,7 @@ if (FALSE) {
 }
     # ??? show change in mean and variance separately?
     diff = apply(abs(canonical.to.mean.and.variance(q) - canonical.to.mean.and.variance(q.old)), 2, max)
- cat(backspace, signif(diff, 2), " ")
+ cat(backspace, iter, signif(diff, 2), " ")
     update.stats = rbind(update.stats, diff)
 
     # possibly stop early
@@ -309,12 +313,12 @@ approx.region.damping = function(A, b, b.var, converge.tolerance = 1e-9,
       q.new = lin.constraint( prior + terms.new )
 
     # constrains posterior to be positive
-if (TRUE) {
-    q1 = canonical.to.mean.and.variance(q.new)
-    q1[ q1[,"m"] < 1e-6 , "m" ] = 1e-6
-    q1[ q1[,"v"] < 1e-14, "v" ] = 1e-14
-    q.new = mean.and.variance.to.canonical(q1)
-}
+# if (TRUE) {
+#     q1 = canonical.to.mean.and.variance(q.new)
+#     q1[ q1[,"m"] < 1e-6 , "m" ] = 1e-6
+#     q1[ q1[,"v"] < 1e-14, "v" ] = 1e-14
+#    q.new = mean.and.variance.to.canonical(q1)
+# }
 
       # how much the posterior changed
       update.diff <- apply(abs(canonical.to.mean.and.variance(q.new) -
@@ -358,10 +362,11 @@ if (TRUE) {
 
 # cat(damping, update.diff, "\n")
 cat(backspace, damping, update.diff, backspace)   # signif(diff, 2)
-    update.stats = rbind(update.stats, c(damping=damping, update.diff))
+    update.stats = rbind(update.stats, update.diff)  # c(damping=damping, update.diff))
 
     # possibly stop early
-    if ((!error.flag) && (max(update.diff) <= converge.tolerance))
+    if ((!error.flag) && all(!is.na(update.diff)) &&
+        (max(update.diff) <= converge.tolerance))
       break
   }
 cat("  iters = ", iter, "\n")

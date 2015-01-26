@@ -8,7 +8,7 @@ source("R/lineage/embryodb.r")
 # Args:
 #   series.name - name of the series to plot
 #   main - title
-#   lwd - with of lines
+#   lwd - width of lines
 plot.movie = function(series.name, main, lwd=5,
   intensity.bounds=c(0,2000)) {
   scd = read.embryodb.dat.file(series.name)

@@ -5,41 +5,40 @@
 my $gene_bounds = "../../../data/seq/merged_genes_WS220.bed";
 
 # just the exons of those
-my $gene_bounds_split = "../../../data/seq/merged_genes_split_WS220.bed";
+my $gene_bounds_split = "../../../data/seq/merged_exons_WS220.bed";
 
-if (1) {
+if (undef) {
 compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/20110922/",
-  "rawCoverage/WS220/20110922/", "-s");
+  "/murrlab/seq/tophat2/WS220_20140111/Murray092812/",
+  "rawCoverage/WS220_20140111/Murray092812/", "-s");
 compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/20110922/",
-  "rawCoverage/WS220/20110922_as/", "-S");
-}
-
-
-if (1) {
-compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/Murray050912/",
-  "rawCoverage/WS220/Murray050912/", "-s");
-compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/Murray050912/",
-  "rawCoverage/WS220/Murray050912_as/", "-S");
+  "/murrlab/seq/tophat2/WS220_20140111/Murray092812/",
+  "rawCoverage/WS220_20140111/Murray092812_as/", "-S");
 }
 
 if (1) {
 compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/Murray_52831_092812/",
-  "rawCoverage/WS220/Murray_52831_092812/", "-s");
+  "/murrlab/seq/tophat2/WS220_20140111/Murray050912/",
+  "rawCoverage/WS220_20140111/Murray050912/", "-s");
 compute_coverage($gene_bounds,
-  "/murrlab/seq/tophat2/WS220/Murray_52831_092812/",
-  "rawCoverage/WS220/Murray_52831_092812_as/", "-S");
+  "/murrlab/seq/tophat2/WS220_20140111/Murray050912/",
+  "rawCoverage/WS220_20140111/Murray050912_as/", "-S");
+}
+
+if (1) {
+compute_coverage($gene_bounds,
+  "/murrlab/seq/tophat2/WS220_20140111/20110922/",
+  "rawCoverage/WS220_20140111/20110922/", "-s");
+compute_coverage($gene_bounds,
+  "/murrlab/seq/tophat2/WS220_20140111/20110922/",
+  "rawCoverage/WS220_20140111/20110922_as/", "-S");
 }
 
 # timeseries; this shouldn't be stranded
-if (undef) {
-  compute_coverage("geneBounds_WS220.tsv",
+if (1) {
+  compute_coverage($gene_bounds,
     "/media/disk2/jburdick/embryo_timeseries",
-    "rawCoverage_WS220/embryo_ts", "");
+    "rawCoverage/WS220_20140111/embryo_ts/", "");
 }
 
 sub compute_coverage {
@@ -49,7 +48,7 @@ sub compute_coverage {
 
   my $read_counts_file = $out_dir;
   $read_counts_file =~ s/\/+$//;
-  $read_counts_file = $read_counts_file . ".readCounts.tsv";
+  $read_counts_file = $read_counts_file . ".totalReads.tsv";
 
   open COUNTS, ">$read_counts_file" || die;
   print COUNTS "sample\ttotal.reads\n";
@@ -69,11 +68,15 @@ print "$file\n";
     # for now, only including uniquely-mapping reads
 #    system ("samtools view -q 1 -b $file | bedtools coverage $str -split -abam - -b $bed_file | gzip -c > $output_file");
 
-    # only include reads which intersect at least one exon
+    # Only include reads which intersect at least one exon.
+    # Mapping quality of 50 seems to be Tophat's score when
+    # something is uniquely mappable.
     # XXX this is finicky
-    system ("samtools view -q 1 -b $file | bedtools intersect $str -u -abam - -b $gene_bounds_split | bedtools coverage $str -split -abam - -b $gene_bounds |cut -f1-6,13-16 | gzip -c > $output_file");
+    system ("samtools view -q 50 -b $file | bedtools intersect $str -u -abam - -b $gene_bounds_split | bedtools coverage $str -split -abam - -b $gene_bounds  | gzip -c > $output_file");
 
-    my $read_count = `samtools view -q 1 -c $file`;
+# removed "cut -f1-6,13-16", since region file is now BED6 rather than BED12
+
+    my $read_count = `samtools view -q 50 -c $file`;
     print COUNTS "$sample_name\t$read_count";
   }
 

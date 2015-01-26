@@ -4,6 +4,20 @@ source("git/utils.r")
 
 source("git/data/worm/available_strains.r")
 
+# motifs upstream of clusters
+motif.enrichment = as.vector(read.tsv(
+  "git/cluster/motif/enrichOptimize/tmp_motif_hier_300.tsv"))
+motifs.per.gene = motif.enrichment[,1]
+names(motifs.per.gene) = rownames(motif.enrichment)
+
+# similarly for ChIP peaks
+chip.per.gene = {
+  r = read.tsv("git/cluster/chip/enrichOptimize/tmp_300_chip.txt")
+  chip.per.gene = r[,1]
+  names(chip.per.gene) = rownames(r)
+  chip.per.gene
+}
+
 # Get list of genes which have TransgenOme clones
 transgenome.genes = {
   tg.table = read.table(
@@ -37,6 +51,7 @@ anatomy.by.gene = c(by(wb.anatomy$Anatomy.Term,
   function(x) paste(sort(unique(as.vector(x))), collapse=",")))
 anatomy.by.gene = sapply(anatomy.by.gene,
   function(x) if (nchar(x) >= 140) paste0(substr(x,1,140), "...") else x)
+
 
 # Adds annotation to a .cdt file.
 # Args:
@@ -77,7 +92,9 @@ add.annotation.to.clustering = function(cluster.dir) {
 
   annotation = list("Functional description" = func.descr,
     "Anatomy terms" = anatomy.by.gene,
-    "cluster" = cl,  # naming this "GROUP" seems to remove dendrogram
+    "Motifs" = motifs.per.gene,
+    "ChIP" = chip.per.gene,
+    "Cluster" = cl,     # naming this "GROUP" seems to remove dendrogram
     "Strain" = wb.transgene.by.gene,
     "TransGenome" = tg)
 
@@ -88,6 +105,4 @@ add.annotation.to.clustering = function(cluster.dir) {
 }
 
 add.annotation.to.clustering("git/cluster/hierarchical/hier.300.clusters/")
-
-
 

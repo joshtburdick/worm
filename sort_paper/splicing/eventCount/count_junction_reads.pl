@@ -31,6 +31,8 @@ sub count_junctions {
     # would be printed with "-ssc".
     system("sjcount -bam $f -quiet -read1 1 -read2 1 " .
       " -ssj $output_dir/$output_name.tsv");
+
+    # FIXME: gzip output?
   }
 }
 

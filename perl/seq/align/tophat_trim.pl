@@ -173,8 +173,7 @@ sub run_tophat_clipping {
 
   run_tophat("$output_base/reads1",
     "$output_base/remainder",
-    "--no-novel-juncs --min-anchor-length 4 --splice-mismatch 1 ",
-    "--read-edit-dist 8 --read-mismatches 5 --no-sort-bam ");
+    "--no-novel-juncs --min-anchor-length 4 --splice-mismatch 1 ");
 
   # sort, and merge .bam output
   system("samtools sort -m 2500000000 " .

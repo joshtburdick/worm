@@ -95,13 +95,13 @@ motif.svg = function(m,
   paste0(s, "</g></svg>")
 }
 
-# Writes a motif as a compressed SVG (.svgz) file.
+# Writes a motif as an SVG file.
 write.motif.svgz = function(m, output.file,
   width=8, height=2, min.motif.width=15) {
 
   m1 = pad.motif(scale.by.ic(m), min.motif.width)
   s = motif.svg(m1)
-  f = gzfile(output.file)
+  f = file(output.file)    # or gzfile()
   cat(s, file=f)
   close(f)
 }

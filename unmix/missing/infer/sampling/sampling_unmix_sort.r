@@ -27,12 +27,12 @@ sort.prior = sort.prior.dirichlet.1(rep(1, 1341), m, 10)
 x0 = sort.init(sort.prior)   # XXX rename this
 m0 = sort.matrix.normalize(x0)
 
-sort.fractions = intersect(rownames(m0), rownames(x)) 
+sort.fractions = sort(intersect(rownames(m0), rownames(x)))
 x = x[ sort.fractions , ]
 
 # for prototyping (and to reduce noise), only keeping
 # most-highly-expressed things
-x = x[ , apply(x, 2, max) >= 1e-4 ]
+x = x[ , apply(x, 2, max) >= 100 ]
 # normalize the rows
 x = x / apply(x, 1, sum)
 

@@ -9,9 +9,9 @@ use strict;
 use Date::Parse;
 use XML::LibXML;
 
-# my $series = @ARGV[0];
+my $series = $ARGV[0];
 
-my $series = "/gpfs/fs0/u/azach/images//20140228_cwn-2_L2/";
+# my $series = "/gpfs/fs0/u/azach/images//20140228_cwn-2_L2/";
 
 die if not $series =~ /\/?([^\/]+)\/?$/;
 my $series_name = $1;
@@ -104,5 +104,6 @@ my $when_by_name = get_times($series);
 my @t = relative_time(\@image_names, $when_by_name);
 
 
-write_table("test.tsv", $series_name, \@t);
+write_table($series . "/dats/TIME" . $series_name . ".csv",
+  $series_name, \@t);
 

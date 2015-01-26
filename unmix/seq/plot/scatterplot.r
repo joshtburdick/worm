@@ -1,5 +1,7 @@
 # Does some scatterplots of sorted fractions.
 
+source("git/utils.r")
+
 output.path = "git/unmix/seq/plot/scatterplot/"
 
 system(paste("mkdir -p ", output.path))
@@ -9,6 +11,9 @@ options(stringsAsFactors = FALSE)
 experimentNames = read.table("git/unmix/seq/quant/experimentNames.tsv",
   sep="\t", header=TRUE, row.names=1)
 
+pseudocount = 3
+
+if (FALSE) {
 count.path = "git/unmix/seq/quant/readsPerMillion"
 
 # get the reads from all experiments
@@ -23,8 +28,13 @@ r3 = as.matrix(
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
 r = log2(1 + cbind(r1, r2, r3))    # ??? add something smaller than 1 here?
+
 r = r[ , order(colnames(r)) ]
 colnames(r) = experimentNames[colnames(r),"name"]
+}
+
+rpm = read.tsv("git/cluster/readsPerMillion.tsv")
+r = log2(pseudocount + rpm)
 
 r.ds = r[,c("ceh-6 (+) hlh-16 (+)", "ceh-6 (+) hlh-16 (-)",
   "ceh-6 (-) hlh-16 (+)", "ceh-6 (-) hlh-16 (-)")]
@@ -39,7 +49,7 @@ draw.scatter.1 = function(r, x.name, y.name, include.correlation=FALSE) {
 #  main = if (include.correlation)
 #    paste("cor =", round(cor(x,y), 3))
 #  else ""
-  main = expression("expression, log"[2](1+coverage))
+  main = expression("expression, log"[2](3+coverage))
 
   plot(r[,x.name], r[,y.name], xlab=x.name, ylab=y.name,
     main = main, xlim=lim, ylim=lim, pch=20, col="#00000080",
@@ -97,19 +107,26 @@ draw.scatter.with.cutoff = function(x.p, x.n, y.p, y.n,
 # Draws a scatterplot, coloring genes which are far away from
 # a threshold.
 draw.scatter.diag.threshold =
-    function(x, y, x.name, y.name, cutoff = 2) {
+    function(x, y, x.name, y.name, cutoff = 2,
+    genes.to.label=c(), genes.to.label.color = c("black")) {
   lim = c(min(x,y), max(x, y))
-  main = expression("expression, log"[2](1+coverage))
+  main = expression("expression, log"[2](3+coverage))
 
   colors = ifelse(y-x > cutoff, "#80000080",
     ifelse(y-x < -cutoff, "#00008080", "#00000080"))
 
   plot(x, y, xlab=x.name, ylab=y.name,
-    main = main, xlim=lim, ylim=lim, pch=20, col=colors,
+    main = main, xlim=lim, ylim=lim, pch=16, col=colors,
     cex=1, cex.axis=1.5, cex.lab=2.5, cex.main=1.5)
   abline(0,1, lwd=5, col="#00000040")
   abline(2,1, lwd=5, col="#80000040")
   abline(-2,1, lwd=5, col="#00008040")
+
+  # also, label a few genes
+  if (length(genes.to.label) > 0)
+    text(genes.to.label, x=x[genes.to.label], y=y[genes.to.label],
+      col=genes.to.label.color, font=2, cex=1.2)    # set adj?)
+
 }
 
 scatterplots1 = function() {
@@ -120,7 +137,7 @@ scatterplots1 = function() {
   par(mar=c(5,4,4,4)+0.1)
   par(mfrow=c(2,3))
   draw.scatter("ceh-6 (+)", "ceh-6 (-)")
-  draw.scatter("ceh-26 (+)", "ceh-26 (-)")
+  draw.scatter("pros-1 (+)", "pros-1 (-)")
   draw.scatter("ceh-27 (+)", "ceh-27 (-)")
 
   draw.scatter("ceh-36 (+)", "ceh-36 (-)")
@@ -196,7 +213,7 @@ scatterplots1 = function() {
 
 scatterplots2 = function() {
 
-  for(g in c("ceh-26", "ceh-6", "pha-4 9/1", "ttx-3")) {
+  for(g in c("pros-1", "ceh-6", "pha-4 9/1", "ttx-3")) {
     g1 = sub("/", "_", g)
     png(file=paste(output.path, "/", g1, ".png", sep=""),
       width=600, height=600)
@@ -256,9 +273,11 @@ enriched.depleted.scatterplots = function() {
 
   png(file=paste(output.path, "/pha4_enrichment.png", sep=""),
     width=600, height=600)
+#  pdf(file=paste(output.path, "/pha4_enrichment.pdf", sep=""),
+#    width=7.5, height=7.5)
   par(mar=c(5,5,4,4)+0.1)
   draw.scatter.diag.threshold(r[,"pha-4 9/1 (-)"], r[,"pha-4 9/1 (+)"],
-    "pha-4 9/1 (-)", "pha-4 9/1 (+)", 2)
+    "pha-4 9/1 (-)", "pha-4 9/1 (+)", 2, c("pha-4", "ceh-22"))
   dev.off()
 
   png(file=paste(output.path, "/ceh6_hlh16_enrichment.png", sep=""),
@@ -266,7 +285,8 @@ enriched.depleted.scatterplots = function() {
   par(mar=c(5,5,4,4)+0.1)
   draw.scatter.diag.threshold(
     r[,"ceh-6 (-) hlh-16 (-)"], r[,"ceh-6 (+) hlh-16 (+)"],
-    "ceh-6 (-) hlh-16 (-)", "ceh-6 (+) hlh-16 (+)", 2)
+    "ceh-6 (-) hlh-16 (-)", "ceh-6 (+) hlh-16 (+)", 2,
+    c("ceh-6", "hlh-16"), c("black", "#f0f070"))
   dev.off()
 }
 
@@ -294,6 +314,7 @@ replicate.scatterplots.coverage.cutoff = function() {
 
 # scatterplots1()
 scatterplots2()
+
 #replicate.scatterplots()
 enriched.depleted.scatterplots()
 replicate.scatterplots.coverage.cutoff()

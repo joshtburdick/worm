@@ -1,7 +1,7 @@
 # Attempt to annotate the motifs in MEME with
 # "organism" and "gene symbol" in a vaguely-consistent way.
 
-r = read.table("data/tf/meme/motifList.tsv",
+r1 = read.table("data/tf/meme/motifList.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
 r$organism = ""

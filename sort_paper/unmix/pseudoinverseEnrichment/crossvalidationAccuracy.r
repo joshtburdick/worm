@@ -28,7 +28,7 @@ plot.crossval.accuracy = function(m, r, predict.set, test.set) {
     plot(r[,a], predicted.x.f,
       main=a, xlab="Measured enrichment", ylab="Predicted enrichment",
       xlim=lim, ylim=lim,
-      pch=16, font=5, cex=0.5, col="#00000080", xaxt="n", yaxt="n")
+      pch=183, font=5, cex=0.5, col="#00000080", xaxt="n", yaxt="n")
 
     # XXX this is just to get the axis labels in the same font
     axis(1); axis(2) 
@@ -63,7 +63,7 @@ write.crossval.graphs.png = function() {
 #  png(paste0(output.dir, "/crossvalidationAccuracy.png"),
 #    width=1000, height=800)
   pdf(paste0(output.dir, "/crossvalidationAccuracy.pdf"),
-    width=15, height=12)
+    width=14, height=12)
   par(mfrow=c(4,5))
 
   a = plot.crossval.accuracy(m, r, single.fractions,
@@ -80,5 +80,5 @@ write.crossval.graphs.png = function() {
 }
 
 # write.crossval.graphs()
-write.crossval.graphs.png()
+# write.crossval.graphs.png()
 

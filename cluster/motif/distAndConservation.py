@@ -9,10 +9,18 @@ import subprocess
 import sys
 
 # where to write results
-outputDir = "distAndConservation/5kb/"
+# outputDir = "distAndConservation/5kb/"
+# outputDir = "distAndConservation/5kb_de_novo/"
+# outputDir = "distAndConservation/5kb_hughes/"
+# outputDir = "distAndConservation/5kb_TCF_LEF/"
+outputDir = "/home/jburdick/tmp/distAndConservation/5kb_hughes_20141202/"
 
 # where .bam files of motif locations are
-motifBamPath = "/murrlab/seq/igv/motif/known/"
+# motifBamPath = "/murrlab/seq/igv/motif/known/"
+# motifBamPath = "/home/jburdick/tmp/fimo_denovo/"
+# motifBamPath = "/home/jburdick/tmp/fimo_hughes/"
+# motifBamPath = "/murrlab/seq/igv/motif/TCF_LEF/"
+motifBamPath = "/home/jburdick/tmp/fimo_hughes_20141202/"
 
 # bigWig file of conservation
 # XXX probably should rename chromosomes in this
@@ -27,6 +35,9 @@ bedtoolsPath = "/home/jburdick/bin/x86_64/"
 kentToolsPath = "/home/jburdick/bin/x86_64/"
 
 # Gives each line in a BED file a unique name.
+# Also:
+# - renames chromosomes
+# - XXX omits any motifs with location <= 0
 def nameMotifs(inputBedFile, outputBedFile):
   inFile = open(inputBedFile, "r")
   outFile = open(outputBedFile, "w")
@@ -39,11 +50,12 @@ def nameMotifs(inputBedFile, outputBedFile):
     chr = "chr" + s[0]
     if s[0] == "MtDNA":
       chr = "chrM"
-    outFile.write(chr + "\t" + str(a) + "\t" + str(b) +
-      "\t" + str(i) + "\t" + s[4] + "\t" + s[5] + "\n")
-#"\t0\t+\t" +
-#      str(a) + "\t" + str(b) + "\t0\t1\t1\t0\n")
-    i = i + 1
+    if int(s[1]) > 0:
+      outFile.write(chr + "\t" + str(a) + "\t" + str(b) +
+        "\t" + str(i) + "\t" + s[4] + "\t" + s[5] + "\n")
+  #"\t0\t+\t" +
+  #      str(a) + "\t" + str(b) + "\t0\t1\t1\t0\n")
+      i = i + 1
   inFile.close()
   outFile.close()
 
@@ -77,7 +89,7 @@ def computeMotifDistAndConservation(name):
   # then, compute conservation at those locations
   subprocess.call([kentToolsPath + "/bigWigAverageOverBed",
     conservationBigWig, "tmpMotif2.bed",
-    "tmpMotifCons1.tsv",
+    "tmpMotifCons1.tsv",  # the TSV file isn't actually generated, AFAIK
     "-bedOut=tmpMotifCons1.bed"])
 
   # XXX change chromosome names back
@@ -111,12 +123,13 @@ subprocess.call(["mkdir", "-p", outputDir])
 
 # nope, running it on everything
 #motifs = [ f.replace(".bam", "")
-for f in os.listdir(motifBamPath)
-  if re.match(".*.bam$", f)
 
-#for m in motifs:
-#  if (m != ""):
-    print("motif: " + m)
-    computeMotifDistAndConservation(m)
+# computeMotifDistAndConservation("bp.5kb.cons.hier.200clusters_186_5")
 
+if True:
+  for f in os.listdir(motifBamPath):
+    if re.match(".*.bam$", f):
+      m = f.replace(".bam", "")
+      print(m)
+      computeMotifDistAndConservation(m)
 

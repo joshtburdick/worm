@@ -40,6 +40,6 @@ for (m in intersect(rownames(motif.filter), known.motifs)) {
 
   write.status(m)
   write.motif.svgz(meme.format.pwm[[m]],
-    paste0(output.dir, "/", m, ".svgz"))
+    paste0(output.dir, "/", m, ".svg"))
 }
 

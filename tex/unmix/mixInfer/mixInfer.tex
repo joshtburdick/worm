@@ -24,11 +24,13 @@ intensities differ between microscopy and FACS sorting.
 
 \subsection{Notation}
 
-First, we define some variables:
+
 
 \begin{itemize}
 
-\item Expression: $X_{ij}$ is the expression of gene $i$ in cell $j$
+\item ``Sorted expression'': $X_{i,j,f}$ is the expression of gene $i$ in cell $j$, in sort
+fraction $f$. This includes each specific sort fraction's
+``view'' of the expression.
 
 \item Sorting: $S_{fj}$ is the proportion of cell $j$ in sorted fraction $f$
 
@@ -36,7 +38,8 @@ First, we define some variables:
 
 \end{itemize}
 
-Here, $X$, $S$, and $V$ are all relative to the entire embryo sample.
+Here, $S$, $V$, and for all $f$, $X_{-,-,f}$ are 
+relative to the entire embryo sample.
 This is a change in units (previously, we were measuring $X$ as
 the proportion of a gene's expression which was in a given cell.)
 
@@ -51,24 +54,16 @@ before; we ignore this efficiency issue for now.)
 
 \subsubsection{The expression data}
 
-We know that the total expression of all the genes in
-a cell add up to that cell's volume:
-
-\[
-\sum_i X_{ij} = V_j
-\]
-
-\color{red}
-
-INCORRECT STUFF
-
 Suppose we have measured that the expression of a gene $i$ in sorted
 fraction $f$ is $a$ (measured as a proportion; so 1 ppm would correspond
 to $a = 10^{-6}$.) Then
 
 \[
-\sum_j X_{ij} = a S_{fi}
+\sum_j X_{i,j,f} = a \sum_{ij} X_{i,j,f} = a \sum_{j} S_{f,j}
 \]
+
+Intuitively, the gene's expression in all cells is some fraction of
+the volume in that fraction, for each specific fraction's ``view'' of the expression.
 
 Note that this constraint assumes that the expression data
 is known exactly. This is incorrect; there is certainly
@@ -76,8 +71,6 @@ uncertainty in its measurement. However, noise in RNA-seq experiments
 may be known more precisely than which cells are going to be
 included in cell sorting, or the relative volumes of
 different cells.
-
-\color{black}
 
 \subsubsection{The sort matrix}
 
@@ -122,6 +115,13 @@ constrained to be equal to it.
 read measurements.)
 
 \subsubsection{Constraints on volume}
+
+We know that the total expression of all the genes in
+a cell add up to that cell's volume:
+
+\[
+\sum_i X_{ij} = V_j
+\]
 
 In the (fairly common) case in which we have matched positive and negative
 sorted samples, which we'll call $f^+$ and $f^-$, we have

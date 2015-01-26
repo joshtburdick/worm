@@ -30,13 +30,15 @@ upstream.cons.hist = read.tsv(gzfile(
 compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
   a = motif.enriched
   a$dist.U = NA
+  a$dist.closer = NA
   a$dist.p = NA
   a$dist.p.corr = NA
   a$cons.U = NA
+  a$cons.higher = NA
   a$cons.p = NA
   a$cons.p.corr = NA
 
-  for(i in 1:2) {    # nrow(a)) {
+  for(i in 1:nrow(a)) {
 
     m = a[i,"motif"]
     cl = a[i,"group"]
@@ -61,25 +63,27 @@ compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
 
       w.dist = wilcox.test(r1$upstream.dist, r0$upstream.dist)
       a[i,"dist.U"] = w.dist$statistic
+      a[i,"dist.closer"] = w.dist$statistic > 0.5 * nrow(r0) * nrow(r1)
       a[i,"dist.p"] = w.dist$p.value
 
       w.cons = wilcox.test(r1$motif.cons, r0$motif.cons)
       a[i,"cons.U"] = w.cons$statistic
+      a[i,"cons.higher"] = w.cons$statistic > 0.5 * nrow(r0) * nrow(r1)
       a[i,"cons.p"] = w.cons$p.value
     }
 
-    if (i %% 1000 == 0) {
-      write.tsv(a, output.file)
+    if (i %% 100 == 0) {
+      write.tsv(a, gzfile(output.file))
     }
   }
 
   a$dist.p.corr = p.adjust(a$dist.p, method="fdr")
   a$cons.p.corr = p.adjust(a$cons.p, method="fdr")
-  write.tsv(a, output.file)
+  write.tsv(a, gzfile(output.file))
 }
 
 if (TRUE) {
   compute.dist.conservation.wilcoxon(motif.enriched,
-    gzfile("git/cluster/motif/plot/distConservationWilcoxon.tsv.gz"))
+    "git/cluster/motif/plot/distConservationWilcoxon.tsv.gz")
 }
 

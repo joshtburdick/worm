@@ -47,6 +47,7 @@ ep.update = function(m, y) {
 
     # 3.(a): "old" posteriors for data terms (the "...\i" term)
     old.v = 1 / ( 1/m$v.x - 1/m$v[i] )
+
     old.m = m$m.x + (old.v / m$v[i]) * (m$m.x - m$m[,i])
 print(c(i, m$v.x, old.v))
 
@@ -59,13 +60,14 @@ print(c(i, m$v.x, old.v))
     z = l.clutter + l.signal
     r = l.signal / (l.clutter + l.signal)
 
-cat("l.clutter =", l.clutter, "   l.signal =", l.signal, "\n")
+cat("l.clutter =", l.clutter, "   l.signal =", l.signal,
+  "    r =", r, "\n")
 
     m$m.x = old.m + old.v * r * (y[,i] - old.m) / (old.v + 1)
     m$v.x = old.v - r * (old.v^2) / (old.v+1) +
       r * (1-r) * (old.v^2) * (sum(y[,i] - old.m)^2) / (m$d * ((old.v+1)^2))
 
-cat("new v =", m$v.x, "\n")
+cat("old v =", old.v, "   new v =", m$v.x, "\n")
 
 #    z.i = (1 - m$w) * dmnorm(y[,i], old.m, (old.v+1) * diag(m$d)) +
 #      m$w * dmnorm(y[,i], m$m.0, m$v.0 * diag(m$d))
@@ -76,6 +78,7 @@ cat("new v =", m$v.x, "\n")
     m$v[i] = 1 / (1 / m$v.x - 1 / old.v)
 # print(c(i, m$v.x, m$v[i]))
 # print(old.m)
+
 cat("updated m$v[i] =", m$v[i], "\n")
 
     m$m[,i] = old.m + ((m$v[i] + old.v) / old.v) * (m$m.x - old.m)
@@ -97,12 +100,13 @@ ep.log.evidence = function(m, y) {
 
 
 # Constructs a toy data set.
-clutter.y = matrix(rnorm(100, sd=10), nrow=2)
-signal.y = matrix(rnorm(100), nrow=2) + 1.23456789
+n = 10000
+clutter.y = matrix(rnorm(n, sd=10), nrow=2)
+signal.y = matrix(rnorm(n), nrow=2) + c(5,6)
 y = cbind(clutter.y, signal.y)
 # y = y[,sample(10)]
 
-m = init.model(100, 2, 0.5)
+m = init.model(n, 2, 0.5)
 
 m1 = ep.update(m, y)
 

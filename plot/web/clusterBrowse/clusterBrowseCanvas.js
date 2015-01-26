@@ -125,8 +125,7 @@ function drawClusters(g, a, p) {
 
 // Centers the clustering on a given gene (or genes; for now, just one gene)
 // Args:
-//   genes - a gene name, or a string of gene names separated by
-//     commas or spaces
+//   genes - a gene name, or a string of gene names separated by spaces
 function setClustering(genes) {
   geneField.value = genes;
 
@@ -135,7 +134,7 @@ function setClustering(genes) {
   // look up gene names
   geneIndex = new Array();
   geneName1 = new Array();
-  s = genes.split(",");
+  s = genes.split(" ");
   for(i=0; i<s.length; i++) {
     if (a.geneNameToIndex[ s[i] ] != undefined) {
       geneIndex.push( a.geneNameToIndex[s [i] ]);
@@ -143,12 +142,22 @@ function setClustering(genes) {
     }
   }
 
-  // FIXME: check for legit gene names
+  // FIXME: show an error if no gene names are legit
 
-
-  // center of all selected genes
-  // FIXME: for now, just uses the first one
-  xCenter = xStandardized[ geneIndex[0] ];
+  // compute center of all selected genes
+  // XXX original version
+  if (1) {
+    xCenter = xStandardized[ geneIndex[0] ];
+  }
+  else {
+    xCenter = new Array(xStandardized[0].length);
+    for(j=0; j<xCenter.length; j++)
+      xCenter[j] = 0;
+    for(i=0; i<geneIndex.length; i++)
+      for(j=0; j<xStandardized[0].length; j++)
+        xCenter[j] += xStandardized[geneIndex[i]][j];
+    xCenter = vectorMath.standardize(xCenter);
+  }
 
 console.log("geneIndex = " + geneIndex);
 
@@ -157,8 +166,13 @@ console.log("geneIndex = " + geneIndex);
 console.log("updated r");
 
 console.log("before sort: p[0] = " + p[0]);
+
   // update the ordering, p
-  goog.array.sort(p, function(i,j) { return r[j] - r[i]; } );
+  // FIXME force the selected genes to be first (although presumably
+  // they'll already be near the start)
+  goog.array.sort(p, function(i,j) {
+    return r[j] - r[i];
+  } );
 console.log("after sort: p[0] = " + p[0]);
 
   // actually draw stuff, in that order
@@ -189,7 +203,6 @@ console.log("loc = " + loc.toString());
   console.log("mouse clicked on " + a.geneName[ p[i] ]);
 
 //  setClustering( a.geneName[ p[i] ] );
-
 
   uri = new goog.Uri(location.search);
   uri.setParameterValue("gene", a.geneName[ p[i] ] );

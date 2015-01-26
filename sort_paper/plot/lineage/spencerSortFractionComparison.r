@@ -60,16 +60,42 @@ plot.it.orig = function() {
   dev.off()
 }
 
-plot.one = function(m, col) {
+plot.one = function(m, hue) {
   h = hclust(cor.dist(m))
+  m1 = m[h$order,]
 
-  plot(h, labels=FALSE, axes=FALSE,
-    sub="", main="", xlab="", ylab="", hang=-2)
-
-
+  par(mar=c(0,16,0,0.1))
+  image(t(m1), useRaster=TRUE,
+    xaxt="n", yaxt="n", zlim=c(0,1), col=hsv(hue, 1, 0:128/128))
+  n = nrow(m1)-1
+  axis(2, at=(0:n)/n, labels=rownames(m1), cex.axis=1.39,
+    line=0, tick=FALSE, las=2)
 }
 
+# Plots these separately.
+plot.separately = function() {
+  pdf("git/sort_paper/plot/lineage/spencerSortFractionComparison.pdf",
+    width=11, height=7)
 
+  layout(matrix(1:3, nrow=3), heights=c(1,1.7,1.3))
+
+  # show the lineage
+  par(mar=c(0,16,0,0.1))
+  plot(1,1, type="n", xlim=c(24,647), ylim=c(350,0),
+    main="", xlab="", ylab="", xaxt="n", yaxt="n", bty="n")
+  a = rep("#c0c0c0", 1341)
+  names(a) = lin.node.names
+  par(new=TRUE)
+  par(mar=c(0,16,0,0.1))
+  plot.segments.per.cell(a, main="", root="P0", times=c(0,339),
+      lwd=1.5, yaxt="n", int.n.to.label=lin.12.cell, add=TRUE)
+
+  plot.one(m.leaf, 0)
+  plot.one(spencer.m.leaf, 1/6)
+  dev.off()
+}
+
+plot.separately()
 
 # Various comparisons of the sizes of these groups.
 facs.on.off = m.leaf > 0

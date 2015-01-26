@@ -13,8 +13,8 @@ my $fasta = "/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.topleve
 # sizes of chromosomes, for SAM->BAM conversion
 my $fasta_sizes = $fasta . ".sizes";
 
-my $meme_matrix_path = "/home/jburdick/gcb/data/tf/meme/motif_databases/";
-# my $meme_matrix_path = ".";  # XXX temporary hack
+# my $meme_matrix_path = "/home/jburdick/gcb/data/tf/meme/motif_databases/";
+my $meme_matrix_path = "";  # XXX temporary hack
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/meme_file/";
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/";
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/";
@@ -32,19 +32,28 @@ my @meme_files = (
 #   qw/jolma2013_shuffled JASPAR_CORE_2009_insects_shuffled 
 # JASPAR_CORE_2009_nematodes_shuffled JASPAR_CORE_2009_vertebrates_shuffled/);
 @meme_files = qw/jolma2013 JASPAR_CORE_2009_insects JASPAR_CORE_2009_nematodes JASPAR_CORE_2009_vertebrates/;
-# @meme_files = qw/JASPAR_CORE_2009_nematodes/;
 
-# fimo_to_bedGraph("TCF_LEF.meme", "TCF_LEF");
-# fimo_to_bedGraph("pha4_hardcoded.meme", "pha4_hardcoded");
+# ??? just trying to understand why MA0199.1 wasn't there
+# @meme_files = qw/JASPAR_CORE_2009_insects/;
 
+if (undef) {
 foreach my $f (@meme_files) {
   print "[running on MEME database file $f.meme]\n";
-  fimo_to_bedGraph("$f.meme", "/media/disk2/jburdick/meme/known/");
+  fimo_to_bedGraph("$f.meme", "/media/disk2/jburdick/meme/tmp2/");
+}
 }
 
-# fimo_to_bedGraph("deNovoMotifs.meme",
-#   "/home/jburdick/tmp/meme_denovo");
+# fimo_to_bedGraph("hughes_motif.meme",
+#   "/home/jburdick/tmp/fimo_hughes/");
 
+# fimo_to_bedGraph("/home/jburdick/gcb/data/tf/bhambhani2014/bhambhani2014.meme",
+#   "/home/jburdick/tmp/fimo_bhambhani");
+# fimo_to_bedGraph("/murrlab/jburdick/src/tf/meme/TCF_LEF.meme",
+#   "/home/jburdick/tmp/fimo_TCF_LEF");
+
+fimo_to_bedGraph(
+  "/home/jburdick/gcb/git/data/tf/hughes_motif_20141202.meme",
+  "/home/jburdick/tmp/fimo_hughes_20141202.meme");
 
 # Utility to convert from .sam to .bam .
 # Also erases the .sam file, and indexes the .bam file.
@@ -117,6 +126,9 @@ print("$meme_matrix_path/$meme_file\n");
 
     my $length = 1 + $end - $start;
 
+    # ??? why was I doing this?
+    # subtracting 2 from start, so this lines up with genomic sequence
+    # (was $start-2)
     print OUT join "\t", ($current_motif, $flag, $chr, $start,
       $mapq, $length . "M", "*", 0, 0, $site, "*\n");
   }

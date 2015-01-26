@@ -9,7 +9,7 @@ ens.mm = useMart("ensembl", dataset="mmusculus_gene_ensembl")
 ens.dm = useMart("ensembl", dataset="dmelanogaster_gene_ensembl")
 
 # updating this from WS240     
-r = read.table(gzfile("data/wormbase/c_elegans.PRJNA13758.WS240.orthologs.txt.gz"),
+r = read.table(gzfile("data/wormbase/c_elegans.PRJNA13758.WS243.orthologs.txt.gz"),
   sep="\t", fill=TRUE, as.is=TRUE)
 
 # drop last line, as it's an "empty record"

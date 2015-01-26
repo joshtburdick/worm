@@ -1,81 +1,135 @@
 # Writes an index page of all the clusters.
 
-
 library("hwriter")
 
 source("git/utils.r")
+source("git/data/wormbase/wb.cluster.name.r")
 
 clustering.dir = "git/cluster/hierarchical/"
 output.dir = "git/sort_paper/plot/web/clusters"
 
-# which clustering to write out
+tag = function(tag.name, x)
+  paste0("<", tag.name, ">", x, "</", tag.name, ">")
+
+# which clustering to write an index for
 clustering.name = "hier.300.clusters"
 
-# Summary of per-cluster information.
-cluster.tf.table = function() {
+# Utility to get the most significant enriched thing by cluster.
+# Args:
+#   e - a table of enrichments (with columns "group", "p.corr",
+#     and column.name -- see below)
+#   cl - the names of the clusters
+#   column.name - the name of the column to return
+#   pretty.print - function to apply to the most significantly
+#     enriched thing
+# Returns: vector of the same length as cl, containing how
+#   many of the given things were enriched, and a description.
+most.enriched = function(e, cl, column.name="group.name",
+    pretty.print = function(a) a) {
+  enriched.count = tapply(e[,column.name], e[,"cluster"], length)
+  e = e[ order(e$p.corr) , ]
+  e = e[ !duplicated(e$cluster) , ]
+  e = tapply(e[,column.name], e[,"cluster"], function(x) x[1])
 
-  # motif.enriched$group %in% c(1,2,3,52,286) 
-  r = motif.enriched[ , c("group", "motif", "enrich", "p.corr") ]
+  r = rep(NA, length(cl))
+  names(r) = cl
+  r[ names(e) ] = paste0(enriched.count[names(e)], ": ", 
+    sapply(e, pretty.print), "...")
 
-  colnames(r) = c("group", "canonical.motif", "motif.enrich", "motif.p")
-
-  m1 = unique(motif.ortholog[ , c("gene", "motif", "canonical.motif") ])
-  r = merge(r, m1)
-
-  # merge in cases in which a ChIP signal was enriched
-  ch1 = chip.enriched[ , c("group","experiment","enrich","p.corr","factor") ]
-  colnames(ch1) = c("group", "chip.experiment", "chip.enrich", "chip.p", "gene")
-  r = merge(r, ch1, all.x=TRUE, all.y=TRUE)
-
-  # add in correlation (when known)
-  r$tf.corr = NA
-  i = r$gene %in% colnames(tf.cluster.cor)
-  # XXX might be cleaner to just convert tf.cluster.cor to a data.frame
-  r[ i, "tf.corr" ] = tf.cluster.cor[
-    cbind(match(r[i,"group"], rownames(tf.cluster.cor)),
-      match(r[i,"gene"], colnames(tf.cluster.cor))) ]
-
-  # variance in each cluster's enrichments
-  cluster.enrich.var = apply(as.matrix(cluster.means), 1, var)
-  r$cluster.enrich.var = cluster.enrich.var[ r$group ]
-
-  r = r[ , c(1,2,11,10,6,4,5,7,8,9) ]
-  colnames(r) = c("Cluster", "TF", "Cluster enrich var.",
-    "TF-cluster corr.", "Motif", "Motif enrich", "Motif p",
-    "ChIP", "ChIP enrich", "ChIP p")
-  r$order = 5 * rank(-r$"Cluster enrich var.") +
-    rank( - abs(r$"TF-cluster corr.") ) +
-    rank(r$"Motif p") +
-    rank(r$"ChIP p")
-
-  r = r[ order(r$order) , ]
-
-  r$"Cluster enrich var." = signif(r$"Cluster enrich var.", 3)
-  r$"TF-cluster corr." = round(r$"TF-cluster corr.", 2)
-  r$"Motif enrich" = round(r$"Motif enrich", 2)
-  r$"Motif p" = signif(r$"Motif p", 2)
-  r$"ChIP enrich" = round(r$"ChIP enrich", 2)
-  r$"ChIP p" = signif(r$"ChIP p", 2)
-  rownames(r) = NULL
-
+  r[ is.na(r) ] = " "
   r
 }
 
-# Writes an index page.
-# (FIXME For now, this will be a .tsv file.)
-write.index = function() {
-
-  b = ""
-
-  s = paste0("<!DOCTYPE html>",
-    "<html><head><title>Clustered FACS-sorted cells</title>",
-    "<style type=\"text/css\">", css, "</style>", "</head>",
-    "<body>", n, "</body></html>")
-  
-
-  cat(s, file=paste0(output.dir, "/", clustering.name, "/index.html"))
+# Formats a cluster name somewhat.
+cluster.name.format.old = function(a) {
+  if (grepl("WBPaper00025032|WBPaper00036286", a))
+    return(a)
+  a = sub("^WBPaper[0-9]+:", "", a)
+  a
 }
 
-r = cluster.tf.table()
-write.tsv(r, "git/sort_paper/plot/web/clustersIndex.tsv")
+# Formats a motif name.
+motif.name.format = function(m) {
+  # FIXME: these motif names are mostly lame
+  paste0(motif.name[m], " <img src=\"motifSvg/", m, ".svg\" ",
+    "title=\"Logo for motif ", m, "\" width=\"107px\" height=\"24px\">")
+}
+
+# Creates an index table.
+index.table = function() {
+
+  a = cluster.means.1
+
+  gene.count = as.vector(table(x$Cluster)[ rownames(a) ])
+
+  # "colorize" the actual data
+  for(j in 1:38) {
+    a[,j] = sapply(a[,j], td.color)
+  }
+
+  # omit "Tissue"
+  ao.enriched = ao.enriched[ ao.enriched$group.name != "Tissue" , ]
+
+  colnames(motif.enriched)[2] = "cluster"  # need to rename this
+  motif.html = most.enriched(motif.enriched, rownames(a),
+    column.name = "motif", pretty.print = motif.name.format)
+
+#  motif.html = sapply(motifs,
+#    function(m) paste0("<img src=\"motifSvg/", m, ".svg\" ",
+#      "title=\"Logo for motif ", m, "\" width=\"107px\" height=\"24px\">"))
+
+  colnames(chip.enriched)[2] = "cluster"   # again, renaming this
+  chip = most.enriched(chip.enriched, rownames(a), column.name="experiment")
+  chip = sub("-post-early-Embryos", "", chip)   # XXX
+
+  # tack on annotation
+  cluster.links = html.link(rownames(a),
+    sapply(rownames(a),
+      function(cl) paste0(clustering.name, "/", cl, ".html"))) 
+  a = cbind(a, data.frame(
+    "Cluster"=tag("td", cluster.links),
+    "Number of genes"=tag("td", gene.count),
+    "Mean expression<br>(RPM)"=tag("td", round(mean.max.rpm[ rownames(a) ], 1)),
+    "Anatomy enriched"=tag("td", most.enriched(ao.enriched, rownames(a))),
+#    "Phenotype enriched"=tag("td", most.enriched(phenotype.enriched, rownames(x))),
+    "Other expression cluster"=tag("td", most.enriched(cluster.enriched, rownames(a), column.name="group", pretty.print=cluster.name.format)),
+    "Motif"=tag("td", motif.html),
+    "ChIP"=tag("td", chip),
+  check.names=FALSE))
+
+  # column names (some rotated using CSS hacking)
+  col.names = colnames(a)
+  col.names[1:41] = sapply(col.names[1:41], rotate.text)
+
+  table.header = paste(c("<thead><tr>",
+    sapply(col.names, function(a) paste0("<th width=\"20px\" height=\"200px\">", a, "</th>")),
+    "</thead></tr>\n"), collapse="")
+
+  # we assume contents of x already have been formatted
+  table.rows.1 = apply(a, 1, function(r)
+    paste0("<tr height=12px>", paste(r, collapse=""), "</tr>\n", collapse=""))
+  table.rows = paste0("<tbody class=expr-tbody>", paste(table.rows.1, collapse=""), "</tbody>")
+
+  paste0("<table class=expr-table>", table.header, table.rows, "</table>")
+}
+
+# Writes out an index page.
+write.index.page = function() {
+  # hack to read in a text file as a string
+  css = paste0(read.table("git/sort_paper/plot/web/clusterCss.txt", sep="~")[,1], collapse="")
+
+  h = index.table()
+
+  s = paste0("<!DOCTYPE html>",
+    "<html><head><title>", "Cluster index</title>",
+    "<style type=\"text/css\">", css, "</style>",
+    "<script>", "</script>", "</head>",
+    "<body>",
+    "<h1>Cluster index</h1>",
+    h, "</body></html>")
+  cat(s, file=paste0(output.dir, "/", 
+    "index.html"))
+}
+
+write.index.page()
 

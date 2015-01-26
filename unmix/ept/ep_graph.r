@@ -16,7 +16,7 @@
 ep.model = function(vars, factors) {
   
   # messages (initially flat)
-  m = NULL
+  m = list()
   for(i in names(factors)) {
     f1 = factors[[i]]
     m1 = NULL
@@ -27,8 +27,8 @@ ep.model = function(vars, factors) {
   }
 
   # factors
-  f = NULL
-  for(i in names(f)) {
+  f = list()
+  for(i in names(factors)) {
     f[[i]] = factors[[i]][[1]]
   }
 
@@ -54,7 +54,7 @@ message.subtract = function(x, y) {
 # Currently, no convergence testing.
 #   m - a model, as constructed above
 # Returns: m, after one round of parallel updates
-update.ep = function(m) {
+ep.update = function(m) {
 
   m1 = list()
 
@@ -68,14 +68,14 @@ update.ep = function(m) {
     m.f = m$factors[[i]](m.to)
 
     # compute message from this factor
-    m1[[i]] = message.subtract(m.f, m$messages[[i]])
+    m1[[i]] = m.f   # message.subtract(m.f, m$messages[[i]])
   }
 
   # clear the variables
   v1 = lapply(m$vars, function(v) 0 * v)
 
   # sum messages from each factor
-  for(i in 1:length(f1)) {
+  for(i in 1:length(m1)) {
     v1 = message.add(v1, m1[[i]])
   }
 
@@ -92,9 +92,8 @@ eq.f = function(a) {
   m
 }
 
-# Factor which constrains a variable (almost the same thing.)
-# ??? should this care about the message passed to it?
-constrain.f = function(a) function(x) {
+# Factor which adds a prior to a variable.
+prior.f = function(a) function(x) {
   x[[1]] = a
   x
 }

@@ -32,10 +32,10 @@ public class TreeExprViewerPrefs extends JPanel {
 	private JTextField endTime;
 	private JCheckBox chckbxShownames;
 	private JButton btnPrint;
-	private JTextField txtImagefile1;
+	private JTextField txtImageFile;
 	private Component glue;
     private JLabel lblImageFile;
-    private JTextField txtImageFile2;
+    private JTextField txtImageFile1;
     private JButton btnPickRed;
     private JButton btnPickGreen;
     private JCheckBox chckbxShowMaxIntensity;
@@ -45,6 +45,11 @@ public class TreeExprViewerPrefs extends JPanel {
     private JTextField txtMaxintensity;
     private JTextField txtMinintensity_1;
     private JTextField txtMaxintensity_1;
+    private JButton btnPickBlue;
+    private JTextField txtMinIntensity_2;
+    private JTextField txtMaxIntensity_2;
+    private JTextField txtImageFile2;
+    private JCheckBox chckbxShowCellFates;
 
 	public TreeExprViewerPrefs(TreePanel tp) {
 		this.tp = tp;
@@ -52,7 +57,7 @@ public class TreeExprViewerPrefs extends JPanel {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 38, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 		setLayout(gridBagLayout);
 		
 		lblImageFile = new JLabel("image file");
@@ -156,22 +161,15 @@ public class TreeExprViewerPrefs extends JPanel {
 		gbc_btnPickRed.gridy = 1;
 		add(btnPickRed, gbc_btnPickRed);
 		
-		txtImagefile1 = new JTextField();
-		txtImagefile1.setEditable(false);
-		GridBagConstraints gbc_txtImagefile1 = new GridBagConstraints();
-		gbc_txtImagefile1.insets = new Insets(0, 0, 5, 5);
-		gbc_txtImagefile1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtImagefile1.gridx = 4;
-		gbc_txtImagefile1.gridy = 1;
-		add(txtImagefile1, gbc_txtImagefile1);
-		txtImagefile1.setColumns(10);
-		
-		chckbxShownames = new JCheckBox("show names");
-		chckbxShownames.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				updateTreePanel();
-			}
-		});
+		txtImageFile = new JTextField();
+		txtImageFile.setEditable(false);
+		GridBagConstraints gbc_txtImageFile = new GridBagConstraints();
+		gbc_txtImageFile.insets = new Insets(0, 0, 5, 5);
+		gbc_txtImageFile.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtImageFile.gridx = 4;
+		gbc_txtImageFile.gridy = 1;
+		add(txtImageFile, gbc_txtImageFile);
+		txtImageFile.setColumns(10);
 		
 		txtMinintensity = new JTextField();
 		txtMinintensity.addActionListener(new ActionListener() {
@@ -227,15 +225,15 @@ public class TreeExprViewerPrefs extends JPanel {
 		gbc_btnPickGreen.gridy = 2;
 		add(btnPickGreen, gbc_btnPickGreen);
 		
-		txtImageFile2 = new JTextField();
-		txtImageFile2.setEditable(false);
-		txtImageFile2.setColumns(10);
-		GridBagConstraints gbc_txtImageFile2 = new GridBagConstraints();
-		gbc_txtImageFile2.insets = new Insets(0, 0, 5, 5);
-		gbc_txtImageFile2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtImageFile2.gridx = 4;
-		gbc_txtImageFile2.gridy = 2;
-		add(txtImageFile2, gbc_txtImageFile2);
+		txtImageFile1 = new JTextField();
+		txtImageFile1.setEditable(false);
+		txtImageFile1.setColumns(10);
+		GridBagConstraints gbc_txtImageFile1 = new GridBagConstraints();
+		gbc_txtImageFile1.insets = new Insets(0, 0, 5, 5);
+		gbc_txtImageFile1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtImageFile1.gridx = 4;
+		gbc_txtImageFile1.gridy = 2;
+		add(txtImageFile1, gbc_txtImageFile1);
 		
 		txtMinintensity_1 = new JTextField();
 		txtMinintensity_1.addActionListener(new ActionListener() {
@@ -285,18 +283,54 @@ public class TreeExprViewerPrefs extends JPanel {
 				updateTreePanel();
 			}
 		});
+		
+		btnPickBlue = new JButton("Pick blue");
+		btnPickBlue.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				loadImageData(2);
+			}
+		});
+		GridBagConstraints gbc_btnPickBlue = new GridBagConstraints();
+		gbc_btnPickBlue.insets = new Insets(0, 0, 5, 5);
+		gbc_btnPickBlue.gridx = 3;
+		gbc_btnPickBlue.gridy = 3;
+		add(btnPickBlue, gbc_btnPickBlue);
+		
+		txtImageFile2 = new JTextField();
+		txtImageFile2.setEditable(false);
+		GridBagConstraints gbc_txtImageFile2 = new GridBagConstraints();
+		gbc_txtImageFile2.insets = new Insets(0, 0, 5, 5);
+		gbc_txtImageFile2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtImageFile2.gridx = 4;
+		gbc_txtImageFile2.gridy = 3;
+		add(txtImageFile2, gbc_txtImageFile2);
+		txtImageFile2.setColumns(10);
+		
+		txtMinIntensity_2 = new JTextField();
+		txtMinIntensity_2.setText("0");
+		GridBagConstraints gbc_txtMinIntensity_2 = new GridBagConstraints();
+		gbc_txtMinIntensity_2.insets = new Insets(0, 0, 5, 5);
+		gbc_txtMinIntensity_2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtMinIntensity_2.gridx = 5;
+		gbc_txtMinIntensity_2.gridy = 3;
+		add(txtMinIntensity_2, gbc_txtMinIntensity_2);
+		txtMinIntensity_2.setColumns(10);
+		
+		txtMaxIntensity_2 = new JTextField();
+		txtMaxIntensity_2.setText("1000");
+		GridBagConstraints gbc_txtMaxIntensity_2 = new GridBagConstraints();
+		gbc_txtMaxIntensity_2.insets = new Insets(0, 0, 5, 5);
+		gbc_txtMaxIntensity_2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtMaxIntensity_2.gridx = 6;
+		gbc_txtMaxIntensity_2.gridy = 3;
+		add(txtMaxIntensity_2, gbc_txtMaxIntensity_2);
+		txtMaxIntensity_2.setColumns(10);
 		chckbxShowMaxIntensity.setSelected(true);
 		GridBagConstraints gbc_chckbxShowMaxIntensity = new GridBagConstraints();
 		gbc_chckbxShowMaxIntensity.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxShowMaxIntensity.gridx = 1;
-		gbc_chckbxShowMaxIntensity.gridy = 3;
+		gbc_chckbxShowMaxIntensity.gridy = 4;
 		add(chckbxShowMaxIntensity, gbc_chckbxShowMaxIntensity);
-		chckbxShownames.setSelected(true);
-		GridBagConstraints gbc_chckbxShownames = new GridBagConstraints();
-		gbc_chckbxShownames.insets = new Insets(0, 0, 0, 5);
-		gbc_chckbxShownames.gridx = 1;
-		gbc_chckbxShownames.gridy = 4;
-		add(chckbxShownames, gbc_chckbxShownames);
 		
 		btnPrint = new JButton("Print");
 		btnPrint.addActionListener(new ActionListener() {
@@ -304,14 +338,40 @@ public class TreeExprViewerPrefs extends JPanel {
 				print();
 			}
 		});
+		
+		chckbxShownames = new JCheckBox("show lineage names");
+		chckbxShownames.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				updateTreePanel();
+			}
+		});
+		chckbxShownames.setSelected(true);
+		GridBagConstraints gbc_chckbxShownames = new GridBagConstraints();
+		gbc_chckbxShownames.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxShownames.gridx = 2;
+		gbc_chckbxShownames.gridy = 4;
+		add(chckbxShownames, gbc_chckbxShownames);
+		
+		chckbxShowCellFates = new JCheckBox("show cell fates");
+		chckbxShowCellFates.setEnabled(false);
+		GridBagConstraints gbc_chckbxShowCellFates = new GridBagConstraints();
+		gbc_chckbxShowCellFates.insets = new Insets(0, 0, 0, 5);
+		gbc_chckbxShowCellFates.gridx = 2;
+		gbc_chckbxShowCellFates.gridy = 5;
+		add(chckbxShowCellFates, gbc_chckbxShowCellFates);
 		GridBagConstraints gbc_btnPrint = new GridBagConstraints();
 		gbc_btnPrint.insets = new Insets(0, 0, 0, 5);
-		gbc_btnPrint.gridx = 3;
-		gbc_btnPrint.gridy = 4;
+		gbc_btnPrint.gridx = 6;
+		gbc_btnPrint.gridy = 5;
 		add(btnPrint, gbc_btnPrint);
 	}
 
 	private void updateTreePanel() {
+		
+		// XXX hack
+		if (tp.signal.size() == 0)
+			return;
+		
 //		System.out.println("focus lost");
 		tp.root = root.getText();
 		tp.lastT = Integer.parseInt(endTime.getText());
@@ -326,6 +386,10 @@ public class TreeExprViewerPrefs extends JPanel {
 		if (tp.signal.size() >= 2) {
 			tp.signal.elementAt(1).loIntensity = Float.parseFloat(txtMinintensity_1.getText());
 			tp.signal.elementAt(1).hiIntensity = Float.parseFloat(txtMaxintensity_1.getText());
+		}
+		if (tp.signal.size() >= 3) {
+			tp.signal.elementAt(2).loIntensity = Float.parseFloat(txtMinIntensity_2.getText());
+			tp.signal.elementAt(2).hiIntensity = Float.parseFloat(txtMaxIntensity_2.getText());
 		}
 
 		tp.repaint();
@@ -378,7 +442,11 @@ public class TreeExprViewerPrefs extends JPanel {
 			if (h == null)
 				throw new Exception("failed to read file");   // XXX
 			TreePanelSignal si = new TreePanelSignal(h);
-			si.color = channel == 0 ? Color.RED : Color.GREEN;
+			switch (channel) {
+				case 0: si.color = Color.red; break;
+				case 1: si.color = Color.green; break;
+				case 2: si.color = Color.blue; break;
+			}
 			System.out.println("read file " + file);
 			
 			HashMap<String, Cell> expr = tp.expr;
@@ -394,7 +462,7 @@ public class TreeExprViewerPrefs extends JPanel {
 			GaussianSmoother gs =
 					new GaussianSmoother(tp.signal.elementAt(channel).cell.get("P0"));
 //			gs.smoothMaximizing(expr, channel);  // FIXME enable one of these
-//			gs.smoothEWMA(expr, channel);
+			gs.smoothEWMA(expr, channel);
 			
 			// finally, redraw
 			tp.expr = expr;
@@ -404,6 +472,13 @@ public class TreeExprViewerPrefs extends JPanel {
 			e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to read file " + file.toString());
         	return;
+		}
+		
+		// if we reached this point, update the relevant label
+		switch (channel) {
+		case 0: txtImageFile.setText(file.getName()); break;
+		case 1: txtImageFile1.setText(file.getName()); break;
+		case 2: txtImageFile2.setText(file.getName()); break;
 		}
 	}
 	
@@ -474,5 +549,14 @@ public class TreeExprViewerPrefs extends JPanel {
         	e.printStackTrace();
         }
 
+	}
+	protected JTextField getTxtImagefile() {
+		return txtImageFile;
+	}
+	protected JTextField getTxtImageFile1() {
+		return txtImageFile1;
+	}
+	protected JTextField getTxtImageFile2() {
+		return txtImageFile2;
 	}
 }

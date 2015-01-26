@@ -14,7 +14,7 @@ get.cufflinks.results = function(f) {
     sep="\t", header=TRUE, as.is=TRUE)
   genes = genes[ ! grepl("21ur-", genes$gene_short_name) , ]
   genes = genes[ , c(1,5,10,13) ]
-  genes[ genes$FPKM_status != "OK" , "FPKM" ] = 0
+  genes[ genes$FPKM_status != "OK" , "FPKM" ] = NA
 
   # XXX hack to default to using a "human readable" name
   genes$id = ifelse(genes$gene_short_name == "-",

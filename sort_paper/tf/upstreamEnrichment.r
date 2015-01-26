@@ -15,7 +15,11 @@ source("git/sort_paper/enrichment/groupToList.r")
 clustering.dir = "git/cluster/hierarchical/"
 
 # running this on the filtered (non-redundant) motifs
-motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+# motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+# XXX this is actually the de novo motifs
+# motif.gene.dir = "git/cluster/motif/distAndConservation/5kb_de_novo/"
+motif.gene.dir = "git/cluster/motif/distAndConservation/5kb_hughes/"
+
 known.motifs = {
   r = list.files(motif.gene.dir)
   sub("_upstreamMotifCons.tsv.gz", "", r)
@@ -48,7 +52,6 @@ for(i in 1:5)
   upstream.cons.dist[[i]] =
     read.tsv(paste0("git/tf/motif/conservation/cons_hist_WS220_",
       i, "kb_upstream.tsv.gz"))
-
 
 # Does a chi-squared test for a clustering.
 # Args:
@@ -185,30 +188,37 @@ if (FALSE) {
 
 # Runs this on clustering for the motifs.
 find.cluster.enrichment.motifs = function() {
-  output.dir = "git/sort_paper/tf/motif/cluster.enrichment/"
+#  output.dir = "git/sort_paper/tf/motif/cluster.enrichment/"
+#  output.dir = "git/sort_paper/tf/motif/allResults/de_novo_motif/"
+  output.dir = "git/sort_paper/tf/motif/allResults/hughes_motif/"
+
   system(paste("mkdir -p", output.dir))
 
-  for (f in setdiff(list.files(clustering.dir), "hier.300.clusters")) {    
+  for (f in c("hier.300.clusters", list.files(clustering.dir))) {    
 # list.files(clustering.dir)) {
-    cat(paste(f, date()), "\n")
+    # skip cases which are already done
+    if (!(paste0(f, ".Rdata") %in% list.files(output.dir))) {
+      cat(paste(f, date()), "\n")
 
-    # clustering to use
-#    clustering1 = read.tsv(paste0(clustering.dir, "/", f, "/clusters.tsv"))
-#    clustering = clustering1[,2]
-#    names(clustering) = rownames(clustering1)
+      # clustering to use
+  #    clustering1 = read.tsv(paste0(clustering.dir, "/", f, "/clusters.tsv"))
+  #    clustering = clustering1[,2]
+  #    names(clustering) = rownames(clustering1)
 
-    clusters = cluster.to.gene.list(paste0(clustering.dir, "/", f, "/clusters.tsv"))
+      clusters = cluster.to.gene.list(paste0(clustering.dir, "/", f, "/clusters.tsv"))
 
-    enrich = compute.enrichment.diff.cutoffs(known.motifs.small, get.motif.counts,
-      clusters, c(1,2,3), c(0, 0.5, 0.7, 0.9), c(30,35,40))
-    enrich[,,,,,"p"][ is.na(enrich[,,,,,"p"]) ] = 1
+      enrich = compute.enrichment.diff.cutoffs(known.motifs,
+        get.motif.counts,
+        clusters, c(1,2,3), c(0, 0.5, 0.7, 0.9), c(30,35,40))
+      enrich[,,,,,"p"][ is.na(enrich[,,,,,"p"]) ] = 1
 
-    enrich[,,,,,"p.corr"] = array(p.adjust(as.vector(enrich[,,,,,"p"]), method="fdr"),
-      dim=dim(enrich[,,,,,"p.corr"]), dimnames=dimnames(enrich[,,,,,"p.corr"]))
+      enrich[,,,,,"p.corr"] = array(p.adjust(as.vector(enrich[,,,,,"p"]), method="fdr"),
+        dim=dim(enrich[,,,,,"p.corr"]), dimnames=dimnames(enrich[,,,,,"p.corr"]))
 
-    save(enrich, file=paste0(output.dir, "/", f, ".Rdata"))
+      save(enrich, file=paste0(output.dir, "/", f, ".Rdata"))
+    }
   }
 }
 
-# find.cluster.enrichment.motifs()
+find.cluster.enrichment.motifs()
 

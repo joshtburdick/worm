@@ -3,44 +3,13 @@
 require("reshape2")
 
 source("git/utils.r")
+source("git/util/arrayUtils.r")
+
+
+source("git/sort_paper/tf/most.significant.r")
 
 # load("git/sort_paper/tf/motifEnrichment/hier.300.clusters.Rdata")
 
-# Given a "slice" of the enrichment results,
-# finds the most significant enrichment (by
-# corrected p-value), and returns the stats
-# about that enrichment.
-most.significant.stats.1 = function(a) {
-
-  # find index of most significant enrichment
-  i = as.vector(which(a[,,,"p.corr"] == min(a[,,,"p.corr"]),
-    arr.ind=TRUE)[1,])
-
-  # converts a cutoff from a number to a numerical level
-  cutoff = function(n) as.numeric(dimnames(a)[[n]][ i[n] ])
-
-  c(upstream.dist.kb = cutoff(1),
-    conservation = cutoff(2),
-    motif.score = cutoff(3),
-    a[i[1], i[2], i[3], ])
-}
-
-# Given an array of enrichment significances, converts
-# to a table containing just the most significant.
-# XXX this is a bit hokey, but is at least fast-ish.
-most.significant.stats = function(enrich) {
-
-  ms = apply(enrich, c(1,2), most.significant.stats.1)
-
-  r = melt(ms[1,,])[,c(1:2)]
-  for(n in dimnames(ms)[[1]]) {
-    r = cbind(r, melt(ms[n,,])[,3])
-  }
-  r[,1] = as.character(r[,1])
-  r[,2] = as.character(r[,2])
-  colnames(r)[3:ncol(r)] = dimnames(ms)[[1]]
-  r
-}
 
 # Finds the most significant stats for all the clusters.
 most.significant.all.clusterings = function(input.dir, output.dir) {
@@ -71,6 +40,36 @@ most.significant.all.clusterings.unfiltered = function(input.dir, output.dir, f)
   write.tsv(r, gzfile(paste0(output.dir, "/", output.file)))
 }
 
+# Similar, but includes "known" set and Hughes motifs.
+# Doesn't filter by significance.
+# Args:
+#   output.dir - where to write the results
+#   f - the clustering to do this for
+# Side effects - writes a .tsv.gz file in output.dir
+most.significant.merged = function(output.dir, f) {
+  system(paste("mkdir -p", output.dir))
+  write.status(f)
+  output.file = sub(".Rdata", "_merged.tsv.gz", f)
+  enrich = NULL
+  load(paste0("git/sort_paper/tf/allResults/motif/", f))
+  enrich.1 = enrich
+  enrich = NULL
+  load(paste0("git/sort_paper/tf/motif/allResults/hughes_motif/", f))
+  enrich.2 = enrich
+  enrich = array.bind(list(enrich.1, enrich.2), 1)
+  enrich[,,,,,"p.corr"] = array(p.adjust(as.vector(enrich[,,,,,"p"]),
+    method="fdr"),
+    dim=dim(enrich[,,,,,"p.corr"]),
+    dimnames=dimnames(enrich[,,,,,"p.corr"]))
+
+  r = most.significant.stats(enrich)
+  colnames(r)[[1]] = "motif"
+  colnames(r)[[2]] = "group"
+
+# not filtering by significance here
+  write.tsv(r, gzfile(paste0(output.dir, "/", output.file)))
+}
+
 # foo = most.significant.stats(enrich)
 
 if (FALSE) {
@@ -89,3 +88,8 @@ most.significant.all.clusterings.unfiltered(
   "hier.300.clusters.Rdata")
 }
 
+if (TRUE) {
+most.significant.merged(
+  "git/sort_paper/tf/summary/motif/",
+  "hier.300.clusters.Rdata")
+}

@@ -1,3 +1,5 @@
-select a, a->Reporter_product, a->Driven_by_gene, a->Strain, a->Construction
+select a, a->Reporter_product, a->Driven_by_gene->Public_name, a->Strain, a->Construction,
+  a->Driven_by_construct
 from a in class Transgene
-where a->Public_name like "stIs105*"
+where Strain like "*Is101*"
+

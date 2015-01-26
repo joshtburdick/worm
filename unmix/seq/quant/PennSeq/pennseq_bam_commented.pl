@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # 20140606, jtb: changing to loop through a set of BAM files instead
+# also adding some comments
 
 use Getopt::Long;
 use Pod::Usage;
@@ -37,8 +38,7 @@ print "Data Scanning...\n";
 my @bam_files = split /,/, $bam;
 foreach my $bam_file (@bam_files) {
 
-  # XXX only running on chromosome I
-  open(SAM,"samtools view $bam_file I |");
+  open(SAM,"samtools view $bam_file |");
   while(<SAM>){
       chomp();
       my @a=split("\t");

@@ -36,6 +36,7 @@ dirichlet.est.moments = function(x, w = NULL) {
 
   # different estimates of the concentration
   s = (x1 - x2) / (x2 - x1^2)
+print(s)
 
   # Minka mentions a suggestion from Ronning which may be
   # better, but I'll just take the geometric mean, basically.

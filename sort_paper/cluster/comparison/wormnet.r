@@ -43,14 +43,21 @@ plot.score.dist = function() {
 compare.arc.clusters = function() {
   r = NULL
 
-  p.cl = table(cl)
-  p.cl = p.cl / sum(p.cl)
-  background.prob = sum(p.cl^2)
+# this was:
+#  p.cl = table(cl)
+#  p.cl = p.cl / sum(p.cl)
+#  background.prob = sum(p.cl^2)
+
+  # but I think it should be the following (as it only counts
+  # a given interaction once)
+  n.cl = table(cl)
+  background.prob = sum(choose(n.cl, 2)) / (sum(n.cl)^2)
 
   for(arc.type in arc.types) {
     r = rbind(r,
       data.frame(
-        p.same.cluster = round(mean(w1[ !is.na(w1[,arc.type]), "same.cluster" ]), 4) ))
+        num.arcs = sum(!is.na(w1[,arc.type])),
+        p.same.cluster = signif(mean(w1[ !is.na(w1[,arc.type]), "same.cluster" ]), 2) ))
   }
 
   rownames(r) = arc.types
@@ -61,8 +68,6 @@ compare.arc.clusters = function() {
 
 
 x = read.tsv("git/cluster/readRatios.tsv")[,1:23]
-
-
 
 
 # Comparison of enrichment of genetic interactions.
@@ -85,10 +90,17 @@ compare.genetic.interactions = function() {
 }
 
 arc.cluster.counts = compare.arc.clusters()
+
+arc.cluster.counts[ 1:21 , ] =
+  arc.cluster.counts[
+    order(arc.cluster.counts[1:21,2], decreasing=TRUE) , ]
+
 write.tsv(arc.cluster.counts, "git/sort_paper/cluster/comparison/wormnet.tsv")
 
-w1.b = w1
-w1.b[ , c(3:24) ] = !is.na( w1.b[ , c(3:24) ] )
+
+
+# w1.b = w1
+# w1.b[ , c(3:24) ] = !is.na( w1.b[ , c(3:24) ] )
 
 
 

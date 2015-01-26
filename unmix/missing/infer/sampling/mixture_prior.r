@@ -162,8 +162,8 @@ expr.init = function(A, B) {
     x = lc(x)
 
     # and positivity (FIXME: use move.bounded() ? )
-    # x[ x < 0 ] = 0
-    x = move.bounded.matrix(x1, x)
+    x[ x < 0 ] = 0
+    # x = move.bounded.matrix(x1, x)
 
     # and rows summing to 1
     x = x / apply(x, 1, sum)
@@ -175,7 +175,7 @@ expr.init = function(A, B) {
   list(x = x, del = del)
 }
 
-# Perturbs the sort matrix somewhat. 
+# Perturbs the sort matrix somewhat (in a random direction.)
 sort.matrix.jump.1 = function(x) {
 print(range(x$S, na.rm=TRUE))
   x$S[ is.na(x$S) ] = 0
@@ -185,6 +185,19 @@ print(range(x$S, na.rm=TRUE))
 
   list(V = V, S =
     matrix(S1, nrow=nrow(x$S), dimnames=dimnames(x$S)))
+}
+
+# Attempt at updating the sort matrix by EM.
+# Args:
+#   A - initial estimate of the sort matrix
+#   X, B - the estimated expression, and the expression totals
+# Returns: updated version of A, such that AX = B
+#   ??? how should the prior be included?
+sort.matrix.em = function(A, X, B) {
+
+
+
+
 }
 
 # Tries to find an initial solution by optimization.

@@ -17,20 +17,18 @@ write.motif.svg.orig = function(pwm, output.file) {
   dev.off()
 }
 
-hughes.motif.table = read.table(
-  "data/tf/hughes/TF_Information_all_motifs.tsv",
+hughes.motif.table = read.table(gzfile(
+  paste0("data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/",
+    "TF_Information_all_motifs_plus.txt.gz")),
   sep="\t", header=TRUE, as.is=TRUE)
 
 hughes.motifs = unique(hughes.motif.table$Motif_ID)
-
-# hughes.motifs = c("M6986_1.00", "M1112_1.00")
 
 output.dir = "git/tf/motif/plot/motifSvg_hughes/"
 system(paste("mkdir -p", output.dir))
 
 # for (m in "GATA3_DBD") {
 for (m in intersect(hughes.motifs, names(meme.format.pwm))) {
-
   write.status(m)
   write.motif.svgz(meme.format.pwm[[m]],
     paste0(output.dir, "/", m, ".svg"))

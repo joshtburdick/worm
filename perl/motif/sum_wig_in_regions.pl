@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# Counts total coverage in some regions (using Bio::DB::BigFile.)
+# Counts total coverage in some regions.
 # The file of regions can include duplicated regions, and this
 # will print the total in each named region.
 # (Presumably this will need normalizing by region size; however
@@ -10,6 +10,7 @@ use strict;
 # FIXME: make these command-line args
 my $regions_file = "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes_cons_0.5.bed";
 # my $regions_file = "/home/jburdick/gcb/git/tf/motif/motifCount/upstreamRegionsWS220_5kb_nogenes.bed";
+
 my $bigwig_dir = "/murrlab/seq/igv/motif/meme/";
 
 # where Jim Kent's tools are located

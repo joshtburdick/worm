@@ -38,7 +38,7 @@ gamma.cond.sum1 = function(x) {
 # Args:
 #   A, b - these give the linear system
 #   x - gamma parameters of x (as natural parameters)
-# Returns: natural parameters of x | sum(x) = 1
+# Returns: natural parameters of x | Ax = b
 gamma.cond.1 = function(A, b) function(x) {
 
   x.mv = gamma.n2mv(x)
@@ -56,6 +56,8 @@ gamma.cond.1 = function(A, b) function(x) {
   # (was using gamma.cond.sum1 earlier)
   c1 = gamma.n2mv(gamma.conditional.approx.1.beta(gamma.mv2n(
     rbind(m = m.s, v = v.s))))
+#  c1 = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(
+#    rbind(m = m.s, v = v.s))))
 
   m.p = as.vector(S %*% (c1["m",]))
   v.p = diag( S %*% diag(c1["v",]) %*% t(S) )

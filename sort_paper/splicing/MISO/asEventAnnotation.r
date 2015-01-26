@@ -52,10 +52,13 @@ get.distance.to.3.prime = function(r) {
   r
 }
 
-events = read.table("git/unmix/seq/quant/MISO/geneAndAS.tsv",
+event.names = read.table("git/unmix/seq/quant/MISO/geneAndAS.tsv",
   header=TRUE, as.is=TRUE)
-events$pos = ifelse(events$strand=="+", events$end, events$start)
+event.names$pos = ifelse(event.names$strand=="+", event.names$end, event.names$start)
+event.names = get.distance.to.3.prime(event.names)
 
-events = get.distance.to.3.prime(events)
+event.names = event.names[ , names(event.names) != "pos" ]
 
+write.tsv(event.names,
+  "git/sort_paper/splicing/MISO/asEventAnnotation.tsv")
 

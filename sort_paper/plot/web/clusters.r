@@ -34,9 +34,9 @@ for(j in c(12:51)) {
 }
 
 # for comparing cluster centers and TF expression profiles
-cluster.means = read.tsv(
+cluster.means.1 = read.tsv(
   paste0("git/sort_paper/cluster/centroids/", clustering.name, "_means.tsv"))
-cluster.means = cluster.means[,1:23]      # ??? convert to a matrix?
+cluster.means = cluster.means.1[,1:23]      # ??? convert to a matrix?
 
 rr = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
 rr = rr[,1:23]
@@ -49,6 +49,12 @@ tf1 = unique(rename.gene.name.vector(
 tf2 = intersect(tf1, x[,3])
 tf.cluster.cor = cor(t(cluster.means), t(rr[tf2,]))
 
+# reads per million (for computing average of maximum)
+rpm = read.tsv("git/cluster/readsPerMillion.tsv")
+rpm = rpm[ x[,3], !grepl("^(HS|RNAi)", colnames(rpm)) ]
+max.rpm = apply(rpm, 1, max)
+mean.max.rpm = tapply(max.rpm, x[,8], mean)
+
 # enriched anatomy terms and other expression clusters
 ao.enriched = read.tsv(paste0(
   "git/sort_paper/enrichment/summary/anatomyEnrichment/",
@@ -60,30 +66,18 @@ phenotype.enriched = read.tsv(paste0(
   "git/sort_paper/enrichment/summary/phenotype/",
   clustering.name, ".tsv"))
 
-# enriched motif and ChIP signals
-motif.enriched = read.tsv(paste0("git/sort_paper/tf/summary/motif/",
-  clustering.name, ".tsv"))
-chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
-  clustering.name, ".tsv"))
-colnames(chip.enriched)[1] = "experiment"
-chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
-
-# make ChIP factor names lower case (to help match them with
-# motif names), and otherwise tweak them
-i = tolower(chip.enriched$factor) %in% rownames(rr)
-chip.enriched$factor[i] = tolower( chip.enriched$factor[i] )
-chip.enriched$factor = sub("LIN-15B", "lin-15", chip.enriched$factor)
-
 # information about orthologs
-motif.ortholog = read.table("git/tf/motif.ortholog.2.tsv",
-  as.is=TRUE, header=TRUE)
+motif.ortholog = read.table("git/tf/motif.ortholog.3.tsv",
+  sep="\t", as.is=TRUE, header=TRUE)
 motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
+
 # add representative motif name, from the motif clustering
-motif.ortholog$canonical.motif =
-  motif.filter[ motif.ortholog$motif, "canonical.name" ]
-motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
+# motif.ortholog$canonical.motif =
+#   motif.filter[ motif.ortholog$motif, "canonical.name" ]
+# motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
+
 # for each motif, list of potential orthologs
-orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
+orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$motif.id,
   function(x) {
     x = as.character(x)
     nhrs = grep("nhr", x)
@@ -95,8 +89,32 @@ orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
   }
 )
 
-source("git/sort_paper/plot/web/hughesMotif.r")
+# enriched motifs
+motif.enriched = read.tsv(gzfile(paste0("git/sort_paper/tf/summary/motif/",
+  clustering.name, "_merged.tsv.gz")))
+# significance cutoff (since this includes all the enrichments)
+motif.enriched = motif.enriched[ motif.enriched$p.corr <= 0.05 , ]
+# limit to motifs with a name
+motif.enriched =
+  motif.enriched[ motif.enriched$motif %in% names(motif.name) , ]
 
+# motif enrichment, using the hypergeometric test
+hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+hyperg.motif = hyperg.motif[ hyperg.motif$p.corr <= 0.05 , ]
+hyperg.motif$motifs.cluster = hyperg.motif$"genes with motif in cluster"
+hyperg.motif$enrich = NA      # FIXME
+
+# enriched ChIP signals
+chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
+  clustering.name, ".tsv"))
+colnames(chip.enriched)[1] = "experiment"
+chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
+
+# make ChIP factor names lower case (to help match them with
+# motif names), and otherwise tweak them
+i = tolower(chip.enriched$factor) %in% rownames(rr)
+chip.enriched$factor[i] = tolower( chip.enriched$factor[i] )
+chip.enriched$factor = sub("LIN-15B", "lin-15", chip.enriched$factor)
 
 # Utility to convert numbers to colors.
 # Args:
@@ -124,7 +142,6 @@ td.color = function(x) {
 # stylesheet has been loaded.)
 rotate.text = function(s) {
   paste0("<div class=\"vertical-text\">", s, "</div>", collapse="")
-
 }
 
 # HTML for a table of enriched anatomy terms / clusters.
@@ -200,6 +217,9 @@ tf.list.annotate = function(tf, cl) {
       paste0("<br><span title=\"", full.list, "\">[full list]</span>"))
 }
 
+# source("git/sort_paper/plot/web/hughesMotif.r")
+source("git/sort_paper/plot/web/motifEnrichCompact.r")
+
 # HTML for a table of enriched motifs.
 motif.table = function(a) {
   if (nrow(a) == 0)
@@ -231,9 +251,12 @@ motif.table = function(a) {
         }
       })
   }
-  a$ortholog = sapply(a$motif,
-    function(m) tf.list.annotate(orthologs.by.motif[[m]], cl))
 
+  # possibly tack on list of orthologous genes
+  if (! ("ortholog" %in% colnames(a))) {
+    a$ortholog = sapply(a$motif,
+      function(m) tf.list.annotate(orthologs.by.motif[[m]], cl))
+  }
   a = a[ , c("motif", "logo", "ortholog", "motifs.cluster", "enrich", "p.corr") ]
 
   # use human-readable motif names
@@ -310,7 +333,7 @@ expr.table = function(x, cl) {
   }
   x = x[ , c(12:51, 3, 4) ]
 
-   col.names = colnames(x)
+  col.names = colnames(x)
   col.names[1:40] = sapply(col.names[1:40], rotate.text)
 
   table.header = paste(c("<thead><tr>",
@@ -351,6 +374,12 @@ write.cluster = function(x, cl) {
   css = paste0(read.table("git/sort_paper/plot/web/clusterCss.txt", sep="~")[,1], collapse="")
 #  css = ""  # XXX hack to disable CSS
 
+  motif.enriched.1 = motif.enrich.compact(
+    motif.enriched[motif.enriched$group == cl,], cl)
+
+  hyperg.motif.enriched.1 = motif.enrich.compact(
+    hyperg.motif[hyperg.motif$group == cl,], cl)
+
   h = paste0(
     "<h2>Cluster ", cl, "</h2>",
     "<h3>Expression</h3>", expr.table(x1),
@@ -375,11 +404,17 @@ write.cluster = function(x, cl) {
         paste0("http://www.wormbase.org/db/get?name=",
         ao, ";class=Expression_cluster")),
 
-    "<h3>Hughes motifs enriched</h3>",
-    hughes.motif.table(hughes.motif.enriched[hughes.motif.enriched$group == cl,]),
+#    "<h3>Hughes motifs enriched</h3>",
+#    hughes.motif.table(hughes.motif.enriched[hughes.motif.enriched$group == cl,]),
 
     "<h3>Motifs enriched</h3>",
-    motif.table(motif.enriched[motif.enriched$group == cl,]),
+    motif.table(motif.enriched.1),
+
+    "<h3>Motifs enriched (using hypergeometric test)</h3>",
+    (if (nrow(hyperg.motif.enriched.1) >= 1)
+      motif.table(hyperg.motif.enriched.1)
+    else
+      "None found"),
 
     "<h3>Correlated (and anti-correlated) transcription factors</h3>",
     correlated.tf.html(cl),
@@ -398,8 +433,17 @@ write.cluster = function(x, cl) {
     cl, ".html"))
 }
 
-# for(cl in c(1,2,3,30,52,245,266,286)) {
-for(cl in sort(unique(x$Cluster))) {
+if (TRUE) {
+# for(cl in c(1,30,52,245,286)) {
+# for(cl in c(1,2,3,30,35,52,245,286)) {
+ for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
+cat("\n")
+}
+
+# write an index
+source("git/sort_paper/plot/web/clustersIndex.r")
+
+
 

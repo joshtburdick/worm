@@ -104,6 +104,7 @@ table.to.logical.matrix = function(i, j) {
 #     (e.g. cluster)
 #   num.genes - the assumed total number of genes
 # Returns: an array of results
+# FIXME: should probably also compute a summary list
 hyperg.test.groups.many.faster = function(groups, gene.set, num.genes) {
 
   # XXX avoid problems with cluster names which are numbers

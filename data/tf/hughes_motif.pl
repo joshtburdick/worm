@@ -2,7 +2,9 @@
 # Imports motifs from the Hughes lab into MEME format.
 # For now, just using the filenames as motif names.
 
-my $input_dir = "~/Dropbox/Josh\ dropbox/sort\ paper/Caenorhabditis_elegans_2014_09_12_2_22_pm/pwms_all_motifs/";
+# my $input_dir = "~/Dropbox/Josh\ dropbox/sort\ paper/Caenorhabditis_elegans_2014_09_12_2_22_pm/pwms_all_motifs/";
+
+my $input_dir = "~/gcb/data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/pwms_all_motifs/";
 
 # Translates one file to the format MEME expects.
 sub as_meme {
@@ -37,7 +39,7 @@ sub as_meme {
 }
 
 
-open OUT, ">hughes_motif.meme" || die;
+open OUT, ">hughes_motif_20141202.meme" || die;
 print OUT <<END;
 MEME version 4.4
 

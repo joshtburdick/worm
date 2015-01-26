@@ -321,6 +321,7 @@ correlated.tf.upstream.dist.test =
 
   rownames(r) = NULL
   r$enrich.p.corr = p.adjust(r$enrich.p, method="fdr")
+  r$nearby.p.corr = p.adjust(r$nearby.p, method="fdr")
   r$dist.p.corr = p.adjust(r$dist.p, method="fdr")
   r
 }
@@ -328,7 +329,7 @@ correlated.tf.upstream.dist.test =
 # Upstream distances for all motifs.
 # upstream.dist = get.motif.upstream.dists(known.motifs.small)
 # save(upstream.dist, file="git/sort_paper/tf/pairwise/upstreamDist.Rdata")
-# load("git/sort_paper/tf/pairwise/upstreamDist.Rdata")
+load("git/sort_paper/tf/pairwise/upstreamDist.Rdata")
 
 # For each motif, gets the upstream distance of a random motif occurrence.
 # rand.upstream.dist = function(m)

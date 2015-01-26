@@ -77,7 +77,7 @@ public class GaussianSmoother {
 	
 	private void smoothEWMA(HashMap<String, Cell> dest, int destIndex,
 			Cell c, double exprSmoothedSoFar) {
-System.out.println("smoothing cell " + c.name);
+// System.out.println("smoothing cell " + c.name);
 		// get where we'll be writing data to
 		TreeMap<Double, Nucleus> destN = dest.get(c.name).nucleus;
 		

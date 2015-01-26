@@ -58,19 +58,24 @@ marker.on.off[ m1 , ] = m.leaf[ m1 , ]
 h = hclust(dist(t(cluster.mean[1:20,])))
 
 pdf("git/sort_paper/plot/heatmap/sortMarkersAndClusters.pdf",
-  width=8, height=16)
+  width=16, height=8)
 # png("git/sort_paper/plot/heatmap/sortMarkersAndClusters.png",
 #   width=1200, height=600)
 # layout(matrix(c(1,2,3,4,4,5), nrow=2, byrow=TRUE),
 #   widths=c(1,1,3), heights=c(1,4))
-layout(matrix(c(1,3,2,3,4,5), nrow=3, byrow=TRUE),
-  widths=c(1,3), heights=c(1,1,3))
+# layout(matrix(c(1,3,2,3,4,5), nrow=3, byrow=TRUE),
+#   widths=c(1,3), heights=c(1,1,3))
+layout(matrix(c(1,2,3,4), nrow=2, byrow=TRUE),
+  widths=c(3,1), heights=c(1,5))
 
+
+# matching TreeView colors
 blue.yellow.colors =
-#  c(hsv(2/3, 1, 128:0/128), hsv(1/6, 1, 1:128/128))
-# temporarily trying to match TreeView colors
   c(hsv(194/360, 1, 128:0/128), hsv(60/360, 1, 1:128/128))
 
+
+# for now, skipping color bars
+if (FALSE) {
 # color bar for markers
 par(mar=c(4,2,7,6)+0.1)
 image(as.matrix(0:128/128), col=hsv(0, 1, 0:128/128),
@@ -81,42 +86,25 @@ axis(1, label=c("off","on"), at=c(0,1))
 par(mar=c(4,5,7,3)+0.1)
 image(as.matrix(-128:128/128), col=blue.yellow.colors,
   xaxt="n", yaxt="n", useRaster=TRUE,
-  main="Enrichment measured by RNA-seq")
+  main="Enrichment measured by RNA-seq", bty="n")
 axis(1, label=c("depleted", "no difference", "enriched"), at=c(0,0.5,1))
 # ??? brighten image a bit?
 # marker.on.off[ marker.on.off >= 0.5 ] = 1
-
-# show where markers are on and off
-par(mar=c(2.1,2.1,0,2.1))
-image(t(marker.on.off),
-  useRaster=TRUE,
-  xaxt="n", yaxt="n", zlim=c(0,1),
-  col=hsv(0, 1, 0:128/128))
-
-# draw the ceh-36 tree above this
-# XXX this is really hacky
-par(new=TRUE)
-plot(1,1, type="n", xlim=c(22,649), ylim=c(1250,40),
-  xaxt="n", yaxt="n")
-par(new=TRUE)
-a = rgb(m.unnormalized["ceh-36",], 0, 0)
-names(a) = lin.node.names
-plot.segments.per.cell(a, main="", root="P0", times=c(0,550),
-    lwd=1.5, yaxt="n", add=TRUE)
-
-# label.panel("a)", gp=gpar(fontsize=14, col="black"))
-
+}
 
 # clustering dendrogram
 if (TRUE) {
-par(mar=c(0,4,0.1,0))
+par(mar=c(0,0,0.1,4))
 plclust(h, labels=FALSE, axes=FALSE,
   sub="", xlab="", ylab="", hang=-1)
 }
 
+plot.new()
+
+
 # the actual clustered expression
-# par(mar=c(2.1,6.4,0,2.4))
-image(scale.interval.to.unit((cluster.mean[,h$order]), c(-1,1)),
+par(mar=c(0,2.5,0,6.4))
+image(scale.interval.to.unit(t(cluster.mean[,h$order]), c(-1,1)),
   useRaster=TRUE, 
   xaxt="n", yaxt="n", zlim=c(0,1),
   col=blue.yellow.colors)
@@ -127,11 +115,39 @@ sample.labels = rownames(cluster.mean)
 sample.labels = sub("t\\.00", "", sample.labels)
 sample.labels = sub("t\\.0", "", sample.labels)
 sample.labels = sub("t\\.", "", sample.labels)
-axis(3, at=0:33/33, labels=sample.labels,
+axis(4, at=0:33/33, labels=sample.labels,
   las=2, tick=FALSE, line=-0.7)
 
-mtext("Time (minutes)", side=2, adj=0.87, line=5.5, cex=1.3)
-mtext("FACS sample", side=2, adj=0.3, line=5.5, cex=1.3)
+# shade the sample labels, to show that they apply both
+# to the expression tree and the clustering
+rect(1, (0:32-0.5)/33, 1.8, (1:33-0.5)/33, border=NA,
+  col=c("#00000020", "#00000000"), xpd=NA)
+
+
+# mtext("Time (minutes)", side=2, adj=0.87, line=5.5, cex=1.3)
+# mtext("FACS sample", side=2, adj=0.3, line=5.5, cex=1.3)
+
+
+
+# where markers are on and off
+par(mar=c(0,2.1,0,0))
+image(t(marker.on.off),
+  useRaster=TRUE, bty="n",
+  xaxt="n", yaxt="n", zlim=c(0,1),
+  col=hsv(1/6, 0.8, 0:128/128), lwd=0)
+# draw the ceh-36 tree above this
+# XXX this is really hacky
+par(new=TRUE)
+plot(1,1, type="n", xlim=c(22,649), ylim=c(1250,40),
+  xaxt="n", yaxt="n", bty="n")
+par(new=TRUE)
+# a = rgb(m.unnormalized["ceh-36",], 0, 0)
+a = hsv(1/6, 0.8, m.unnormalized["ceh-36",])
+names(a) = lin.node.names
+plot.segments.per.cell(a, main="", root="P0", times=c(0,550),
+    lwd=1.5, yaxt="n", add=TRUE)
+
+# label.panel("a)", gp=gpar(fontsize=14, col="black"))
 
 dev.off()
 

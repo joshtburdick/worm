@@ -6,6 +6,7 @@ import gzip
 import math
 import os
 import re
+import subprocess
 
 # ChIP-TF peaks
 # inputDir = "/home/jburdick/tmp/chip_TF_peak/"
@@ -34,8 +35,7 @@ def parseExperimentName(name):
 # This includes converting the score to an integer.
 def convertPeakGff3ToBed(inputGff3GzFile, outputBedFile):
   inFile = gzip.GzipFile(inputGff3GzFile, "r")
-  outFile = open(outputBedFile, "w")
-  # XXX this isn't sorted
+  outFile = open("tmp1.bed", "w")
 
   i = 0
   for line in inFile:
@@ -53,8 +53,9 @@ def convertPeakGff3ToBed(inputGff3GzFile, outputBedFile):
 
     # convert q-value to an integer
     s1 = float(s[5])
-    if s1 > 0:
-      score = - math.trunc(math.log10(float(s[5])))
+    if s1 > 1e-100:
+      # note multiplication by 10, since these are often small
+      score = - math.trunc( 10 * math.log10(float(s[5])))
     else:
       score = 1000      # max. allowed by BED standard
 
@@ -66,15 +67,20 @@ def convertPeakGff3ToBed(inputGff3GzFile, outputBedFile):
     i = i + 1
   inFile.close()
   outFile.close()
+  
+  # and sort this
+  # XXX shouldn't use shell=True
+  subprocess.call("bedtools sort -i tmp1.bed > " + outputBedFile, shell=True)
+
 
 for f in os.listdir(inputDir):
-  if re.match(".*\.gff3\.gz", f):
+  if re.match(".*combined.*", f) and re.match(".*\.gff3\.gz", f):
 #    print f
     n = parseExperimentName(f)
     # output filename is like the original filename,
     # but slightly simplified
-    outputFile = (n['gene'] + "_" + n['stage'] +
-      "_rep" + n['replicate'] + ".bed")
+    outputFile = (n['gene'] + "_" + n['stage']   # + "_rep" + n['replicate'] 
+      + ".bed")
     print outputFile
     convertPeakGff3ToBed(inputDir + "/" + f,
       outputDir + "/" + outputFile)

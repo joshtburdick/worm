@@ -1,4 +1,5 @@
-# Models attempting to estimate cell volume and sort matrix.
+# Models attempting to estimate expression and cell volume
+# (and possibly the sort matrix.)
 
 source("git/unmix/ept/approx_region_sparse.r")
 
@@ -10,15 +11,17 @@ source("git/unmix/ept/approx_region_sparse.r")
 #   v, v.var - mean and variance of estimate of each cell's volume
 #     (these should add up to about one)
 #   s - estimate of how much each cell is present in each fraction
-#     (between 0 and 1)
+#     (betwen 0 and 1, I think)
 #   x.f - expression of each gene in each fraction (currently this
-#     is assumed to be known exactly). Each row
+#     is assumed to be known exactly). Each row corresponds to one
+#     gene, and each column corresponds to one row of s.
 # Returns: list with elements
 #   A, b, b.var - constraints defining the corresponding
 #     unmixing problem.
 unmix.to.linear.system.1 = function(v, v.var, s, x.f) {
 
   # first, define the variable names
+  # ??? do I need these?
   fractions = rownames(x.f)
   genes = colnames(x.f)
   cells = names(v)
@@ -28,67 +31,77 @@ unmix.to.linear.system.1 = function(v, v.var, s, x.f) {
     FUN=function(a,b) paste(a,b, sep="_")))
   v = paste(cells, "volume", sep="_")
 
-  A.colnames = c(v, cf, gc)
-  a = rep(0, length(A.colnames))
-  names(a) = A.colnames
+  # tables storing constraints (in sparse form)
+  A1 = NULL
+  b1 = NULL
 
-  # XXX for now, not worrying much about efficiency,
-  # or making A sparse
-  A = NULL
-  b = NULL
-  b.var = NULL
-
-  # constraints encoding assumptions about volume
+  # constraints encoding assumptions about volume of each cell
   for(i in cells) {
-    a1 = a
-    a1[paste(i, "volume", sep="_")] = 1
-    A = rbind(A, a1)
-    b = c(b, v[i])
-    b.var = c(b.var, v.var[i])
+
+    A1 = rbind(A1,
+      data.frame(i = paste(cells, "volume_assumption", sep="_"),
+        j = paste(cells, "volume", sep="_"),
+        a = 1, stringsAsFactors=FALSE))
+
+    b1 = rbind(b1,
+      data.frame(i = cells,
+        b = v[cells],
+        b.var = v.var[cells], stringsAsFactors=FALSE))
   }
 
-  # constraints on total volume in each fraction, based
-  # on cell volume and the sort matrix, which we assume is
-  # known exactly (here)
+  # constraints on total volume in each fraction, based on cell volume
+  # and the sort matrix, which we assume is known exactly (here).
+  # possibly not needed
   for(f in fractions) {
-    a1[ paste(f, "volume", sep="_") ] = -1
-    for(i in cells) {
-      a1 = a
-      a1[ paste(i, "volume", sep="_") ] = s[f, i]
 
-      # add this constraint
-      A = rbind(A, a1)
-      b = c(b, 0)
-      b.var = c(b.var, 0)
-    }
+    A1 = rbind(A1,
+      data.frame(i = paste(f, "volume", sep="_"),
+        j = paste(f, cells, sep="_"),
+        a = s[f, cells], stringsAsFactors=FALSE))
+    A1 = rbind(A1,
+      data.frame(i = paste(f, "volume", sep="_"),
+        j = paste(f, "volume", sep="_"),
+        a = -1, stringsAsFactors=FALSE))
+
+    b1 = rbind(b1,
+      data.frame(i = paste(f, "volume", sep="_",
+        b = 0,
+        b.var = 0, stringsAsFactors=FALSE))
   }
 
-  # constraints that expression of all genes in each cell (as a
-  # fraction of the whole embryo sample) adds up to the volume of
-  # each cell (again, as a fraction of the whole embryo sample)
+  # constraints that total expression of all genes in each cell
+  # adds up to the volume of that cell (both as a fraction of
+  # the whole embryo sample)
+  # also possibly not needed
   for(i in cells) {
 
-    a1 = a
-    a1
+    A1 = rbind(A1,
+      data.frame(i = ,
+        j = paste(
 
+
+  }
+
+  # constraints that expression of each gene in each fractions
+  # adds up to some proportion of that fraction's total volume
+  # (currently these are assumed to be exact)
+  for(f in fractions)
     for(g in genes) {
 
+      A1 = rbind(A1,
+        data.frame(i = paste(g, f, sep="_"),
+          j = paste(g, cells, sep="_"),
+          a = s[f, cells], stringsAsFactors=FALSE))
+
+      b1 = rbind(b1, 
+        data.frame(i = ,
+          b = 0,
+          b.var = 0, stringsAsFactors = FALSE))
 
     }
 
-    # add this constraint (again, it's exact)
-    A = rbind(A, a1)
-    b = c(b, 0)
-    b.var = c(b.var, 0)
-  }
-
-  # constraints that expression of each gene in some fractions
-  # adds up to some proportion of that fraction's total volume
-
-
-
-
-  list(A = A, b = b, b.var = b.var)
+  list(A1 = A1, b1 = b1)
+#  list(A = A, b = b, b.var = b.var)
 }
 
 # Creates a constrained linear system from assumptions

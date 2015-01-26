@@ -1,6 +1,5 @@
-# Combines the original motifs and Hughes motifs into one
-# file.
-# (For now, only doing this for the 300-cluster version.)
+# Combines the original and Hughes motif enrichments into one
+# file. (For now, only doing this for the 300-cluster version.)
 
 source("git/utils.r")
 source("git/sort_paper/tf/most.significant.r")
@@ -13,7 +12,7 @@ system("mkdir -p git/sort_paper/tf/motif/combined/")
 # rewritten to 1e-300.
 p.adjust.1 = function(p) {
   p[ is.na(p) ] = 1
-  p[ p <= 1e-300 ] = 1e-300
+#  p[ p <= 1e-300 ] = 1e-300
   p.adjust(p, method="fdr")
 }
 

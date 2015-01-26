@@ -41,6 +41,10 @@ sub write_max_file {
   while (<IN>) {
     chomp;
     next if /track/;
+
+    # also skipping over liftOver messages, and other comments
+    next if /^#/;
+
     my($chr, $a, $b, $score) = split /\t/;
     my $k = "$chr:$a";
     if (!defined $m{$k} || ((defined $m{$k} && $score >= $m{$k}))) {
@@ -56,6 +60,10 @@ sub write_max_file {
   while (<IN>) {
     chomp;
     next if /track/;
+
+    # also skipping over liftOver messages, and other comments
+    next if /^#/;
+
     my($chr, $a, $b, $score) = split /\t/;
     my $k = "$chr:$a";
     if (defined $m{$k}) {
@@ -78,6 +86,9 @@ sub import_dir {
     chomp $f;
     next if not $f =~ /\.wig\.gz$/;
 
+    # only including files including "combined" in their name
+#    next if not $f =~ /combined/;
+
     print STDERR "converting $f\n";
 
     # name of file to write
@@ -92,8 +103,8 @@ sub import_dir {
 #    system("gunzip -c $wig_gz_dir/$f | fgrep -v track > $bigwig_dir/$tmp_file");
     write_max_file("$wig_gz_dir/$f", "$bigwig_dir/$tmp_file");
 
-    system("bedGraphToBigWig $bigwig_dir/$tmp_file $chromosome_sizes_file $bigwig_dir/$bw_file");
-
+#    system("bedGraphToBigWig $bigwig_dir/$tmp_file $chromosome_sizes_file $bigwig_dir/$bw_file");
+    system("wigToBigWig -clip $bigwig_dir/$tmp_file $chromosome_sizes_file $bigwig_dir/$bw_file");
     unlink("$bigwig_dir/$tmp_file");
   }
 }

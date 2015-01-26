@@ -2,24 +2,30 @@
 # FACS-sorted cells or clusters.
 
 source("git/utils.r")
-
 source("git/sort_paper/plot/enrichment/heatmapUtils.r")
-
 source("git/sort_paper/tf/motifInfo.r")
 source("git/tf/motif/motifName.r")
+source("git/data/wormbase/wb.cluster.name.r")
 
-anatomy.info.matrix = function(f) {
+# Reads anatomy info (or WB cluster info).
+anatomy.info.matrix = function(f, ao.or.wbcluster) {
   max.color.p = 6
 
-  r = read.table(file=paste0("git/sort_paper/enrichment/summary/anatomyEnrichment/", f, ".tsv"),
+  r = read.table(file=paste0("git/sort_paper/enrichment/summary/",
+    ao.or.wbcluster, "/", f, ".tsv"),
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
   # XXX
   r = r[ r$group.name != "Tissue" & !grepl("depleted", r$cluster) , ]
 
-  r = r[ -log10(r$p.corr) >= 1 , ]
+  r = r[ -log10(r$p.corr) >= 1 , ]    # was 1
    # & r$term.depth <= 4 , ]
 
-  a = as.matrix(make.sparse.matrix(r$cluster, r$group.name, -log10(r$p.corr))) / max.color.p
+  group.names = if (ao.or.wbcluster=="anatomyEnrichment")
+    r$group.name
+  else
+    r$group
+
+  a = as.matrix(make.sparse.matrix(r$cluster, group.names, -log10(r$p.corr))) / max.color.p
   a = a[ , pick.top.few.columns(a, 1) ]
   a
 }
@@ -65,34 +71,60 @@ add.rows = function(a, rows) {
 # Side effects: plots a heatmap.
 plot.stacked = function(f, cluster.subset = NULL) {
 
-  anatomy.m = anatomy.info.matrix(f)
+  anatomy.m = anatomy.info.matrix(f, "anatomyEnrichment")
+  cluster.m = anatomy.info.matrix(f, "wormbaseCluster")
   go.m = gene.ontology.matrix(f)
   motif.m = motif.chip.matrix(paste0("motif/", f),
     p.cutoff=4, max.color.p = 7, num.to.include=1)
   chip.m = motif.chip.matrix(paste0("chip/", f),
-    p.cutoff=1, max.color.p = 4, num.to.include=2)
+    p.cutoff=1, max.color.p = 4, num.to.include=1)
 
-  # XXX combine the rows appropriately
-  cl = unique(c(rownames(anatomy.m), rownames(go.m),
-    rownames(motif.m), rownames(chip.m)))
+# browser()
+  # possibly subset these
+  if (!is.null(cluster.subset)) {
+    f = function(a, num.to.keep) {
+      a = row.subset(a, cluster.subset)
+      a = a[ , pick.top.few.columns(a, num.to.keep) ]
+      a
+    }
+
+    anatomy.m = f(anatomy.m, 1)
+    cluster.m = f(cluster.m, 1)
+    go.m = f(go.m, 2)
+    motif.m = f(motif.m, 1)
+    chip.m = f(chip.m, 1)
+  }
 
   # sort columns of these by clustering them
   sort.columns = function(a) {
+    if (ncol(a) < 2) {
+      return(a)
+    }
     a[a > 1] = 1
     a[ , hclust(cor.dist(t(a)))$order ]
   }
   anatomy.m = sort.columns(anatomy.m)
+  cluster.m = sort.columns(cluster.m)
   go.m = sort.columns(go.m)
   motif.m = sort.columns(motif.m)
   chip.m = sort.columns(chip.m)
 
+  # some renaming
+  colnames(cluster.m) = sapply(colnames(cluster.m), cluster.name.format)
+  colnames(chip.m) = gsub("_", " ", colnames(chip.m))
+
+  # XXX combine the rows appropriately
+  cl = unique(c(rownames(anatomy.m), rownames(cluster.m),
+    rownames(go.m), rownames(motif.m), rownames(chip.m)))
+
   anatomy.m = add.rows(anatomy.m, cl)
+  cluster.m = add.rows(cluster.m, cl)
   go.m = add.rows(go.m, cl)
   motif.m = add.rows(motif.m, cl)
   chip.m = add.rows(chip.m, cl)
 
   # compute "row" ordering
-  r = cbind(anatomy.m, cbind(go.m, cbind(motif.m, chip.m)))
+  r = cbind(anatomy.m, cbind(cluster.m, cbind(go.m, cbind(motif.m, chip.m))))
 
 # browser()
 
@@ -101,11 +133,6 @@ plot.stacked = function(f, cluster.subset = NULL) {
   cl = cl[ hclust(cor.dist(r))$order ]
 
   r = r[cl,]
-
-  # possibly subset this
-  if (!is.null(cluster.subset)) {
-    r = r[ rownames(r) %in% cluster.subset , ]
-  }
 
   # only keep cases in which something is present
   r = r[ , apply(r>0, 2, any) ]
@@ -150,9 +177,10 @@ plot.stacked = function(f, cluster.subset = NULL) {
   }
 
   color.columns(anatomy.m, 0)
-  color.columns(go.m, 0.2)
-  color.columns(motif.m, 0.4)
-  color.columns(chip.m, 0.6)
+  color.columns(cluster.m, 0.2)
+  color.columns(go.m, 0.4)
+  color.columns(motif.m, 0.6)
+  color.columns(chip.m, 0.8)
 
   # ??? return info needed by highlight.column() ?
 }
@@ -170,16 +198,18 @@ system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
-  width=5, height=10)
-par(mar=c(6,15,1,1))
-ao = anatomy.info.matrix("hier.300.clusters")
-plot.stacked("hier.300.clusters", rownames(ao))
+  width=3, height=5.5)
+par(mar=c(1,9,0.1,0.1))
+ao = anatomy.info.matrix("hier.300.clusters", "anatomyEnrichment")
+wbc = anatomy.info.matrix("hier.300.clusters", "wormbaseCluster")
+cl.subset = unique(c(rownames(ao), sort(rownames(wbc), decreasing=TRUE)[1:5]))
+plot.stacked("hier.300.clusters", cl.subset)
      # , as.character(c(1,2,30,52,79,223,286)))
 dev.off()
 
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
-  width=16.5, height=14.5)
-par(mar=c(6,15,1,1))
+  width=17.5, height=16.5)
+par(mar=c(1,10,0.1,0.1))
 
 plot.stacked("hier.300.clusters")
 
@@ -191,11 +221,10 @@ plot.stacked("hier.300.clusters")
 dev.off()
 
 
-
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.5, height=6.8)
-par(mar=c(6,15,1,1))
+  width=2.8, height=5.5)
+par(mar=c(3.5,8,0.1,0.1))
 plot.stacked("facs")
 dev.off()
 

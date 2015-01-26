@@ -9,7 +9,7 @@ source("git/utils.r")
 clustering.dir = "git/cluster/hierarchical/"
 
 motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
-output.dir = "git/cluster/motif/enrichOptimize/cutoff.optimize"
+output.dir = "git/cluster/motif/enrichOptimize/cutoff.optimize.tmp"
 system(paste("mkdir -p", output.dir))
 
 # running this on the filtered (non-redundant) motifs

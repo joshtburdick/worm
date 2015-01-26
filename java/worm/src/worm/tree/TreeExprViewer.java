@@ -38,8 +38,18 @@ public class TreeExprViewer extends JFrame {
 //		"/gpfs/fs0/u/azach/images//20120714_JIM136_L3/dats/SCD20120714_JIM136_L3.csv"  // JIM-136
 		};
 		
-		tp = createPanelFromFilenames(files);
-		// tp = new TreePanel();   // XXX
+		// tp = createPanelFromFilenames(files);
+		tp = new TreePanel();   // XXX
+		/** XXX this isn't working
+		try {
+			AnatomyInfo ai = new AnatomyInfo();
+			tp.anatomyInfo = ai.cellInfo;
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+		
 		prefs = new TreeExprViewerPrefs(tp);
 		add(prefs, BorderLayout.NORTH);
 		sp.getViewport().add(tp);
@@ -90,5 +100,4 @@ System.out.println("reading file " + i + ": " + files[i]);
 //		t.pack();    // XXX this sets the image too large
 		t.setVisible(true);
 	}
-
 }

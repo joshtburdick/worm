@@ -10,7 +10,7 @@ public class TreePanelSignal {
 	Color color = Color.RED;
 	
 	/** Intensities which should be "black" and "color", respectively. */
-	float loIntensity = 0f, hiIntensity = 2400f;
+	float loIntensity = 0f, hiIntensity = 1000f;
 	
 	/** The cells, indexed by name, then time. */
 	HashMap<String, Cell> cell;

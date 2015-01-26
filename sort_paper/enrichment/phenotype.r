@@ -31,17 +31,21 @@ phenotype = read.tsv(gzfile("data/wormbase/phenotype_WS220.tsv.gz"))
 
 # which gene has which phenotype
 phenotype.gene = read.table(
-  "data/wormbase/phenotype_gene_WS220.tsv.gz",
-  sep="\t", header=TRUE, as.is=TRUE)[,c(1,3)]
+  "data/wormmine/phenotype_gene.tsv.gz",
+  sep="\t", header=TRUE, as.is=TRUE)
+# use sequence name, if gene name isn't defined
+i = phenotype.gene[,2] == ""
+phenotype.gene[i,2] = phenotype.gene[i,1]
+phenotype.gene = phenotype.gene[,c(3,2)]
 colnames(phenotype.gene) = c("Phenotype.ID", "gene")
+
 phenotype.gene = merge(phenotype.descendent, phenotype.gene)
 phenotype.gene$phenotype.name =
   phenotype[phenotype.gene$Parent.Phenotype.ID, "Phenotype Name"]
 
 # RNAi phenotypes
-rnai = read.table("data/wormbase/wb_rnai_WS220.tsv.gz",
-  sep="\t", header=TRUE, as.is=TRUE)[,c(3,6)]
-colnames(rnai) = c("Phenotype.ID", "gene")
+rnai = read.tsv("git/data/wormbase/rnai.phenotype.tsv.gz")
+colnames(rnai) = c("gene", "Phenotype.ID")
 rnai = merge(phenotype.descendent, rnai)
 rnai$phenotype.name =
   phenotype[rnai$Parent.Phenotype.ID, "Phenotype Name"]
@@ -95,6 +99,7 @@ sort.fraction.enrichment = function() {
   save(r, file=paste0(output.dir, "facs", ".Rdata"))
 }
 
-# compute.cluster.enrichment()
-# sort.fraction.enrichment()
+sort.fraction.enrichment()
+compute.cluster.enrichment()
+
 

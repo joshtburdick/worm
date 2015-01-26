@@ -2,7 +2,7 @@
 # particular FACS-sorted samples.
 
 library("grid")
-library("ggplot2")
+# library("ggplot2")
 
 source("git/utils.r")
 
@@ -24,6 +24,7 @@ max.expr = apply(rpm.facs, 1, max)
 
 cat("num. genes =", length(max.expr), "\n")
 
+if (FALSE) {
 # histogram of highest expression of each gene in each sample
 pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
   width=7, height=10)
@@ -39,9 +40,9 @@ num.fractions = apply(rpm.facs >= 1, 1, sum)
 # hist(num.fractions, breaks=max(num.fractions)+1, col="grey")
 
 dev.off()
-
-cat("max. genes in any individual sample =",
-  max(apply(rpm.facs>=1, 2, sum)), "\n")
+}
+cat("range of genes in any individual sample =",
+  paste(range(apply(rpm.facs>=1, 2, sum))), "\n")
 
 # restrict to genes considered "expressed"
 r.sort.only.averaged = r.sort.only.averaged[ max.expr >= 1, ]
@@ -55,21 +56,26 @@ num.fractions.enriched.depleted = {
 
 cat("number of genes enriched/depleted in at least one fraction =",
   length(num.fractions.enriched.depleted), "\n")
+
 pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
-  width=7.5, height=5)
+  width=7.5, height=4)
 
-
-if (FALSE) {
+if (TRUE) {
   # log-scale version of this
   counts = table(num.fractions.enriched.depleted)
-  barplot(log10(counts), yaxt="n",
-    main="Number of fractions in which a gene\nis enriched or depleted",
-    xlab="Number of fractions", ylab="Count",
-    col="grey", cex.main=1.5, cex.axis=0.9, cex.lab=1.2)
+
+  cumulative.counts = rev(cumsum(rev(counts)))
+
+  barplot(log10(cumulative.counts), yaxt="n",
+#    main="Number of fractions in which\na gene is enriched or depleted",
+    main=expression(paste("Number of genes enriched or depleted in ",
+      italic("n"), " or more fractions")),
+    xlab=expression(italic("n")), ylab="Number of genes",
+    col="grey", cex.main=1.2, cex.axis=0.9, cex.lab=1.2)
   axis(2, labels = c(1,10,100,1000), at=c(0,1,2,3))
   abline(h=0)
 } else {
-# version with subgraph
+# version with subgraph (not currently used)
 #hist(num.fractions.enriched.depleted,
 #  main="Number of fractions in which a gene\nis enriched or depleted",
 #  xlab="Number of fractions",
@@ -103,6 +109,6 @@ dev.off()
 
 cat("table of number of fractions enriched/depleted:\n")
 show(table(num.fractions.enriched.depleted))
-
-
+cat("cumulative counts of enriched/depleted fractions:\n")
+print(cumulative.counts)
 

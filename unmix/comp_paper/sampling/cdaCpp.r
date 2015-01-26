@@ -12,12 +12,11 @@ sourceCpp(file = "git/unmix/comp_paper/sampling/cda.cpp")
 #   A, b - these define the constraint that Ax = b
 #   x0 - the starting point
 #   num.samples - the number of samples to include
-# not yet implemented:
 #   thinning - number of samples to skip (e.g., setting this
 #     to 1000 will only store every thousandth sample.)
 #     Useful because this method has high autocorrelation.
 #     By default, set to 1 (which returns every sample.)
-#   renormalization interval?
+#   (not implemented: renormalization interval?)
 # Returns: matrix of samples
 sample.cda = function(A, b, x0, num.samples, thinning) {
 

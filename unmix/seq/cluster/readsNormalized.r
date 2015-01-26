@@ -11,18 +11,18 @@ options(stringsAsFactors = FALSE)
 experimentNames = read.table("git/unmix/seq/quant/experimentNames.tsv",
   sep="\t", header=TRUE, row.names=1)
 
-count.path = "git/unmix/seq/quant/readsPerMillion"
+count.path = "git/unmix/seq/quant/readsPerMillion/WS220_20140111/"
 
 r1 = as.matrix(
-  read.table(paste(count.path, "readsPerMillion_Murray_050912.tsv", sep="/"),
+  read.table(paste(count.path, "050912.tsv", sep="/"),
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
 r2 = as.matrix(
-  read.table(paste(count.path, "readsPerMillion_092812.tsv", sep="/"),
+  read.table(paste(count.path, "092812.tsv", sep="/"),
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
 r3 = as.matrix(
-  read.table(paste(count.path, "readsPerMillion_20110922.tsv", sep="/"),
+  read.table(paste(count.path, "20110922.tsv", sep="/"),
   header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
 
 embryo.timeseries = as.matrix(read.table(

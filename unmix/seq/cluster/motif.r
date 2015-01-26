@@ -9,6 +9,7 @@ library(rpart)   # deprecated
 # ??? not sure this is the right measure
 stderr <- function(x) sqrt(var(x)/length(x))
 
+# read in data
 if (TRUE) {
 
 #  source("git/tf/motif/motifCount/motif.counts.r")
@@ -18,10 +19,17 @@ if (TRUE) {
     sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
 }
 
+
+
+
+
+
+
+
 # Looks for enriched motifs, and writes them in a file.
 # Args:
 #   path - where to find "clusters.tsv" file
-#   c - matrix of predictors
+#   x - matrix of predictors
 #   output.name - what to name the output file
 # Side effects: writes a file of results
 t.test.clusters = function(path, x, output.name) {
@@ -45,6 +53,7 @@ t.test.clusters = function(path, x, output.name) {
 
   r
 }
+
 
 if (FALSE) {
 
@@ -152,8 +161,10 @@ enriched.in.fraction.1 = function(log.enrich, motif, output.dir) {
   a = NULL
   for(s in colnames(log.enrich)) {
     cat(s, "")
-    r = t.test.many.graphing(motif[ log.enrich[,s] >= cutoff , ],
-      motif[ log.enrich[,s] <= -cutoff , ], output.dir, s)
+    r = t.test.many(motif[ log.enrich[,s] >= cutoff , ],
+      motif[ log.enrich[,s] <= -cutoff , ])
+#    r = t.test.many.graphing(motif[ log.enrich[,s] >= cutoff , ],
+#      motif[ log.enrich[,s] <= -cutoff , ], output.dir, s)
     r$p.bh = p.adjust(r$p, method="hochberg")
     r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
     r = r[ order(r$p.bh) , ]
@@ -218,7 +229,11 @@ cluster.dirs = paste("git/unmix/seq/cluster/",
     "WGCNA/wnet.ts_pow11_mch0.1/",
     "WGCNA/wnet.ts_pow11_mch0.2/"), sep="")
 
-
+# using new location
+cluster.dirs = c(paste("git/cluster/hierarchical/hier.",
+    c(50, 100, 150, 200, 250, 300), ".clusters", sep=""),
+  paste("git/cluster/hierarchical/hier.ts.",
+    c(50, 100, 150, 200, 250, 300), ".clusters", sep=""))
 
 
 # Does the above test, for all clusters.
@@ -252,16 +267,16 @@ compute.interaction.stats = function(f, bh.cutoff = 0.5) {
     num.clusters = length(unique(r$cluster)))
 }
 
+
 if (FALSE) {
 t.test.all.clusters.1(known.motifs, "knownMotifEnrichment_5kb")
 t.test.all.clusters.1(de.novo.motifs, "deNovoMotifEnrichment_5kb")
 t.test.all.clusters.1(chip, "chipEnrichment_5kb")
-}
 
 # Computes stats about enrichment for all the clusterings.
 cluster.stats = function() {
   r = NULL
-  for(cl in cluster.dirs) {
+  for(cl in cluster.dirs[1:4]) {
     r = rbind(r,
       c(cl,
         compute.interaction.stats(
@@ -271,11 +286,13 @@ cluster.stats = function() {
   }
   colnames(r) = c("clustering",
     "known.motifs.pairs", "known.motifs", "known.motifs.clusters",
-    "de.novo.motif.pairs", "de.novo.motifs", "de.novo.motifs.clusters")
+    "de.novo.motifs.pairs", "de.novo.motifs", "de.novo.motifs.clusters")
   r
 }
-write.table(cluster.stats(), file="git/unmix/seq/cluster/clusterStats.tsv",
+write.table(cluster.stats(), file="git/cluster/clusterStats.tsv",
   sep="\t", row.names=TRUE, col.names=NA)
+}
+
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
 
 

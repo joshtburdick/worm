@@ -12,7 +12,8 @@ my $fasta = "/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.topleve
 # my $meme_matrix_path = "/home/jburdick/gcb/data/tf/meme/motif_databases/";
 # my $meme_matrix_path = ".";  # XXX temporary hack
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/meme_file/";
-my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/";
+# my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/";
+my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/";
 
 my @meme_files = (
   qw/jolma2013 JASPAR_CORE_2009 dmmpmm2009 dpinteract/,
@@ -22,16 +23,20 @@ my @meme_files = (
   qw/prodoric regtransbase scpd_matrix uniprobe_mouse uniprobe_worm/,
   qw/wei2010_human_mws wei2010_mouse_mws wei2010_mouse_pbm zhao2011/);
 
+# just including a subset of these
+@meme_files = (
+  qw/jolma2013_shuffled JASPAR_CORE_2009_insects_shuffled JASPAR_CORE_2009_nematodes_shuffled JASPAR_CORE_2009_vertebrates_shuffled/);
+
 # fimo_to_bedGraph("TCF_LEF.meme", "TCF_LEF");
 # fimo_to_bedGraph("pha4_hardcoded.meme", "pha4_hardcoded");
 
-#foreach my $f (@meme_files) {
-#  print "[running on MEME database file $f.meme]\n";
-#  fimo_to_bedGraph("$f.meme", "/home/jburdick/tmp/meme");
-#}
+foreach my $f (@meme_files) {
+  print "[running on MEME database file $f.meme]\n";
+  fimo_to_bedGraph("$f.meme", "/home/jburdick/tmp/meme_shuffled/");
+}
 
-fimo_to_bedGraph("deNovoMotifs.meme",
-  "/home/jburdick/tmp/meme_denovo");
+# fimo_to_bedGraph("deNovoMotifs.meme",
+#   "/home/jburdick/tmp/meme_denovo");
 
 
 # Runs FIMO, converting its output to bedGraph files (which nonetheless
@@ -39,12 +44,14 @@ fimo_to_bedGraph("deNovoMotifs.meme",
 sub fimo_to_bedGraph {
   my($meme_file, $output_path) = @_;
 
+print("$meme_matrix_path/$meme_file\n");
   # if the database isn't there, skip it
   return if not -e "$meme_matrix_path/$meme_file";
 
   print STDERR "[running FIMO on $meme_file]\n";
   system("mkdir -p $output_path");
 
+# cat("$meme_bin/fimo --text $meme_matrix_path/$meme_file $fasta\n");
   open IN, "$meme_bin/fimo --text $meme_matrix_path/$meme_file $fasta |" || die;
 
   $_ = <IN>;

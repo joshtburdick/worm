@@ -29,12 +29,11 @@ ao = data.frame(gene=rename.gene.name.vector(wb.anatomy$Gene.Public.Name),
 }
 
 # information about expression clusters from WormBase
-wb.cluster = read.table(gzfile("data/wormbase/gene_expr_cluster.tsv.gz"),
-  sep="\t", header=TRUE, as.is=TRUE)
-# filter out one experiment with munged annotation
-wb.cluster = wb.cluster[ grep("WBPaper00029359", wb.cluster[,4], invert=TRUE) , ]
-wb.cluster = data.frame(gene = rename.gene.name.vector(wb.cluster[,2]),
-  group = wb.cluster[,4], group.name = wb.cluster[,5], stringsAsFactors=FALSE)
+load("git/data/wormbase/expr.cluster.Rdata")
+wb.cluster = expr.cluster
+wb.cluster$gene = rename.gene.name.vector(wb.cluster$gene)
+wb.cluster = unique(wb.cluster)
+wb.cluster$group.name = expr.cluster.descr[ wb.cluster$group ]
 
 # gene.groups = rbind(ao, wb.cluster)
 gene.groups = rbind(ao.group, wb.cluster)
@@ -60,19 +59,23 @@ for (f in list.files("git/cluster/hierarchical/")) {
 
 # compute what's enriched in clusters
 compute.cluster.enrichment = function() {
-for (f in list.files("git/cluster/hierarchical/")) {
-  cat(f, "\n")
-  cl1 = read.tsv(paste0("git/cluster/hierarchical/", f, "/clusters.tsv"))
-  colnames(cl1) = c("gene", "set")
 
-  r = hyperg.test.groups.many.faster(unique(wb.cluster), cl1, num.genes)
-  save(r, file=paste0("git/sort_paper/enrichment/wormbaseCluster/",
-    f, ".Rdata"))
+  system("mkdir -p git/sort_paper/enrichment/wormbaseCluster/")
+  system("mkdir -p git/sort_paper/enrichment/anatomyEnrichment/")
 
-  r = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
-  save(r, file=paste0("git/sort_paper/enrichment/anatomyEnrichment/",
-    f, ".Rdata"))
-}
+  for (f in list.files("git/cluster/hierarchical/")) {
+    cat(f, "\n")
+    cl1 = read.tsv(paste0("git/cluster/hierarchical/", f, "/clusters.tsv"))
+    colnames(cl1) = c("gene", "set")
+
+    r = hyperg.test.groups.many.faster(unique(wb.cluster), cl1, num.genes)
+    save(r, file=paste0("git/sort_paper/enrichment/wormbaseCluster/",
+      f, ".Rdata"))
+
+    r = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
+    save(r, file=paste0("git/sort_paper/enrichment/anatomyEnrichment/",
+      f, ".Rdata"))
+  }
 }
 
 # compute what's enriched in sort fractions (old version)
@@ -130,11 +133,11 @@ sort.fraction.anatomy.enrichment = function() {
 
   r = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
   save(r, file=paste0("git/sort_paper/enrichment/anatomyEnrichment/",
-    "sortFraction", ".Rdata"))
+    "facs", ".Rdata"))
 
   r = hyperg.test.groups.many.faster(unique(wb.cluster), cl1, num.genes)
   save(r, file=paste0("git/sort_paper/enrichment/wormbaseCluster/",
-    "sortFraction", ".Rdata"))
+    "facs", ".Rdata"))
 }
 
 # enrichment of genes in lineages
@@ -169,7 +172,10 @@ colnames(cl1) = c("gene", "set")
 foo = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
 }
 
-# compute.cluster.enrichment()
+sort.fraction.anatomy.enrichment()
 
-# sort.fraction.anatomy.enrichment()
+if (TRUE) {
+  compute.cluster.enrichment()
+}
+
 

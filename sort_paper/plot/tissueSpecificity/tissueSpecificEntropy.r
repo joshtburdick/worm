@@ -82,9 +82,22 @@ for(group in names(gene.groups)) {
   plot(max.expr[ gene.groups[[group]] ],
     tissue.spec.entropy[ gene.groups[[group]] ],
     main = group,
-    xlab="Maximum log2(rpm+1)",
-    ylab="Entropy (bits)",
+    xlab="Expression (maximum log2(rpm+1))",
+    ylab="Entropy (bits)", xaxt="n", yaxt="n",
     pch=183, font=5, col="#0000ff80")
+  axis(1)
+  axis(2)
+
+  # XXX hack: label some of the "linc"s
+  if (group %in% c("ancRNA", "lincRNA", "non-coding")) {
+    g = names(max.expr)[ max.expr >= 2 & tissue.spec.entropy <= 4.5 ]
+    g = intersect(g, gene.groups[[group]])
+    g = setdiff(g, "linc-77")
+
+    text(max.expr[g], tissue.spec.entropy[g],
+      labels=paste(" ", g), adj=c(0,0), srt=315,
+      cex=ifelse(group=="non-coding", 0.3, 0.6))
+  }
 
   plot.new()
 
@@ -130,4 +143,13 @@ if (TRUE) {
 }
 
 dev.off()
+
+# write out table for lincRNAs
+lg = gene.groups[["lincRNA"]]
+linc.rna.ts = data.frame(max.expr = max.expr[lg],
+  tissue.spec.entropy = tissue.spec.entropy[lg])
+linc.rna.ts = linc.rna.ts[
+  order(-linc.rna.ts$max.expr, -linc.rna.ts$tissue.spec.entropy), ]
+write.tsv(linc.rna.ts, "git/sort_paper/plot/tissueSpecificity/lincRNA tissue specificity.tsv")
+
 

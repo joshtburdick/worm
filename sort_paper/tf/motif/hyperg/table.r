@@ -74,19 +74,14 @@ most.significant.results = function(name) {
   i = r$motif %in% names(motif.to.name)
   r[ i , "motif.name" ] = motif.to.name[ r[ i , "motif" ] ]
 
-  colnames(r)[7] = "genes with motif in cluster"
-  colnames(r)[8] = "genes in cluster"
-  colnames(r)[9] = "genes with motif"
+  colnames(r)[6] = "genes with motif in cluster"
+  colnames(r)[7] = "genes in cluster"
+  colnames(r)[8] = "genes with motif"
   r = r[ order(r$p) , c(1,11,2:10) ]
   r
 }
 
 r = most.significant.results("facs")
 system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-# write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
-
-# load(paste0(enrich.result.dir, "5kb/facs.Rdata"))
-# enrich = enrich[1:5,1:5,,,,]
-
-# foo = enrich.to.table(enrich)
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
 

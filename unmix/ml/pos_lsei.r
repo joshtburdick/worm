@@ -41,7 +41,6 @@ move.bounded = function(a, b) {
   # If any element of s is negative, it doesn't matter, in
   # terms of hitting boundaries. However, if any element is
   # positive, we can only add that "amount" of delta.
-
   m = min(1, s[ s > 0 ])
 
   a + m * delta

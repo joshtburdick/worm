@@ -27,6 +27,10 @@ enrich.vs.singlet = r[ , pos.genes ] - singlet.average
 png("git/sort_paper/FACS/matchedVsSingletControl.png",
   width=1200, height=1200)
 par(mfrow=c(4,4))
+# XXX PDF file is huge
+# pdf("git/sort_paper/FACS/matchedVsSingletControl.pdf",
+#   width=7.5, height=10)
+# par(mfrow=c(3,2))
 
 for(j in colnames(enrich)) {
   r = range(c(enrich[,j], enrich.vs.singlet[,j]))

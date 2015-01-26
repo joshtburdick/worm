@@ -1,6 +1,8 @@
 # Comparison of enrichment from FACS sorting with expression
 # measurement from RNA-seq.
 
+# FIXME: mention which are promoter fusions vs. protein fusions?
+
 # the expression data (from movies)
 expr.cell =
   as.matrix(read.table("git/unmix/unmix_comp/data/exprCell.tsv",
@@ -30,6 +32,13 @@ rna.seq = {
 experimentNames = read.table("git/unmix/seq/quant/experimentNames.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
+# utility to clip something to an interval
+clip.to.interval = function(x, lo, hi) {
+  x[ x < lo ] = lo
+  x[ x > hi ] = hi
+  x
+}
+
 # genes for which we have expression from imaging and sequence
 # (note that this only includes 116 / 123 genes)
 g = intersect(rownames(expr.cell), rownames(rna.seq))
@@ -43,9 +52,11 @@ seq.experiments = c(
 
 img.experiments = sub(" .*", "", seq.experiments)
 
-# positive and negative expression, from imaging
-img.pos = expr.cell[g,] %*% t(sortMatrix[img.experiments,])
-img.neg = expr.cell[g,] %*% t(1 - sortMatrix[img.experiments,])
+# convert to "average expression across cells"
+img.pos = t(t(expr.cell[g,] %*% t(sortMatrix[img.experiments,])) /
+  apply(sortMatrix[img.experiments,], 1, sum))
+img.neg = t(t(expr.cell[g,] %*% t(1-sortMatrix[img.experiments,])) /
+  apply((1-sortMatrix)[img.experiments,], 1, sum))
 
 # the same thing, from RNA-seq
 seq.pos.names = experimentNames[
@@ -56,12 +67,6 @@ rna.seq.pos = rna.seq[g, seq.pos.names]
 rna.seq.neg = rna.seq[g, seq.neg.names]
 colnames(rna.seq.pos) = seq.experiments
 colnames(rna.seq.neg) = seq.experiments
-
-# adjust for proportion of the embryo included by those
-# sequencing experiments
-fraction.sorted = apply(sortMatrix, 1, mean)
-rna.seq.pos = t(t(rna.seq.pos) * fraction.sorted[img.experiments])
-rna.seq.neg = t(t(rna.seq.neg) * (1-fraction.sorted[img.experiments]))
 
 # For each sorted fraction, plots the relative expression
 # measured by imaging, compared with from sequencing.
@@ -90,17 +95,18 @@ plot.imaging.and.seq.expr = function() {
 # Plots the same thing, but for each gene.
 plot.per.gene.comparison = function() {
   for(g1 in g) {
-    image.r = img.pos[g1,] /
-      (img.pos[g1,] + img.neg[g1,])
-    seq.r = rna.seq.pos[g1,] /
-      (rna.seq.pos[g1,] + rna.seq.neg[g1,])
+    eps = 0.1
+    image.r = log2(img.pos[g1,] + eps) - log2(img.neg[g1,] + eps)
+    seq.r = log2(rna.seq.pos[g1,] + eps) - log2(rna.seq.neg[g1,] + eps)
+    image.r = clip.to.interval(image.r, -5, 5)
+    seq.r = clip.to.interval(seq.r, -5, 5)
 
-    plot(image.r, seq.r, xlim=c(0,1), ylim=c(0,1),
+    plot(image.r, seq.r, xlim=c(-5,5), ylim=c(-5,5),
       xlab="imaging",
       ylab="RNA-seq",
       main=g1,
       pch=20, col="#00000080")
-#    mtext("relative expression as pos/(pos+neg)", cex=0.65, line=0.5)
+    mtext("log2 enrichment in (+) vs (-)", cex=0.65, line=0.5)
   }
 
 }
@@ -108,7 +114,7 @@ plot.per.gene.comparison = function() {
 pdf("git/unmix/missing/sortingComparison.pdf", width=7.5, height=10)
 par(mfrow=c(4,3))
 par(mar=c(4,4,4,4) + 0.1)
-plot.imaging.and.seq.expr()
+# plot.imaging.and.seq.expr()
 plot.per.gene.comparison()
 dev.off()
 

@@ -80,16 +80,16 @@ motifs = motifs[g,]
 
 
 
-# Does many t-tests.
+# Does many Wilcox tests.
 # Args:
 #   a, b - two matrices with the same number of columns
 #   (NB: this will only test whether a > b)
 # Returns: data frame with columns:
 #   name - which column was being tested
-#   t, df, p - results from t-test
-# FIXME rewrite using genefilter::rowttest? the issues are
-# that it isn't one-sided (and doesn't seem much faster, either)
-t.test.many = function(a, b) {
+#   W, p - results from t-test
+#   a.mean, a.sd, b.mean, b.sd - motif stats in cluster
+#     being tested, and background (all other clusters)
+wilcox.test.many = function(a, b) {
   r = NULL
 
   for(j in colnames(a)) {
@@ -98,23 +98,22 @@ t.test.many = function(a, b) {
 #      c(name=j, m[[1]], p=m[[3]], m[[2]]))
     m = wilcox.test(a[,j], b[,j])
     r = rbind(r,
-      c("name"=j, m$statistic, "p"=m$p.value, "df"=NA,
+      data.frame("name"=j, "W"=m$stat, "p"=m$p.value,
         a.mean = mean(a[,j]), a.sd = sd(a[,j]),
-        b.mean = mean(b[,j]), b.sd = sd(b[,j])))
+        b.mean = mean(b[,j]), b.sd = sd(b[,j]), stringsAsFactors=FALSE))
   }
 
   # XXX type conversion hack
   data.frame(name = r[,"name"],
     stat = as.numeric(r[,"W"]),
     p = as.numeric(r[,"p"]),
-    df = as.numeric(r[,"df"]),
     a.mean = as.numeric(r[,"a.mean"]),
     a.sd = as.numeric(r[,"a.sd"]),
     b.mean = as.numeric(r[,"b.mean"]),
     b.sd = as.numeric(r[,"b.sd"]))
 }
 
-# Same as above, but also graphs the distributions.
+# Does many t-tests, graphing the distributions.
 # Args:
 #   a, b - two matrices with the same number of columns
 # Returns: data frame with columns:
@@ -164,55 +163,12 @@ t.test.many.graphing = function(a, b, output.dir, base.name) {
     df = as.integer(r[,"df"]))
 }
 
-# Tests for motifs enriched in particular sorted fractions.
-enriched.in.fraction.1 = function(log.enrich, motif, output.dir) {
-  cutoff = log2(3)
-
-  g1 = intersect(rownames(log.enrich), rownames(motif))
-  log.enrich = log.enrich[g1,]
-  motif = motif[g1,]
-  a = NULL
-  for(s in colnames(log.enrich)) {
-    cat(s, "")
-    r = t.test.many(motif[ log.enrich[,s] >= cutoff , ],
-      motif[ log.enrich[,s] <= -cutoff , ])
-#    r = t.test.many.graphing(motif[ log.enrich[,s] >= cutoff , ],
-#      motif[ log.enrich[,s] <= -cutoff , ], output.dir, s)
-    r$p.bh = p.adjust(r$p, method="fdr")
-    r = r[ r$p.bh <= 0.5 & r$t > 0 , ]
-    r = r[ order(r$p.bh) , ]
-    if (nrow(r) > 0)
-      r = data.frame(sample=s, r)
-    a = rbind(a, r)
-  }
-
-  a
-}
-
-# Does that test for all sorted fractions.
-enriched.in.fraction = function() {
-  output.path = "git/unmix/seq/cluster/fraction_enrich"
-  system(paste("mkdir -p", output.path))
-
-  r = as.matrix(read.table("git/unmix/seq/cluster/readsNormalized.tsv",
-    header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE))
-
-  write.table(enriched.in.fraction.1(r[,c(1:25)], motif,
-    paste(output.path, "/motif_5kb", sep="")),
-    file=paste(output.path, "/motif_5kb.tsv", sep=""),
-    sep="\t", row.names=TRUE, col.names=NA)
-  write.table(enriched.in.fraction.1(r[,c(1:25)], chip,
-    paste(output.path, "/chip_5kb", sep="")),
-    file=paste(output.path, "/chip_5kb.tsv", sep=""),
-    sep="\t", row.names=TRUE, col.names=NA)
-}
-
-# Computes t-tests for all the clusters.
+# Computes Wilxocon test for all the clusters.
 # Args:
 #   cluster - which cluster each gene is in
 #   motif - the motifs or other predictors.
 # Returns: data frame of results.
-t.test.all.clusters = function(cluster, motif) {
+wilcox.test.all.clusters = function(cluster, motif) {
   r = NULL
 
   for(cl in sort(unique(cluster))) {
@@ -226,7 +182,7 @@ cat(cl, "")
     z1 = (motif[i,])
     z2 = (motif[!i,])
 
-    a = t.test.many(motif[i,], motif[!i,])
+    a = wilcox.test.many(motif[i,], motif[!i,])
 #    a = t.test.many(motifs[i,], motifs[ sample(which(!i), sum(i)) , ])
     r = rbind(r, cbind(cluster = cl, a))
   }
@@ -286,18 +242,6 @@ cat("t.test.many inputs have size", dim(motif[i,m]),
   r
 }
 
-# Alternative way of testing just the TFs which are somewhat
-# near a given cluster, by filtering which tests are included.
-# Args:
-#   r - the enrichment of various motifs
-#   
-#   min.tf.corr - correlation of TF with cluster
-# Returns: 
-#filter.cluster.enrichment = function(r, min.tf.corr) {
-
-
-#}
-
 # Writes out enrichment of only regulatory elements associated
 # with TFs correlated some amount with cluster centers.
 filter.correlation.cluster.enrichment =
@@ -354,7 +298,7 @@ filter.correlation.cluster.enrichment =
 #   x - matrix of predictors
 #   output.name - what to name the output file
 # Side effects: writes a file of results
-t.test.clusters = function(path, x, output.name) {
+wilcox.test.clusters = function(path, x, output.name) {
   cl = read.table(paste(path, "/clusters.tsv", sep=""),
     sep="\t", header=TRUE, row.names=1, stringsAsFactors=FALSE)
   rownames(cl) = cl$gene
@@ -363,13 +307,11 @@ t.test.clusters = function(path, x, output.name) {
   x = x[g,]
   cl = cl[g,]
 
-  r = t.test.all.clusters(cl$cluster, x)
+  r = wilcox.test.all.clusters(cl$cluster, x)
 
-if (TRUE) {   # XXX testing
-  r$p.bh = p.adjust(r$p, method="fdr")
-  r = r[ r$p.bh <= 0.5 & r$stat > 0 , ]
-  r = r[ order(r$p.bh) , ]
-}
+  r$p.fdr = p.adjust(r$p, method="fdr")
+  r = r[ r$p.fdr <= 0.05 , ]
+  r = r[ order(r$p.fdr) , ]
 
   write.table(r,
     file=paste(path, "/", output.name, ".tsv", sep=""),
@@ -384,23 +326,18 @@ cluster.names = c(
   paste("hier.", c(50, 100, 150, 200, 250, 300), sep=""),
   paste("hier.ts.", c(50, 100, 150, 200, 250, 300), sep=""))
 
-# cluster.dirs = c(paste("git/cluster/hierarchical/hier.",
-#     c(50, 100, 150, 200, 250, 300), ".clusters", sep=""),
-#   paste("git/cluster/hierarchical/hier.ts.",
-#     c(50, 100, 150, 200, 250, 300), ".clusters", sep=""))
-
 # using new location
 cluster.dirs = paste("git/cluster/hierarchical/", cluster.names, ".clusters", sep="")
-cluster.dirs = cluster.dirs[c(10,4)]    # for testing
+# cluster.dirs = cluster.dirs[c(10,4)]    # for testing
 
 # Does the above test, for all clusters.
 # Args:
 #   motif - a set of predictors
 #   output.name - name of output file
-t.test.all.clusters.1 = function(motif, output.name) {
+wilcox.test.all.clusters.1 = function(motif, output.name) {
 
-  for(cluster.dir in cluster.dirs) {
-    t.test.clusters(cluster.dir, motif, output.name)
+  for(cluster.dir in rev(cluster.dirs)) {
+    wilcox.test.clusters(cluster.dir, motif, output.name)
   }
 #t.test.clusters("git/unmix/seq/cluster/hierarchical/hier",
 # motif, "motifEnrichment_5kb")
@@ -426,73 +363,25 @@ count.enriched = function(f, bh.cutoff = 0.5) {
 }
 
 ###
-# Does t-tests of known motifs, de novo motifs, and ChIP
-
-#t.test.all.clusters.1(known.motifs, "knownMotifEnrichment_5kb")
-#t.test.all.clusters.1(de.novo.motifs, "deNovoMotifEnrichment_5kb")
+# Does Wilcoxon tests of known motifs, de novo motifs, and ChIP
+if (FALSE) {
+wilcox.test.all.clusters.1(known.motifs, "MW_knownMotifEnrichment_5kb")
+wilcox.test.all.clusters.1(de.novo.motifs, "MW_deNovoMotifEnrichment_5kb")
 #t.test.all.clusters.1(chip, "chipEnrichment_5kb")
 #t.test.all.clusters.1(known.motifs.0.5.cons, "knownMotifEnrichment_5kb_0.5cons")
 #t.test.all.clusters.1(de.novo.motifs.0.5.cons, "deNovoMotifEnrichment_5kb_0.5cons")
 #t.test.all.clusters.1(chip.0.5.cons, "chipEnrichment_5kb_0.5cons")
+}
 
 if (TRUE) {
   load(file="git/tf/motif/motifCount/shuffled.motif.counts.Rdata")
-  t.test.all.clusters.1(shuffled.known.motifs,
-    "shuffledKnownMotifEnrichment_5kb")
-  t.test.all.clusters.1(shuffled.known.motifs.0.5.cons,
-    "shuffledKnownMotifEnrichment_5kb_0.5cons")
+  wilcox.test.all.clusters.1(shuffled.known.motifs,
+    "MW_shuffledKnownMotifEnrichment_5kb")
+  wilcox.test.all.clusters.1(shuffled.known.motifs.0.5.cons,
+    "MW_shuffledKnownMotifEnrichment_5kb_0.5cons")
 }
 
-if (FALSE) {
-  # Computes stats about enrichment for all the clusterings.
-  cluster.stats.old = function() {
-    r = NULL
-    for(cl in cluster.dirs) {
-      r = rbind(r,
-        c(cl,
-          count.enriched(
-            paste(cl, "knownMotifEnrichment_5kb.tsv", sep="/"), 0.05),
-          count.enriched(
-            paste(cl, "deNovoMotifEnrichment_5kb.tsv", sep="/"), 0.05)))
-    }
-    colnames(r) = c("clustering",
-      "known.motifs.pairs", "known.motifs", "known.motifs.clusters",
-      "de.novo.motifs.pairs", "de.novo.motifs", "de.novo.motifs.clusters")
-    r
-  }
-  write.table(cluster.stats(), file="git/cluster/clusterStats.tsv",
-    sep="\t", row.names=TRUE, col.names=NA)
-}
 
-# Computes statistics about enrichment for all of the clusterings.
-cluster.stats = function() {
-  r = NULL
-  count.regulators = function(cl, regulator) {
-    a = count.enriched(
-      paste("git/cluster/hierarchical/", cl, ".clusters/", regulator, ".tsv", sep=""), 0.05)
-    data.frame(clustering = cl,
-      regulator = regulator,
-      num = a["num"],
-      num.predictors = a["num.predictors"],
-      num.clusters = a["num.clusters"])
-  }
-
-  for(cl in cluster.names)
-    for(a in c("MW_knownMotifEnrichment_5kb"))
-#      "knownMotifEnrichment_5kb_0.5cons",
-#      "deNovoMotifEnrichment_5kb",
-#      "deNovoMotifEnrichment_5kb_0.5cons",
-#      "chipEnrichment_5kb",
-#      "chipEnrichment_5kb_0.5cons"))
-      r = rbind(r, count.regulators(cl, a))
-
-  rownames(r) = NULL
-  r
-}
-if (FALSE) {
-  write.table(cluster.stats(), file="git/cluster/clusterStats.tsv",
-    sep="\t", row.names=TRUE, col.names=NA)
-}
 # z = t.test.many(motif[c(1:2),], motif[c(100:120),])
 
 

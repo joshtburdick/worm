@@ -32,6 +32,18 @@ gp.ll.dense = function(x, y, kernel.fun, si2) {
   - sum(log(diag(u))) - 0.5 * sum( y * z ) - (n/2)*log(2*pi)
 }
 
+# Slower (but possibly more correct) version of log-likelihood.
+gp.ll.dense.1 = function(x, y, kernel.fun, si2) {
+  n = dim(x)[1]
+  k = kernel.fun(x, x) + diag(si2, n)
+
+  half.log.det = sum(log(diag(chol(k))))
+
+  - half.log.det - 0.5 * sum(y * solve(k, y)) - (n/2) * log(2*pi)
+
+
+}
+
 # Log-likelihood, for some data set, allowing sparsity.
 # We assume that the diagonal of 
 gp.ll = function(kernel.matrix, y, si2) {

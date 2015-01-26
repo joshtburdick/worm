@@ -126,20 +126,32 @@ cat("dim(wx1) =", dim(wx1), "\n")
 #   clusters - the cluster each gene is in
 #   cluster.colors - the color for each cluster
 #   basefile - base output file
+#   label - the description to use for each gene
 # Side effects: writes out files colored appropriately
 write.clusters.treeview = function(x, hr, hc,
-    clusters, cluster.colors, basefile) {
+    clusters, cluster.colors, basefile, descr=NULL) {
   num.clusters = max(clusters)
 
   # first, write the files (not colorized)
   options(stringsAsFactors = TRUE)  # XXX don't know why this is needed
   r2gtr(hr, file = paste(basefile, ".gtr", sep = ""))
   r2atr(hc, file = paste(basefile, ".atr", sep = ""))
-  r2cdt(hr, hc, x, file = paste(basefile, ".cdt", sep = ""))
+  if (is.null(descr))
+    r2cdt(hr, hc, x, file = paste(basefile, ".cdt", sep = ""))
+  else {
+    x1 = cbind(rownames(x), as.character(descr),
+      data.frame(x, check.names=FALSE))
+# print("computed x1")
+# print(class(x1))
+# print(x1[1:5,1:5])
+    r2cdt(hr, hc, x1, file = paste(basefile, ".cdt", sep = ""),
+      labels=TRUE, description=TRUE)
+  }
 
   # then, color the rows according to the clustering
   # read in files
-  cdt = read.table(paste(basefile, ".cdt", sep = ""), skip=3, as.is=TRUE)
+  cdt = read.table(paste(basefile, ".cdt", sep = ""),
+    sep="\t", quote="", skip=3, as.is=TRUE)
   gene.id = cdt[,1]
   names(gene.id) = cdt[,2]
 
@@ -182,4 +194,20 @@ write.clusters.treeview = function(x, hr, hc,
     sep="\t", row.names=FALSE, col.names=TRUE, quote=FALSE)
 }
 
+# Writes a "dummy" .atr file, which avoids changing the order
+# of the samples.
+# Args:
+#   f - filename
+#   n - number of "ARRY" entries (which will be numbered 0..n-1)
+write.dummy.atr = function(f, n) {
+  n = n - 1
+  r = data.frame(NODEID=paste0("NODE", 1:n, "X"),
+    LEFT = c("ARRY0X", paste0("NODE", 1:(n-1), "X")),
+    RIGHT = paste0("ARRY", 1:n, "X"),
+    CORRELATION = 1,
+    NODECOLOR = "#ffffff")
+
+  write.table(r, file=f, quote=FALSE, sep="\t",
+    row.names=FALSE, col.names=TRUE)
+}
 

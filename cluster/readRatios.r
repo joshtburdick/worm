@@ -46,10 +46,10 @@ r = r[ , order(colnames(r)) ]
 # Gets the ratios for all genes which have positive and negative samples.
 get.pos.neg.expression = function() {
   a = NULL
-  pos.neg.genes = c("ceh-26", "ceh-27", "ceh-36", "ceh-6",
-    "cnd-1 8/19", "cnd-1 12/14", "cnd-1 1/4",
-    "F21D5.9", "mir-57", "mls-2", "pal-1",
-    "pha-4 5/9", "pha-4 9/1", "pha-4 12/9", "ttx-3", "unc-130")
+  pos.neg.genes = c("cnd-1 8/19", "cnd-1 12/14", "cnd-1 1/4",
+    "pha-4 5/9", "pha-4 9/1", "pha-4 12/9", 
+    "ceh-27", "ceh-36", "ceh-6", "F21D5.9", "mir-57", "mls-2",
+    "pal-1", "pros-1", "ttx-3", "unc-130")
   for(g in pos.neg.genes) {
     pos = r[ , paste(g, "(+)") ]
     neg = r[ , paste(g, "(-)") ]

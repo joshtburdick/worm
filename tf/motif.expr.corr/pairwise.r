@@ -8,7 +8,8 @@ load("git/tf/motif/meme.format.pwm.Rdata")
 
 source("git/utils.r")
 
-x = read.tsv("git/unmix/seq/cluster/readsFACSandTS.tsv")
+# x = read.tsv("git/unmix/seq/cluster/readsFACSandTS.tsv")
+x = read.tsv("git/cluster/readRatios.tsv")
 
 # XXX: omitting timeseries data for now
 # x = x[,1:23]
@@ -164,31 +165,12 @@ count.pairwise.filtered = function() {
 }
 
 if (FALSE) {
-  # pairwise.0.9 = pairwise.interaction.regress(ortho, motif, tf.cor, 0.9)
-  # pairwise.0.8 = pairwise.interaction.regress(ortho, motif, tf.cor, 0.8)
+  pairwise.0.9 = pairwise.interaction.regress(ortho, motif, tf.cor, 0.9)
+  pairwise.0.8 = pairwise.interaction.regress(ortho, motif, tf.cor, 0.8)
   pairwise.0.7 = pairwise.interaction.regress(ortho, motif, tf.cor, 0.7)
 
-  # save(pairwise.0.9, pairwise.0.8, pairwise.0.7,
-  #   file="git/tf/motif.expr.corr/pairwise.Rdata")
-
-  # FIXME:
-  # - add directionality to these?
-  # - add likely target genes?
-
-  # cytoscape.file =
-  #   pairwise.0.7[ pairwise.0.7$type=="m1:m2" & pairwise.0.7$p.adj <= 5e-2,]
-
-  # only keeping significant interaction terms
-  cytoscape.file =
-    pairwise.0.7[ pairwise.0.7$p.adj <= 5e-2 , ]
-
-  # removing nhrs
-  cytoscape.file =
-    cytoscape.file[ grep("nhr", cytoscape.file$g1, invert=TRUE) , ]
-  cytoscape.file =
-    cytoscape.file[ grep("nhr", cytoscape.file$g2, invert=TRUE) , ]
-
-  # write.table(cytoscape.file, file="git/tf/motif.expr.corr/cytoscape.0.7.tsv",
-  #   sep="\t", col.names=NA, quote=FALSE)
+  save(pairwise.0.9, pairwise.0.8, pairwise.0.7,
+    file="git/tf/motif.expr.corr/pairwise.Rdata")
 }
+
 

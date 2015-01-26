@@ -1,6 +1,8 @@
 # Counts of the number of genes enriched in
 # particular FACS-sorted samples.
 
+# XXX deprecated: see ./pha4KnownPharyngealEnrichment.r
+
 source("git/plot/label_panel.r")
 source("git/utils.r")
 source("git/data/name_convert.r")
@@ -27,17 +29,20 @@ rownames(pha4.late) = pha4.late$gene
 pha4.early = rename.gene.names(pha4.early)
 pha4.late = rename.gene.names(pha4.late)
 
+
 pha4.replicates = c("pha-4 9/1", "pha-4 5/9", "pha-4 12/9")
+replicate.colors = hsv((0:2)/3, (3:1)/3, 1)
 
 # Plots a histogram of genes.
 plot.it = function(r) {
   r = as.matrix(r)
   r = r[ order(apply(r,1,mean)), ]
-  barplot(t(r), beside=TRUE, las=3, cex.names=0.8, yaxt="n",
-    ylim=c(-2,6))
+  barplot(t(r), beside=TRUE, space=c(0,2), las=3,
+    cex.names=0.8, yaxt="n", ylim=c(-2,6), col=replicate.colors)
   axis(side=2)
   mtext("Enrichment", cex=1.1, side=2, line=3)
-  abline(h=0, col="darkgrey")
+  abline(h=0)
+  abline(h=2, col="#00000060")
 }
 
 pdf("git/sort_paper/plot/pha4Enrichment.pdf",
@@ -57,6 +62,8 @@ label.panel("b)")
 
 plot.it(r[ rownames(pha4.early), pha4.replicates ])
 mtext("Early pharyngeal genes", cex=1.3)
+legend("topleft", pha4.replicates, fill=replicate.colors,
+  cex=0.8)
 label.panel("a)")
 plot.it(r[ rownames(pha4.late), pha4.replicates ])
 mtext("Late pharyngeal genes", cex=1.3)

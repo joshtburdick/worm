@@ -112,7 +112,7 @@ par(new=TRUE)
 a = rgb(m.unnormalized["ceh-36",], 0, 0)
 names(a) = lin.node.names
 plot.segments.per.cell(a, main="", root="P0", times=c(0,250),
-    lwd=1.5, yaxt="n", add=TRUE)
+    lwd=1.5, yaxt="n", add=TRUE, int.n.to.label=c())
 
 # label the samples
 if (FALSE) {

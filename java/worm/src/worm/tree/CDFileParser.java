@@ -57,7 +57,7 @@ public class CDFileParser {
 		
 		// create Cell, if it's not already present
 		if (!cells.containsKey(cell)) {
-			System.out.print(cell + " ");
+//			System.out.print(cell + " ");
 			cells.put(cell, new Cell(cell));
 		}
 		

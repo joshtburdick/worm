@@ -75,8 +75,7 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
 
       # restrict to the genes clustered
       # XXX also using an arbitrary cutoff for "motif is present"
-      motif.count = motif.count[g,,,] > 0
-
+      motif.count = motif.count[g,,,,drop=FALSE] > 0
       sum.by.cluster = function(x) {
         c(by(x, cl, sum))
       }

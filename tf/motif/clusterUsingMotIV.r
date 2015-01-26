@@ -22,10 +22,12 @@ known.motifs = c(
   read.meme.file(known.motif.meme.file[[3]]),
   read.meme.file(known.motif.meme.file[[4]]))
 
+#  read.meme.file("git/tf/motif/hughes_motif.meme"))
+
 motifs = c(known.motifs, de.novo.motifs)
 
 dists = motifDistances(motifs)
 motif.clusters = hclust(dists)
 
-save(motif.clusters, known.motifs, file="git/tf/motif/clusterUsingMotIV.Rdata")
+# save(motif.clusters, known.motifs, file="git/tf/motif/# clusterUsingMotIV_20141006.Rdata")
 

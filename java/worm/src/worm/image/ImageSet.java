@@ -40,27 +40,16 @@ public class ImageSet {
 	}
 	
 	/** Reads an image.
-	 * 	(Despite previous comment, this now seems to be reading compressed
-	 * TIFFs; need to check this though. Also, it would be good to know
-	 * precisely which .jars need to be where for this to work.) */
+	 * XXX It would be good to know precisely which .jars need to be
+	 * where for this to work.) */
 	private BufferedImage readImage(File f) throws IOException {
 		PlanarImage planarImage = JAI.create("fileload", f.getAbsolutePath());
 	    BufferedImage img = planarImage.getAsBufferedImage();
-	    
-	    // XXX trying to make this transparent, and failing...
-	    /*
-Graphics2D g2d = img.createGraphics();
-g2d.setComposite(
-  AlphaComposite.getInstance(AlphaComposite.DST_OUT, 1.0f));
-g2d.setColor(new Color(0,0,0,0));
-Rectangle2D.Double rect = 
-  new Rectangle2D.Double(0,0,img.getWidth(),img.getHeight()); 
-g2d.fill(rect);
-*/
 		return img;
 	}
 	
-	/** Constructs a (possibly mipmapped) Texture2D of a given image. */
+	/** Constructs a (possibly mipmapped) Texture2D of a given image. 
+	 * Deprecated. */
 	private Texture readTexture2D(File f) throws IOException {		
 		BufferedImage i = readImage(f);
 		System.out.println(i);
@@ -72,7 +61,8 @@ g2d.fill(rect);
 		return tl.getTexture();
 	}
 	
-	/** Constructs this from a directory. */
+	/** Constructs this from a directory. 
+	 * Deprecated (reading all the images at once probably isn't a good plan.) */
 	public ImageSet(File imageDir) throws IOException {
 	
 		// loop through contents of directory
@@ -107,7 +97,8 @@ g2d.fill(rect);
 	/** Gets which image this is from the filename.
 	 * This may need to be generalized at some point, and may not be used.
 	 * @param filename  an image filename
-	 * @return the time and plane. */
+	 * @return the time and plane. 
+	 * Possibly deprecated. */
 	private int[] parseFilename(String filename) {
 		int[] r = new int[2];
 		Matcher m = filenameParse.matcher(filename);
@@ -126,15 +117,17 @@ g2d.fill(rect);
 	}
 	
 	/** Gets all images at a particular time point.
+	 * (Later this may include caching.)
 	 * @param t  the timepoint of images to fetch
-	 * @return  a hash, keyed by plane, of the images. */
+	 * @return  a hash, keyed by plane number, of the images. */
 	public SortedMap<Integer, BufferedImage> getImagesAtTime(int t) {
 		TreeMap<Integer, BufferedImage> images = new TreeMap<Integer, BufferedImage>();
-		
+System.err.println("reading images from " + baseName + ", time " + t);		
 		// this reads in images until it fails to read in a file,
 		// and then assumes there aren't any more images
 		for(int z=1; z<=99; z++) {
 			File imageFile = new File(imageFileName(t, z));
+//			System.out.println("trying to read " + imageFile);
 			if (!imageFile.exists())
 				return images;
 			try {

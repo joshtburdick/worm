@@ -1,7 +1,8 @@
 # Plots the number of genes enriched (or depleted) vs. the number of
 # cells in a sorted fraction.
 
-source("git/sort_paper/plot/numEnrichedInFractions.r")
+# XXX we assume this was run already
+# source("git/sort_paper/plot/numEnrichedInFractions.r")
 
 # the sort matrix
 source("git/sort_paper/unmix/sortMatrix.r")
@@ -16,10 +17,21 @@ n.depleted = apply(r.sort.only.averaged <= -2, 2, sum)
 s = intersect(names(n.cells), names(n.enriched))
 
 
-pdf("git/sort_paper/plot/numEnrichedVsNumCells.pdf")
-plot(n.cells[s], n.enriched[s], pch=20, col="#ff000080")
+# pdf("git/sort_paper/plot/numEnrichedVsNumCells.pdf",
+#   width=5.5, height=5.5)
+par(mar=c(5,5,4,1) + 0.1)
+xlim = c(0, max(n.cells[s]))
+ylim = c(0, max(c(n.enriched[s], n.depleted[s])))
+plot(n.cells[s], n.enriched[s], pch=20, col="#ff0000b0",
+  xlim=xlim, ylim=ylim, cex.main=1.1,
+  main = "Genes enriched in different\nnumbers of sorted cells",
+  xlab = "Number of sorted cells",
+  ylab = "Number of genes enriched / depleted")
 par(new=TRUE)
-plot(n.cells[s], n.depleted[s], pch=20, col="#0000ff80")
+plot(n.cells[s], n.depleted[s], pch=20, col="#0000ffb0",
+  xlim=xlim, ylim=ylim, main="", xlab="", ylab="")
 
-dev.off()
+legend("topright", legend=c("enriched", "depleted"),
+  col=c("#ff0000b0", "#0000ffb0"), pch=20)
+# dev.off()
 

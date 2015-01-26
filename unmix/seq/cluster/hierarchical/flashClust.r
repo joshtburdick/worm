@@ -18,10 +18,11 @@ r = as.matrix(read.tsv("git/unmix/seq/cluster/readsFACSandTS.tsv"))
 
 # remove constant rows
 r = r[ apply(r, 1, var) > 0 , ]
+r[ is.na(r) ] = 0
 
 r.sort.only = r[,c(1:23)]
 r.sort.only = r.sort.only[ apply(r.sort.only, 1, var) > 0 , ]
-
+r.sort.only[ is.na(r.sort.only) ] = 0
 
 # Does hierarchical clustering.
 # Args:
@@ -52,9 +53,9 @@ h.cluster = function(r, r.cluster, output.path, num.clusters.list) {
       sep="\t", row.names=TRUE, col.names=NA)
 
     # write in TreeView format
-    write.treeview(r, r.cluster, clusters,
-      rainbow(max(clusters))[sample(max(clusters),max(clusters))],
-      paste(output.path.1, "clusters", sep="/"))
+#    write.treeview(r, r.cluster, clusters,
+#      rainbow(max(clusters))[sample(max(clusters),max(clusters))],
+#      paste(output.path.1, "clusters", sep="/"))
 
     # use handmade dendrogram
     # FIXME this isn't currently working
@@ -83,7 +84,7 @@ hcluster.treeview = function(r, r.cluster, method = "correlation", link = "compl
   list(hr=hr, hc=hc)
 }
 
-if (TRUE) {
+if (FALSE) {
   # weights to down-weight the timeseries data
 #  w1 = rep(1, 61)
 #  w1[c(39:61)] = 0.1

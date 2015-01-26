@@ -4,6 +4,7 @@
 # (or average) 1?
 
 library("MASS")
+library("limSolve")
 
 # useful for printing progress
 write.status = function(s) {
@@ -48,8 +49,36 @@ closest.point = function(A, b, x) {
   x - as.vector(t(A) %*% M %*% (A %*% x - b))
 }
 
-# Utility to jump a random amount in some direction.
-random.jump = function(x, d) {
+# "Vectorized" form of the above.
+# M = chol2inv(chol(A %*% t(A))) (it's assumed to be
+# precomputed, for the sake of efficiency)
+closest.points = function(A, B, X, M) {
+  X - as.vector(t(A) %*% M %*% (A %*% X - B))
+}
+
+# Normalizes the rows of a matrix.
+normalize.rows = function(x) x / apply(x, 1, sum)
+
+# Like "closest.point", but also attempts to normalize
+# the rows of B.
+closest.point.normalized = function(A, B, X, M) {
+  r = NULL
+
+  # XXX I don't know quite why this should converge
+  # to a fixed point, but it seems to.
+  for(iter in 1:4) {
+    X1 = normalize.rows(closest.points(A, B, X, M))
+    r[iter] = sd(as.vector(X1 - X))
+    X = X1
+  }
+
+  # FIXME: warn if this doesn't seem to have converged?
+  X
+}
+
+# Utility to jump a random amount in some direction,
+# keeping all entries of x positive.
+random.positive.jump = function(x, d) {
   r = x / d
   lo = max(c(-Inf, -r[r>0]))
   hi = min(c(Inf, -r[r<0]))
@@ -61,10 +90,31 @@ random.jump = function(x, d) {
 cda.sample = function(Z, x, num.iters) {
   for(i in 1:num.iters) {
     z = Z[ , sample(ncol(Z), 1) ]
-    x = random.jump(x, z)
+    x = random.positive.jump(x, z)
   }
 
   x
+}
+
+# Random-directions sampling rule (useful since we don't
+# want to explicitly compute the null space Z.)
+# Args:
+#   A, B - these give the constraint
+#   X - the current point
+# Returns: a new value of X, s.t. AX=B, and all X >= 0
+random.dir.sample = function(A, X, B, iters=100) {
+  M = chol2inv(chol(A %*% t(A)))
+
+  for(iter in 1:iters) {
+    # pick a point relative to X, which is in the plane
+    X1 = closest.point.normalized(A, B, X + rnorm(nrow(X)*ncol(X)), M)
+
+    # randomly jump in that direction (an amount which
+    # doesn't cause any X to go negative)
+    X = random.positive.jump(X, X1 - X)
+  }
+
+  X
 }
 
 # Updates A and x.
@@ -129,12 +179,10 @@ write.status(iter)
     }
 
     # update x in the new plane
-if (FALSE) {
-    Z = Null(t(A))
-    for(j in 1:ncol(x)) {
-      x[,j] = cda.sample(Z, x[,j], 100)
-    }
-}
+#    for(j in 1:ncol(x)) {
+#      x[,j] = cda.sample(Z, x[,j], 100)
+#    }
+    x = random.dir.sample(A, x, B)
   }
 
   list(A = A.samples, x = x.samples, A.update.iters = A.update.iters)

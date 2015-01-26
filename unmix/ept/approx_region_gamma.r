@@ -32,6 +32,7 @@ m2mv = function(x) {
 # Incorporates some linear constraints, using a somewhat
 # vague and experimental moment-matching method, which may
 # well be completely incorrect.
+# XXX ... and indeed, it doesn't seem to work.
 # Args:
 #   x - gamma distributions (as natural parameters)
 #   A, b - these give constraints on the sums of x
@@ -61,7 +62,7 @@ approx.region.gamma = function(A, b, max.iters=100) {
   x1 = rbind(m = rep(1, ncol(A)), v = rep(1^2, ncol(A)))
   prior = gamma.mv2n(x1)
   colnames(prior) = colnames(A)
-prior = prior / 1
+prior = prior / 2
 
   # the approximating terms
   term = array(0, dim=c(2, ncol(A), nrow(A)),
@@ -82,7 +83,7 @@ prior = prior / 1
 # print(gamma.n2mv(q1))
 
     # messages from each factor, conditional on constraint
-    q.new = gamma.conditional.approx.mm(q1, A, b)
+    q.new = gamma.conditional.approx(q1, A, b)
 
     # difference between those messages, and current posterior
     change = sweep(q.new, c(1,2), q, "-")
@@ -146,10 +147,18 @@ print(q)
   list(x = q, term = term)
 }
 
+# Wrapper for gamma-conditional-approx which avoids the
+# whole multidimensional array thing.
+gamma.conditional.approx.vec = function(x, A, b) {
+
+}
+
+if (FALSE) {
+
 A0 = t(rep(1,4))
 r = approx.region.gamma(A0, 1, max.iters=100)
 # this exactly matches the moments of the actual marginals,
-# which are ~ Beta(1,3) (for what that's worth)
+# which are ~ Beta(1,4) (for what that's worth)
 # to see this, eval
 #     gamma.n2mv(r$x)
 
@@ -162,10 +171,11 @@ A1 = rbind(c(1,1,0), c(0,1,1))
 r1 = approx.region.gamma(A1, c(1,1), max.iters = 200)
 
 A2 = rbind(
-  c(1,1,1,1,1,0),
-  c(0,0,0,1,1,1))
+  c(1,1,1,1,1,0,0),
+  c(0,0,0,1,1,1,1))
 rownames(A2) = c("ceh-6", "hlh-1")
-colnames(A2) = c("ABal", "ABar", "ABpl", "ABpr", "EMS", "P2")   # XXX bogus
-r2 = approx.region.gamma(A2, c(1,1), max.iters=100)
+colnames(A2) = c("ABal", "ABar", "ABpl", "ABpr", "MS", "E", "P2")   # XXX bogus
+r2 = approx.region.gamma(A2, c(0.5,0.5), max.iters=100)
 
+}
 

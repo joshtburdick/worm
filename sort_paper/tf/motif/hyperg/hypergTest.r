@@ -2,16 +2,52 @@
 
 source("git/tf/motif/enrichment/motifHyperg.r")
 
-cl = as.matrix(read.tsv(
-  "git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))[,2]
-cl = gsub(" ", "", cl)
+# XXX hokey way of getting this
+orig.motif.list = {
+  load("git/sort_paper/tf/allResults/motif/hier.300.clusters.Rdata")
+  dimnames(enrich)[[1]]
+}
 
-if (FALSE) {
+# Looks for motif enrichments for one clustering.
+# Args:
+#   cl - the clustering
+#   name - name to use for the output file
+# Side effects: saves motif enrichments to that file.
+enrich.test.one.clustering = function(cl, name) {
+  output.dir = "git/sort_paper/tf/motif/hyperg/allResults/"
+
+  system(paste0("mkdir -p ", output.dir, "chip/"))
   enrich = enrich.test.many.motifs(
-    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
-
+    "git/tf/chip/count/upstreamChipCount/", cl)
   save(enrich, file=
-    "git/sort_paper/tf/motif/hyperg/hughes_20141202/facs.Rdata")
+    paste0(output.dir, "chip/", name, ".Rdata"))
+
+#  system(paste0("mkdir -p ", output.dir, "5kb/"))
+#  enrich = enrich.test.many.motifs(
+#    "git/tf/motif/count/upstreamMotifCount/5kb/", cl, orig.motif.list)
+#  save(enrich, file=
+#    paste0(output.dir, "5kb/", name, ".Rdata"))
+
+#  system(paste0("mkdir -p ", output.dir, "hughes/"))
+#  system("mkdir -p git/sort_paper/tf/motif/hyperg/allResults/hughes/")
+#  enrich = enrich.test.many.motifs(
+#    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
+#  save(enrich, file=
+#    "git/sort_paper/tf/motif/hyperg/hughes_20141202/facs.Rdata")
+}
+
+if (TRUE) {
+  cl = as.matrix(read.tsv(
+    "git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))[,2]
+  cl = gsub(" ", "", cl)
+
+  enrich.test.one.clustering(cl, "facs")
+
+#  enrich = enrich.test.many.motifs(
+#    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
+
+#  save(enrich, file=
+#    "git/sort_paper/tf/motif/hyperg/hughes_20141202/facs.Rdata")
 }
 
 if (FALSE) {
@@ -41,6 +77,31 @@ save(shuffled.expr.enrich, file=
   "git/sort_paper/tf/motif/hyperg/shuffled.expr.enrich.Rdata")
 }
 
+# Runs on one directory.
+enrich.test.file = function(f) {
+  output.dir = "git/sort_paper/tf/motif/hyperg/hughes_20141202/"
+  system(paste0("mkdir -p ", output.dir))
+
+  cl = as.matrix(read.tsv(
+    paste0("git/sort_paper/cluster/datasetComparison/clustering/",
+      f)))[,1]
+  # XXX
+  cl = { 
+    cl.names = names(cl)
+    cl = as.character(cl)
+    names(cl) = cl.names
+    cl
+  }
+  name = sub(".tsv", "", f)
+
+  enrich.test.one.clustering(cl, name)
+
+#  enrich = enrich.test.many.motifs(
+#    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
+#
+#  save(enrich, file=paste0(output.dir, "/", name, ".Rdata"))
+}
+
 # Runs on one directory of the original clusterings.
 enrich.test.clustering = function() {
   output.dir = "git/sort_paper/tf/motif/hyperg/hughes_20141202_facs_clustering/"
@@ -59,35 +120,12 @@ enrich.test.clustering = function() {
   }
 }
 
-# Runs on one directory.
-enrich.test.file = function(f) {
-  output.dir = "git/sort_paper/tf/motif/hyperg/hughes_20141202/"
-  system(paste0("mkdir -p ", output.dir))
-
-  cl = as.matrix(read.tsv(
-    paste0("git/sort_paper/cluster/datasetComparison/clustering/",
-      f)))[,1]
-  # XXX
-  cl = { 
-    cl.names = names(cl)
-    cl = as.character(cl)
-    names(cl) = cl.names
-    cl
-  }
-  name = sub(".tsv", "", f)
-
-  enrich = enrich.test.many.motifs(
-    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
-
-  save(enrich, file=paste0(output.dir, "/", name, ".Rdata"))
-}
-
-if (FALSE) {
+if (TRUE) {
   enrich.test.file("hy.tsv")
   enrich.test.file("spencer.tsv")
   enrich.test.file("spencerEmbryonic.tsv") 
   enrich.test.file("shuffled.rows.facs.tsv")
+#  enrich.test.clustering()
 }
 
-enrich.test.clustering()
 

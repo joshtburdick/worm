@@ -23,7 +23,7 @@ num.genes.per.anatomy.term = sort(table(ao$group.name), decreasing=TRUE)
 anatomy.term.1 = num.genes.per.anatomy.term[1:15]
 ao = ao[ao$group.name %in% names(anatomy.term.1) , ] 
 
-# clobber some anatomy terms with less-specific terms\
+# clobber some anatomy terms with less-specific terms
 ao[ao$group.name %in% c("head neuron", "nerve ring", "nervous system",
   "neuron", "tail neuron", "ventral cord neuron"), "group.name"] = "neuron"
 ao[ao$group.name %in% c("body wall musculature", "vulval muscle"),
@@ -31,15 +31,14 @@ ao[ao$group.name %in% c("body wall musculature", "vulval muscle"),
 ao[ao$group.name %in% c("reproductive system", "spermatheca", "vulva"),
   "group.name"] = "reproductive"
 
+ao = unique(ao)
 
-
-
-# possibly restrict to genes only annotated with one term
-unique.gene = {
+# possibly restrict to genes only annotated with a few terms
+specific.gene = {
   gene.count = table(ao$gene)
-  names(gene.count)[ gene.count == 1 ]
+  names(gene.count)[ gene.count <= 2 ]
 }
-# ao = ao[ ao$gene %in% unique.gene , ]
+ao = ao[ ao$gene %in% specific.gene , ]
 
 # information about clusters
 wb.cluster = read.table(gzfile("data/wormbase/gene_expr_cluster.tsv.gz"),

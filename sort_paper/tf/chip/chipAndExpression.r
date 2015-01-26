@@ -88,7 +88,7 @@ chip.expr.cor = function(chip.count, bp.count, cluster.lme) {
       for(score in dimnames(chip.count)[[4]]) {
         peaks.per.kb = chip.count[,ud,cons,1] /
           (bp.count[,ud,cons] / 1e3)
-        if (any(peaks.per.kb > 0)) {
+        if (sum)peaks.per.kb > 0) {
           s = summary(lm(cluster.lme ~ peaks.per.kb))
           r = rbind(r, data.frame(upstream.dist = ud,
             conservation = cons,

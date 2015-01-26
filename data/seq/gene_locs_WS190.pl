@@ -15,30 +15,43 @@ my $infile = "~/data/wormbase/c_elegans.WS190.annotations.gff2.gz";
 # Creates a BED6 file containing merged exons, and the names of all
 # genes overlapping each exon.
 sub get_exons {
-  open IN, "gunzip -c $infile | egrep \"(Coding_transcript|Non_coding_transcript)\" | bedtools sort -i - |" || die;
   open OUT, "| bedtools sort -i - > exons_WS190.bed" || die;
 
+  # first, the majority of genes (from Wormbase)
+  open IN, "gunzip -c $infile | egrep \"(Coding_transcript|Non_coding_transcript)\" | bedtools sort -i - |" || die;
   while (<IN>) {
     my @a = split /\t/;
     $a[0] =~ s/^CHROMOSOME_//;
 
-    if ($a[1] eq "Coding_transcript" && $a[2] eq "exon") {
+    if (($a[1] eq "Coding_transcript" ||
+        $a[1] eq "Non_coding_transcript")
+        && $a[2] eq "exon") {
       die @a if not $a[8] =~ /Transcript "(\S+)"/;
       my $name = $1;
       print OUT (join "\t", $a[0], $a[3], $a[4], $name, 0, $a[6]);
       print OUT "\n";
     }
-
-    if ($a[1] eq "Non_coding_transcript" && $a[2] eq "exon") {
-      die @a if not $a[8] =~ /Transcript "(\S+)"/;
-      my $name = $1;
-      print OUT (join "\t", $a[0], $a[3], $a[4], $name, 0, $a[6]);
-      print OUT "\n";
-    }
-
   }
-
   close IN;
+
+  # then, the non-coding RNAs
+  my $dir = "../../../data/expression/lincRNA/";
+  open IN,
+    "cat $dir/ancRNAs_W3PSeq3_ce6.gtf $dir/lincRNAs_W3PSeq3_ce6.gtf |"
+    || die;
+  while (<IN>) {
+    my @a = split /\t/;
+    $a[0] =~ s/^chr//;
+
+    if ($a[2] eq "exon") {
+      die @a if not $a[8] =~ /gene_id "(\S+)"/;
+      my $name = $1;
+      print OUT (join "\t", $a[0], $a[3], $a[4], $name, 0, $a[6]);
+      print OUT "\n";
+    }
+  }
+  close IN;
+
   close OUT;
 
   system("bedtools merge -s -nms -i exons_WS190.bed " .
@@ -86,12 +99,31 @@ sub group_exons {
   close OUT;
 }
 
+# Reads in mapping from transcript names to human-readable
+# WormBase names (when available.)
+sub get_wormbase_names {
+  open IN, "gunzip -c ../../../data/wormbase/c_elegans.PRJNA13758.WS240.xrefs.txt.gz |" || die;
+  my %h = ();
+  while (<IN>) {
+    chomp;
+    my @a = split /\t/;
+    if (!($a[2] eq ".")) {
+      $h{$a[0]} = $a[2];
+      $h{$a[3]} = $a[2];
+    }
+  }
+
+  return \%h;
+}
+
 # Converts from GFF format to BED format.
 # Args:
 #   gff_in - GFF file to convert
 #   bed_out - BED file to write to
 sub gff_to_bed {
   my($gff_in, $bed_out) = @_;
+
+  my $wormbase_name = get_wormbase_names();
 
   # first, read in all records, indexed by gene
   open IN, "bedtools sort -i $gff_in |" || die;
@@ -119,6 +151,11 @@ sub gff_to_bed {
     foreach (@r) {
       push @sizes, $_->[4] + 1 - $_->[3];
       push @starts, $_->[3] + 0 - $a;
+    }
+
+    # if possible, convert ID to be a Wormbase gene name
+    if (defined $wormbase_name->{$id}) {
+      $id = $wormbase_name->{$id};
     }
 
     print OUT join "\t", ($r[0]->[0], $a-1, $b, $id, 0,

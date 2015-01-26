@@ -5,7 +5,6 @@ library(Matrix)
 library(corpcor)
 
 source("git/utils.r")
-source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/normal.r")
 
 # Moment-matches a normal, truncated at x >= 0,
@@ -34,7 +33,15 @@ positive.moment.match.canonical = function(x) {
 # Adds in a constraint of the form Ax ~ b, and returns the
 # full covariance matrix. This expects, and returns, a
 # full covariance matrix.
-mvnorm.naive = function(m, V, A, b, b.var) {
+
+# A multivariate normal distribution, conditional on a 
+# linear constraint.
+# Args:
+#   m, V - mean and covariance matrix of the MV normal
+#   A, b, b.var - these give the linear constraint
+# Returns: list of mean and covariance of the posterior
+#   (the covariance may not be positive definite)
+mvnorm.full = function(m, V, A, b, b.var) {
 
   # first, compute (A V A^T + v I) ^ -1, which I'll call B
   M = as.matrix( A %*% V %*% t(A) + Diagonal(x = b.var) )
@@ -80,14 +87,34 @@ lin.constraint.sparse = function(m, v, A, b, b.var) {
 }
 
 # Message constraining "Ax ~ N(b, b.var)".
-lin.constraint.factor = function(A, b, b.var) function(x) {
+lin.constraint.factor = function(A, b, b.var) function(x.mean, x.prec) {
   mv = canonical.to.mean.and.variance(x)
-#  r = mvnorm.2.diag(mv[,"m"], mv[,"v"], A, b, b.var)
-  r = lin.constraint.sparse(mv[,"m"], mv[,"v"], A, b, b.var)
-# print("r =")
-# print(r)
-# print(colnames(r))
+
+
+  r = lin.constraint.sparse(x.mean, x.prec, A, b, b.var)
+
+
   mean.and.variance.to.canonical(r)
+}
+
+# Given two points, computes proportion of the distance
+# from a to b you can move "as far as possible", without
+# any element of the vector going negative.
+amt.to.move = function(a, b) {
+
+  # the amount we would go in each direction
+  delta = b - a
+
+  s = - a / delta
+  s[ is.na(s) ] = 0
+
+  # If any element of s is negative, it doesn't matter, in
+  # terms of hitting boundaries. However, if any element is
+  # positive, we can only add that "amount" of delta.
+
+  m = min(1, s[ s > 0 ])
+
+  a + m * delta
 }
 
 # Approximates a region constrained such that x >= 0,
@@ -96,8 +123,8 @@ lin.constraint.factor = function(A, b, b.var) function(x) {
 #   A, b, b.var - these give the constraint that
 #     Ax ~ Normal(b, b.var), x >= 0
 #     (For exact constraints, b.var can be 0.)
-#   prior.mean - the prior mean (zero if omitted)
 #   prior.var - the prior covariance (flat if omitted)
+#     (mean is assumed to be zero)
 # Returns: list with components
 #   m, v - the mean and variance of the posterior
 #   t - the prior times the terms (without the linear constraint)
@@ -141,6 +168,8 @@ approx.region.full = function(A, b, b.var,
     }
 
     # add in Ax ~ N(-,-) constraint
+    # This takes the prior , and only returns the mean, and diagonal of
+    # the posterior covariance matrix
     q = lin.constraint( prior + terms )
 
     # ??? show change in mean and variance separately?
@@ -156,7 +185,7 @@ cat(" \n")
 
   mv = canonical.to.mean.and.variance(q)
   list(m = mv[,"m"], v = mv[,"v"],
-    t = canonical.to.mean.and.variance( prior + terms ),
+#    t = canonical.to.mean.and.variance( prior + terms ),
     update.stats = update.stats)
 }
 

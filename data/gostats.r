@@ -1,6 +1,7 @@
 # Attempt at using GOstats.
 
 library("GOstats")
+library("GO.db")
 library("org.Ce.eg.db")
 
 # useful utility
@@ -58,39 +59,45 @@ go.depth.deprecated = function(go.category, go.id) {
 
 # Gets GO enrichment results for a set of genes.
 # Args:
-#   background.genes - the set of background genes
+#   universe.genes - the universe of gene names
 #   genes - a set of gene symbols (ideally either
 #     names like "ceh-6" or clone IDs like "T19A6.1")
-go.hyperg = function(background.genes, genes) {
-  background.eg.ids = gene.to.eg.id( background.genes )
+#   depth.bound - only include terms with depth between
+#     depth.bound[1] and depth.bound[2]
+go.hyperg = function(universe.genes, genes, depth.bound) {
+  universe.eg.ids = unique(gene.to.eg.id( c(universe.genes, genes)))
 
   r = NULL
+  num.tests = 0
 
   for(ont in c("BP", "CC", "MF")) {
+    geneIds = gene.to.eg.id(genes)
 
-    params = new("GOHyperGParams",
-      geneIds=gene.to.eg.id(genes),
-      universeGeneIds=background.eg.ids,
-      annotation="celegans",
-      ontology=ont,
-      pvalueCutoff=0.05,
-      conditional=FALSE,
-      testDirection="over")
+    if (length(gene.to.eg.id) > 0) {
+      params = new("GOHyperGParams",
+        geneIds=gene.to.eg.id(genes),
+        universeGeneIds=universe.eg.ids,
+        annotation="celegans",
+        ontology=ont,
+        pvalueCutoff=0.05,
+        conditional=TRUE,   # was FALSE
+        testDirection="over")
 
-    try({
-      ht = summary(hyperGTest(params))
-      colnames(ht)[[1]] = "GOID"
-      print(dim(ht))
-      if (nrow(ht) > 0) {
-        r = rbind(r, cbind(ontology=ont, ht))
-      }
-    })
+      try({
+        gt = hyperGTest(params)
+        ht = summary(gt, categorySize=10)
+        colnames(ht)[[1]] = "GOID"
+        print(dim(ht))
+        num.tests = num.tests + length(slot(slot(gt, "goDag"), "nodes"))
+        if (nrow(ht) > 0) {
+          r = rbind(r, cbind(ontology=ont, ht,
+            term.depth = sapply(ht$GOID, go.depth(ont))))
+        }
+      })
+    }
   }
 
-  r$p.corr = p.adjust(r$Pvalue, method="fdr")
-  r = r[r$p.corr <= 0.05,]
-  r
+  r = r[ r$term.depth >= depth.bound[1] & r$term.depth <= depth.bound[2] , ]
+  list(r = r, num.tests = num.tests)
 }
-
-
 

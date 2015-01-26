@@ -4,7 +4,7 @@
 # adding up to something.
 # Args:
 #   a - initial Dirichlet parameters
-#   A. b - these give the linear constraint
+#   A, b - these give the linear constraint
 # Returns: a counts, conditional on A(mean(Dirichlet(a))) = b
 dirichlet.cond = function(a, A, b) {
 
@@ -62,13 +62,11 @@ unmix.dirichlet = function(A, b) {
   list(m = m, x = x + 1, mean = (x+1) / sum(x+1))
 }
 
-
-
 A = rbind(
   c(1,1,1,1,1,0),
   c(0,0,0,1,1,1))
 
-a1 = dirichlet.cond(a, A, c(0.5, 0.1))
+# a1 = dirichlet.cond(a, A, c(0.5, 0.1))
 
 r = unmix.dirichlet(A, c(0.5, 0.1))
 

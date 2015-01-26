@@ -42,8 +42,8 @@ gamma.s2mv = array.apply(function(a) {
 gamma.mv2n = function(a) gamma.s2n(gamma.mv2s(a))
 gamma.n2mv = function(a) gamma.s2mv(gamma.n2s(a))
 
-# Finds the marginal distributions of independant gamma variables,
-# conditional on their sum adding up to exactly one.
+# Finds the marginal distributions of independant gamma
+# variables, conditional on their sum adding up to one.
 # (Analogous to lin.constraint() in the EP code.)
 # ??? is this correct? (ETA: it appears not...)
 # Args:
@@ -81,11 +81,11 @@ print(round(p, 3))
 # conditional on them summing to 1.
 #   This is an approximation; but if the gammas all have
 # the same scale, then it amounts to moment-matching
-# a Dirichlet with a gamma (which should often be good.)
+# a beta with a gamma (which should often be good.)
 # Args:
 #   x - gamma distributions (as natural parameters)
 # Returns: same, conditional on them summing to 1
-gamma.conditional.approx.1 = function(x) {
+gamma.conditional.approx.1.beta = function(x) {
 
   xa = gamma.n2s(x)
 
@@ -108,6 +108,26 @@ gamma.conditional.approx.1 = function(x) {
   mm["b",] = mm["b",] + xa["b",] - xb["b",]
 
   gamma.s2n(mm)
+}
+
+#   Estimates marginals of independent gamma variables,
+# conditional on them summing to 1. This is a simpler
+# method than gamma.conditional.approx.1.beta .
+# XXX and incorrect, I think.
+# Args:
+#   x - gamma distributions (as natural parameters)
+# Returns: same, conditional on them summing to 1.
+gamma.conditional.approx.1.rescale = function(x) {
+  # XXX this only works on one at a time
+
+  # compute sum of these
+  x.mv = gamma.n2mv(x)
+  s = sum(x.mv["m",])
+
+
+
+
+  list(x.mv = x.mv)
 }
 
 # Approximates marginals of gamma-distributed variables,
@@ -135,7 +155,7 @@ gamma.conditional.approx = function(x, A, b) {
 # print(gamma.n2mv(xs))
 
   # condition on the scaled distribution summing to 1
-  xsc = array(apply(xs, c(3), gamma.conditional.approx.1),
+  xsc = array(apply(xs, c(3), gamma.conditional.approx.1.beta),
     dim=dim(xs), dimnames=dimnames(x))
 # print(xsc)
   dimnames(xsc) = dimnames(x)
@@ -149,30 +169,6 @@ gamma.conditional.approx = function(x, A, b) {
   xc["e2",,][ t(A==0) ] = x["e2",,][ t(A==0) ]
 
   xc
-}
-
-# Approximates marginals of gamma-distributed variables,
-# given constraints on their expected sums.
-# Args:
-#   x - natural parameters of gamma distributions
-#   A, b - these give the exact constraint that A * x = b
-# Returns: x, conditional on the constraint
-# XXX this isn't currently working.
-if (FALSE) {
-gamma.conditional.approx = function(x, A, b) {
-
-  # convert to mean and variance?
-  x.mv = gamma.n2mv(x)
-
-
-  # compute nullspace of A
-  Z = Null(A)
-
-
-
-
-
-}
 }
 
 # The density function for the gamma, conditional on vars summing to 1.

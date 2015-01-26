@@ -42,7 +42,8 @@ meme.format.pwm = {
     read.meme.file(known.motif.meme.file[[2]]),
     read.meme.file(known.motif.meme.file[[3]]),
     read.meme.file(known.motif.meme.file[[4]]),
-    read.meme.file("git/tf/motif/hughes_motif.meme"))
+#    read.meme.file("git/tf/motif/hughes_motif.meme"),
+    read.meme.file("git/data/tf/hughes_motif_20141202.meme"))
 
   number.columns = function(x) {
 # print(dim(x))

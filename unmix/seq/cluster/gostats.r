@@ -1,43 +1,46 @@
-# Attempt at using GOstats. Not currently working.
-
+# Attempt at using GOstats.
 
 library("GOstats")
 library("org.Ce.eg.db")
 
-library("biomaRt")   # this is deprecated
+# for background genes
+source("git/sort_paper/plot/numEnrichedInFractions.r")
 
-ens.ce = useMart("ensembl", dataset="celegans_gene_ensembl")
-
-# to see available maps, do
-#    ls("package:celegans.db")
-
-# convert symbol names to Entrez gene IDs
-symbol.to.entrez = function(genes) {
-  a = unlist(mget(genes, revmap(celegansSYMBOL), ifnotfound=NA))
-  a = a[ !is.na(a) ]
-  s = unlist(mget(a, celegansENSEMBL, ifnotfound=NA))
-  s = s[ !is.na(s) ]
-  s
+# useful utility
+gene.to.eg.id = function(genes) {
+  mappedLkeys(subset(org.Ce.egALIAS2EG,
+    Rkeys = genes, drop.invalid.keys=TRUE))
 }
 
-# print( symbol.to.entrez( c("ceh-26", "scl-27", "sre-20", "foo") ))
-gene.ids = c("ceh-6", "hlh-1", "tbx-35", "cnd-1")
+# determine "background" gene symbols
+background.genes = names(max.expr)[ max.expr > 1 ]
+background.eg.ids = gene.to.eg.id( background.genes )
 
-all.genes = Lkeys(org.Ce.egGO)
+# Gets GO enrichment results for a set of genes.
+# Args:
+#   genes - a set of gene symbols (ideally either
+#     names like "ceh-6" or clone IDs like "
+go.hyperg = function(genes) {
+  r = NULL
 
-gene.ids = sample(all.genes, 500)
+  for(ont in c("BP", "CC", "MF")) {
 
-# parameters
-if (TRUE) {
-params = new("GOHyperGParams",
-  geneIds=gene.ids,
-#  universeGeneIds= symbol.to.entrez(c("lin-12", "lin-14")),
-  annotation="celegans",
-  ontology="BP",
-  pvalueCutoff=0.05,
-  conditional=FALSE,
-  testDirection="over")
+    params = new("GOHyperGParams",
+      geneIds=gene.to.eg.id(genes),
+      universeGeneIds=background.eg.ids,
+      annotation="celegans",
+      ontology=ont,
+      pvalueCutoff=0.05,
+      conditional=FALSE,
+      testDirection="over")
+
+    ht = summary(hyperGTest(params))
+    colnames(ht)[[1]] = "GOID"
+    r = rbind(r, cbind(ontology=ont, ht))
+  }
+
+  r
 }
 
-r = hyperGTest(params)
+foo = go.hyperg(sample(background.genes, 100))
 

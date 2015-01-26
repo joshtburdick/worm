@@ -3,8 +3,11 @@
 source("git/utils.r")
 
 # information about orthologs
-motif.ortholog = read.table("git/tf/motif.ortholog.3.tsv",
-  as.is=TRUE, header=TRUE)
+#motif.ortholog = read.table("git/tf/motif.ortholog.3.tsv",
+#  as.is=TRUE, header=TRUE)
+#
+motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
+
 motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 
 # add representative motif name, from the motif clustering
