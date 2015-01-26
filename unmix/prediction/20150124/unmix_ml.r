@@ -54,6 +54,11 @@ expressed = which( apply(rpm, 1, max) >= 5 )
 # x.other = 1e6 - apply(rpm, 2, sum)
 # rpm = rbind(rpm, "_other" = x.other)
 
+# Definition of "enrichment."
+log2.enrich = function(x.plus, x.minus)
+  log2( 3 + x.plus ) - log2( 3 + x.minus )
+
+
 # Unmixes a data set.
 # Args:
 #   m - the sort matrix
@@ -75,31 +80,42 @@ unmix.ml = function(m, rpm, max.iters=200) {
 }
 
 # Simulates a sorting experiment.
-sim.sort.ratio = function(x, m) {
-  m.plus = m / sum(m)
-  m.minus = (1-m) / sum(1-m)
+# Args:
+#   x - the predicted expression data
+#   m - the sort matrix
+#   f.plus, f.minus - names of positive and negative
+#     fractions used for sorting
+# Returns: vector of predicted read ratios, computed
+#   as for the actual data.
+sim.sort.ratio = function(x, m, f.plus, f.minus) {
+  x.plus = as.vector( x %*% m[ f.plus , ] )
+  x.minus = as.vector( x %*% m[ f.minus , ] )
 
-  x.plus = x %*% as.matrix(as.vector(m.plus))
-  x.minus = x %*% as.matrix(as.vector(m.minus))
-
-  log2( 3 + x.plus ) - log2( 3 + x.minus )
+  r = log2( 3 + x.plus ) - log2( 3 + x.minus )
+  names(r) = rownames(x)
+  r
 }
 
 # Measures accuracy of unmixing by cross-validation.
 # Args:
 #   rpm - the reads to use for unmixing
+#   m - the sort matrix
 #   f - the sort fraction to unmix
 # Returns: list containing
 #   x - the unmixed data
-#   sim.r - the simulated 
-unmix.ml.crossval = function(rpm, f) {
+#   sim.r - the simulated enrichment
+#   actual.r - the actual enrichment
+unmix.ml.crossval = function(rpm, m, f) {
+  # FIXME deal with cases w/o negative controls
+  f.plus = paste0(f, " (+)")
+  f.minus = paste0(f, " (-)")
 
   # remove fraction being predicted from the input data
   # (as well as doubly-sorted fractions)
-  s = setdiff(rownames(m1),
-    c(double.sorted.fractions, paste(f, c("(+)", "(-)"))))
-# print(s)
-  x = unmix.ml(m1[ s , ], rpm[ , s ])
+  s = setdiff(rownames(m),
+    c(double.sorted.fractions, f.plus, f.minus))
+print(s)
+  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
 
   # name of the fraction to use for sim. sorting
   sim.f = f
@@ -108,12 +124,25 @@ unmix.ml.crossval = function(rpm, f) {
   }
 
   list(x = x,
-    sim.r = sim.sort.ratio(x[,1:1341], m1[sim.f, 1:1341]))
+    sim.r = sim.sort.ratio(x, m, f.plus, f.minus),
+    actual.r = log2.enrich(rpm[ , f.plus ], rpm[ , f.minus ]))
 }
 
+unmix.ml.all = function() {
+  r = NULL
 
+  for(f in setdiff(rownames(m)[1:14], c("hlh-16", "irx-1"))) {
+    write.status(f)
+    a = unmix.ml.crossval(rpm, m1, f)
+    r[[f]] = cor(a$sim.r, a$actual.r)
+  }
+
+  r
+}
 
 # x = unmix.ml(m1, rpm)
 
-# crossval.r = unmix.ml.crossval(rpm, "pros-1")
+# crossval.r = unmix.ml.crossval(rpm, m1, "mls-2")
+
+unmix.corr = unmix.ml.all()
 
