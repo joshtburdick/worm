@@ -115,5 +115,5 @@ unmix.ml.crossval = function(rpm, f) {
 
 # x = unmix.ml(m1, rpm)
 
-crossval.r = unmix.ml.crossval(rpm, "pros-1")
+# crossval.r = unmix.ml.crossval(rpm, "pros-1")
 
