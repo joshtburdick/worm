@@ -95,3 +95,79 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
   r
 }
 
+# Tests for enrichment of a motif in one gene set (defined by
+# a logical vector), using many different motif cutoffs.
+# Args:
+#   motif.count - a set of motif counts
+#   gene.set - a logical vector of which genes are in the set
+#     (the set of "all genes" is given by names() of this)
+# Returns: a slice of enrichments
+enrich.test.gene.set = function(motif.count, gene.set) {
+
+  # restrict to genes in the set
+  g = intersect(names(gene.set), dimnames(motif.count)[[1]])
+  gene.set = gene.set[ g ]
+  # also, using an arbitrary cutoff for "motif is present"
+  motif.count = motif.count[g,,,,drop=FALSE] > 0
+
+  # object to hold results
+  a = list(stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
+  r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
+
+  r["m.cluster",,,] = apply(motif.count[gene.set,,,,drop=FALSE] > 0, c(2:4), sum)
+  r["g.cluster",,,] = sum(gene.set)
+  r["m.total",,,] = apply(motif.count, c(2:4), sum)
+  g.total = length(gene.set)
+  r["p",,,] = motif.enrich.hyperg(r["m.cluster",,,],
+    r["g.cluster",,,],
+    r["m.total",,,], g.total)
+
+  r
+}
+
+# Like enrich.test.many.motifs(), but searches for
+# enrichment of possibly-overlapping sets of genes.
+# Args:
+#   motif.dir - directory containing motif counts
+#   gene.sets - a list of gene sets, each of which is
+#     a boolean vector
+#   motifs - optional subset of motifs to include
+# Returns: a data frame of enrichments
+enrich.test.gene.sets.many.motifs =
+    function(motif.dir, gene.sets, motifs=NULL) {
+
+  group.names = sort(names(gene.sets))
+  motif.files = list.files(motif.dir)    # [1:20]
+  motif.names = sub(".Rdata$", "", motif.files)
+
+  # possibly filter list of motifs to include
+  if (!is.null(motifs)) {
+    motif.names = intersect(motif.names, motifs)
+  }
+  motif.files = intersect(motif.files, paste0(motif.names, ".Rdata"))
+
+  # get a file of counts, and various dimensions
+  load(paste0(motif.dir, "/", motif.files[1]))
+
+  # object to hold results
+  a = list(motif = motif.names,
+    group = group.names,
+    stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
+  r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
+
+  # loop through motifs and groups
+  for(f in motif.files) {
+    write.status(f)
+    motif.count = NULL
+    load(paste0(motif.dir, "/", f))
+    motif.name = sub(".Rdata$", "", f)
+    for(g in group.names) {
+      r[motif.name,g,,,,drop=FALSE] =
+        enrich.test.gene.set(motif.count, gene.sets[[g]])
+    }
+  }
+
+  r[,,"p.corr",,,] = p.adjust(r[,,"p",,,], method="fdr")
+  r
+}
+

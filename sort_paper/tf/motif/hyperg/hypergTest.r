@@ -33,7 +33,7 @@ enrich.test.one.clustering = function(cl, name) {
 #  enrich = enrich.test.many.motifs(
 #    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
 #  save(enrich, file=
-#    "git/sort_paper/tf/motif/hyperg/hughes_20141202/facs.Rdata")
+#    paste0(output.dir, "hughes/", name, ".Rdata"))
 }
 
 if (TRUE) {

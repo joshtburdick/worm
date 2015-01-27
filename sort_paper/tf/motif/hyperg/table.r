@@ -65,7 +65,7 @@ most.significant.results = function(name) {
 
   load(paste0(enrich.result.dir, "5kb/", name, ".Rdata"))
   r1 = enrich.to.table(enrich)
-  load(paste0(enrich.result.dir, "hughes_20141202/", name, ".Rdata"))
+  load(paste0(enrich.result.dir, "hughes/", name, ".Rdata"))
   r2 = enrich.to.table(enrich)
   r = rbind(r1, r2)
 
@@ -81,7 +81,11 @@ most.significant.results = function(name) {
   r
 }
 
+# r = most.significant.results("hier.300")
+# system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
+# write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+
 r = most.significant.results("facs")
-system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))
+
 
