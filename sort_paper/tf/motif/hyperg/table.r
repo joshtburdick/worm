@@ -48,8 +48,6 @@ most.significant.stats.1 = function(a) {
     a[ , i[1], i[2], i[3] ])
 }
 
-
-
 # Given an array of enrichment results, gets information about
 # the most significant result.
 enrich.to.table = function(enrich) {
@@ -61,7 +59,7 @@ enrich.to.table = function(enrich) {
 }
 
 # Constructs a table of one set of results.
-most.significant.results = function(name) {
+most.significant.results.motif = function(name) {
 
   load(paste0(enrich.result.dir, "5kb/", name, ".Rdata"))
   r1 = enrich.to.table(enrich)
@@ -81,9 +79,25 @@ most.significant.results = function(name) {
   r
 }
 
-r = most.significant.results("hier.300")
-system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+most.significant.results.chip = function(name) {
+
+  load(paste0(enrich.result.dir, "chip/", name, ".Rdata"))
+  r = enrich.to.table(enrich)
+
+  colnames(r)[6] = "genes with motif in cluster"
+  colnames(r)[7] = "genes in cluster"
+  colnames(r)[8] = "genes with motif"
+  r = r[ order(r$p) , c(1,11,2:10) ]
+  r
+}
+
+#r = most.significant.results.motif("hier.300")
+#system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
+#write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+
+r = most.significant.results.chip("hier.300")
+system("mkdir -p git/sort_paper/tf/motif/hyperg/table/chip")
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/chip/hier.300.tsv.gz"))
 
 # r = most.significant.results("facs")
 # write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))
