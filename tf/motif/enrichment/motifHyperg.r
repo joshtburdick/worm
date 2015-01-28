@@ -162,7 +162,8 @@ enrich.test.gene.sets.many.motifs =
   # object to hold results
   a = list(motif = motif.names,
     group = group.names,
-    stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
+    stat=c("m.cluster", "g.cluster", "m.total",
+      "enrich", "p", "p.corr"))
   r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
 
   # loop through motifs and groups

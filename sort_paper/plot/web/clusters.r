@@ -99,10 +99,9 @@ motif.enriched =
   motif.enriched[ motif.enriched$motif %in% names(motif.name) , ]
 
 # motif enrichment, using the hypergeometric test
-hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
 hyperg.motif = hyperg.motif[ hyperg.motif$p.corr <= 0.05 , ]
 hyperg.motif$motifs.cluster = hyperg.motif$"genes with motif in cluster"
-hyperg.motif$enrich = NA      # FIXME
 
 # Function to make ChIP factor names lower case (to help
 # match them with motif names), and otherwise tweak them
@@ -120,11 +119,10 @@ chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
 chip.enriched$factor = chip.name.improve(chip.enriched$factor)
 
 # same, using hypergeometric test
-hyperg.chip = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/chipTable/hier.300.tsv.gz"))
+hyperg.chip = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/chipTable/hier.300.clusters.tsv.gz"))
 colnames(hyperg.chip)[1] = "experiment"
 colnames(hyperg.chip)[5] = "motifs.cluster"
 hyperg.chip = hyperg.chip[ hyperg.chip$p.corr <= 0.05 , ]
-hyperg.chip$enrich = NA   # FIXME
 hyperg.chip$factor = sub("_.*$", "", hyperg.chip$experiment)
 hyperg.chip$factor = chip.name.improve(hyperg.chip$factor)
 
@@ -449,10 +447,9 @@ write.cluster = function(x, cl) {
 }
 
 if (TRUE) {
-for(cl in c(11,30)) {
 # for(cl in c(1,30,52,245,286)) {
 # for(cl in c(1,2,3,30,35,52,245,286)) {
-# for(cl in sort(unique(x$Cluster))) {
+for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
 cat("\n")

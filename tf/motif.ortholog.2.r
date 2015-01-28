@@ -95,6 +95,6 @@ motif.ortholog.2 = motif.ortholog[ motif.ortholog$has.motif != "" , ]
 motif.ortholog.2 =
   motif.ortholog.2[ order(motif.ortholog.2$gene, motif.ortholog.2$related.gene) , ]
 
-write.table(motif.ortholog.2, file="git/tf/motif.ortholog.2.tsv",
-  sep="\t", row.names=FALSE, col.names=TRUE)
+# write.table(motif.ortholog.2, file="git/tf/motif.ortholog.2.tsv",
+#   sep="\t", row.names=FALSE, col.names=TRUE)
 

@@ -71,23 +71,10 @@ most.significant.results.motif = function(name) {
   r$motif.name = r$motif
   i = r$motif %in% names(motif.to.name)
   r[ i , "motif.name" ] = motif.to.name[ r[ i , "motif" ] ]
-
   colnames(r)[6] = "genes with motif in cluster"
   colnames(r)[7] = "genes in cluster"
   colnames(r)[8] = "genes with motif"
-  r = r[ order(r$p) , c(1,11,2:10) ]
-  r
-}
-
-most.significant.results.chip = function(name) {
-
-  load(paste0(enrich.result.dir, "chip/", name, ".Rdata"))
-  r = enrich.to.table(enrich)
-
-  colnames(r)[6] = "genes with motif in cluster"
-  colnames(r)[7] = "genes in cluster"
-  colnames(r)[8] = "genes with motif"
-  r = r[ order(r$p) , c(1,11,2:10) ]
+  r = r[ order(r$p) ,c(1,12,2:11)]
   r
 }
 
