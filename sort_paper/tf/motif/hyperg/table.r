@@ -91,13 +91,9 @@ most.significant.results.chip = function(name) {
   r
 }
 
-#r = most.significant.results.motif("hier.300")
-#system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-#write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
-
-r = most.significant.results.chip("hier.300")
-system("mkdir -p git/sort_paper/tf/motif/hyperg/table/chip")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/chip/hier.300.tsv.gz"))
+r = most.significant.results.motif("hier.300.clusters")
+system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
 
 # r = most.significant.results("facs")
 # write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))

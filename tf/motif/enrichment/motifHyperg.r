@@ -23,10 +23,10 @@ motif.enrich.hyperg.naive =
     function(m.cluster, g.cluster, m.total, g.total) {
   p = NA
   s = 0
-  if (m.cluster[i] <= m.total[i]) {   # XXX shouldn't happen
-    for(k1 in m.cluster[i]:m.total[i]) {
-      s = s + dhyper(k1, m.total[i],
-        g.total - m.total[i], g.cluster[i])
+  if (m.cluster <= m.total) {   # XXX shouldn't happen
+    for(k1 in m.cluster:m.total) {
+      s = s + dhyper(k1, m.total,
+        g.total - m.total, g.cluster)
     }
     p = s
   }
@@ -79,18 +79,21 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
       sum.by.cluster = function(x) {
         c(by(x, cl, sum))
       }
-      m.cluster = apply(motif.count, c(2:4), sum.by.cluster)
       m.total = apply(motif.count, c(2:4), sum)
-      r1 = motif.enrich.hyperg(m.cluster, g.cluster,
-        rep(m.total, each=length(g.cluster)), g.total)
 
-      r[motif.name,,"m.cluster",,,] = m.cluster
+      r[motif.name,,"m.cluster",,,] =
+        apply(motif.count, c(2:4), sum.by.cluster)
       r[motif.name,,"g.cluster",,,] = g.cluster
-      r[motif.name,,"m.total",,,] = m.total
+      r[motif.name,,"m.total",,,] = rep(m.total, each=length(g.cluster))
+
       r[motif.name,,"enrich",,,] =
-        (r[motif.name,,"m.cluster",,,] / r[motif.name,,"g.cluster",,,]) /
-        (r[motif.name,,"m.total",,,] / g.total)
-      r[motif.name,,"p",,,] = r1
+        (r[motif.name,,"m.cluster",,,] / r[motif.name,,"m.total",,,]) /
+        (r[motif.name,,"g.cluster",,,] / g.total)
+      r[motif.name,,"p",,,] = motif.enrich.hyperg(
+        r[motif.name,,"m.cluster",,,],
+        r[motif.name,,"g.cluster",,,],
+        r[motif.name,,"m.total",,,],
+        g.total)
     }
   }
 
@@ -123,8 +126,8 @@ enrich.test.gene.set = function(motif.count, gene.set) {
   r["m.total",,,] = apply(motif.count, c(2:4), sum)
   g.total = length(gene.set)
   r["enrich",,,] =
-    (r["m.cluster",,,] / r["g.cluster",,,]) /
-    (r["m.total",,,] / g.total)
+    (r["m.cluster",,,] / r["m.total",,,]) /
+    (r["g.cluster",,,] / g.total)
   r["p",,,] = motif.enrich.hyperg(r["m.cluster",,,],
     r["g.cluster",,,],
     r["m.total",,,], g.total)

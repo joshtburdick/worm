@@ -45,12 +45,12 @@ most.significant.results.chip = function(name) {
   colnames(r)[6] = "genes with peak in cluster"
   colnames(r)[7] = "genes in cluster"
   colnames(r)[8] = "genes with peak"
-  r = r[ order(r$p) , c(1:4,6:10) ]
+  r = r[ order(r$p) , c(1:4,6:11) ]
   r
 }
 
-r = most.significant.results.chip("hier.300")
+r = most.significant.results.chip("hier.300.clusters")
 system("mkdir -p git/sort_paper/tf/motif/hyperg/chipTable")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/chipTable/hier.300.tsv.gz"))
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/chipTable/hier.300.clusters.tsv.gz"))
 
 
