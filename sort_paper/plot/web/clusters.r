@@ -104,13 +104,6 @@ hyperg.motif = hyperg.motif[ hyperg.motif$p.corr <= 0.05 , ]
 hyperg.motif$motifs.cluster = hyperg.motif$"genes with motif in cluster"
 hyperg.motif$enrich = NA      # FIXME
 
-# enriched ChIP signals
-chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
-  clustering.name, ".tsv"))
-colnames(chip.enriched)[1] = "experiment"
-chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
-
-
 # Function to make ChIP factor names lower case (to help
 # match them with motif names), and otherwise tweak them
 chip.name.improve = function(f) {
@@ -118,8 +111,22 @@ chip.name.improve = function(f) {
   f[i] = tolower( f[i] )
   f = sub("LIN-15B", "lin-15", f)
 }
+
+# enriched ChIP signals
+chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
+  clustering.name, ".tsv"))
+colnames(chip.enriched)[1] = "experiment"
+chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
 chip.enriched$factor = chip.name.improve(chip.enriched$factor)
 
+# same, using hypergeometric test
+hyperg.chip = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/chipTable/hier.300.tsv.gz"))
+colnames(hyperg.chip)[1] = "experiment"
+colnames(hyperg.chip)[5] = "motifs.cluster"
+hyperg.chip = hyperg.chip[ hyperg.chip$p.corr <= 0.05 , ]
+hyperg.chip$enrich = NA   # FIXME
+hyperg.chip$factor = sub("_.*$", "", hyperg.chip$experiment)
+hyperg.chip$factor = chip.name.improve(hyperg.chip$factor)
 
 # Utility to convert numbers to colors.
 # Args:
@@ -425,7 +432,10 @@ write.cluster = function(x, cl) {
     correlated.tf.html(cl),
 
     "<h3>ChIP peaks enriched</h3>",
-    chip.table(chip.enriched[chip.enriched$group == cl,])
+    chip.table(chip.enriched[chip.enriched$group == cl,]),
+
+    "<h3>ChIP peaks enriched (using hypergeometric test)</h3>",
+    chip.table(hyperg.chip[hyperg.chip$group == cl,])
   )
 
   s = paste0("<!DOCTYPE html>",
@@ -439,7 +449,7 @@ write.cluster = function(x, cl) {
 }
 
 if (TRUE) {
-for(cl in c(30)) {
+for(cl in c(11,30)) {
 # for(cl in c(1,30,52,245,286)) {
 # for(cl in c(1,2,3,30,35,52,245,286)) {
 # for(cl in sort(unique(x$Cluster))) {

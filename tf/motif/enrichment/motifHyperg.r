@@ -63,7 +63,7 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
   # object to hold results
   a = list(motif = motif.names,
     group = cluster.names,
-    stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
+    stat=c("m.cluster", "g.cluster", "m.total", "enrich", "p", "p.corr"))
   r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
 
   # loop through the motif files
@@ -87,6 +87,9 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
       r[motif.name,,"m.cluster",,,] = m.cluster
       r[motif.name,,"g.cluster",,,] = g.cluster
       r[motif.name,,"m.total",,,] = m.total
+      r[motif.name,,"enrich",,,] =
+        (r[motif.name,,"m.cluster",,,] / r[motif.name,,"g.cluster",,,]) /
+        (r[motif.name,,"m.total",,,] / g.total)
       r[motif.name,,"p",,,] = r1
     }
   }
@@ -111,13 +114,17 @@ enrich.test.gene.set = function(motif.count, gene.set) {
   motif.count = motif.count[g,,,,drop=FALSE] > 0
 
   # object to hold results
-  a = list(stat=c("m.cluster", "g.cluster", "m.total", "p", "p.corr"))
+  a = list(stat=c("m.cluster", "g.cluster", "m.total",
+    "enrich", "p", "p.corr"))
   r = array.from.dimnames(c(a, dimnames(motif.count)[2:4]))
 
   r["m.cluster",,,] = apply(motif.count[gene.set,,,,drop=FALSE] > 0, c(2:4), sum)
   r["g.cluster",,,] = sum(gene.set)
   r["m.total",,,] = apply(motif.count, c(2:4), sum)
   g.total = length(gene.set)
+  r["enrich",,,] =
+    (r["m.cluster",,,] / r["g.cluster",,,]) /
+    (r["m.total",,,] / g.total)
   r["p",,,] = motif.enrich.hyperg(r["m.cluster",,,],
     r["g.cluster",,,],
     r["m.total",,,], g.total)

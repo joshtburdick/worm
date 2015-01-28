@@ -22,18 +22,18 @@ enrich.test.one.clustering = function(cl, name) {
   save(enrich, file=
     paste0(output.dir, "chip/", name, ".Rdata"))
 
-#  system(paste0("mkdir -p ", output.dir, "5kb/"))
-#  enrich = enrich.test.many.motifs(
-#    "git/tf/motif/count/upstreamMotifCount/5kb/", cl, orig.motif.list)
-#  save(enrich, file=
-#    paste0(output.dir, "5kb/", name, ".Rdata"))
+  system(paste0("mkdir -p ", output.dir, "5kb/"))
+  enrich = enrich.test.many.motifs(
+    "git/tf/motif/count/upstreamMotifCount/5kb/", cl, orig.motif.list)
+  save(enrich, file=
+    paste0(output.dir, "5kb/", name, ".Rdata"))
 
-#  system(paste0("mkdir -p ", output.dir, "hughes/"))
-#  system("mkdir -p git/sort_paper/tf/motif/hyperg/allResults/hughes/")
-#  enrich = enrich.test.many.motifs(
-#    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
-#  save(enrich, file=
-#    paste0(output.dir, "hughes/", name, ".Rdata"))
+  system(paste0("mkdir -p ", output.dir, "hughes/"))
+  system("mkdir -p git/sort_paper/tf/motif/hyperg/allResults/hughes/")
+  enrich = enrich.test.many.motifs(
+    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
+  save(enrich, file=
+    paste0(output.dir, "hughes/", name, ".Rdata"))
 }
 
 if (TRUE) {
@@ -41,7 +41,7 @@ if (TRUE) {
     "git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))[,2]
   cl = gsub(" ", "", cl)
 
-  enrich.test.one.clustering(cl, "facs")
+  enrich.test.one.clustering(cl, "hier.300.clusters")
 
 #  enrich = enrich.test.many.motifs(
 #    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
@@ -120,7 +120,7 @@ enrich.test.clustering = function() {
   }
 }
 
-if (TRUE) {
+if (FALSE) {
   enrich.test.file("hy.tsv")
   enrich.test.file("spencer.tsv")
   enrich.test.file("spencerEmbryonic.tsv") 
