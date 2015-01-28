@@ -81,11 +81,11 @@ most.significant.results = function(name) {
   r
 }
 
-# r = most.significant.results("hier.300")
-# system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-# write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
+r = most.significant.results("hier.300")
+system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
+write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.tsv.gz"))
 
-r = most.significant.results("facs")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))
+# r = most.significant.results("facs")
+# write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))
 
 

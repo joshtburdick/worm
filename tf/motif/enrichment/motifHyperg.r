@@ -160,10 +160,11 @@ enrich.test.gene.sets.many.motifs =
     write.status(f)
     motif.count = NULL
     load(paste0(motif.dir, "/", f))
+
     motif.name = sub(".Rdata$", "", f)
     for(g in group.names) {
-      r[motif.name,g,,,,drop=FALSE] =
-        enrich.test.gene.set(motif.count, gene.sets[[g]])
+      r1 = enrich.test.gene.set(motif.count, gene.sets[[g]])
+      r[motif.name,g,,,,] = r1
     }
   }
 

@@ -110,11 +110,16 @@ chip.enriched = read.tsv(paste0("git/sort_paper/tf/summary/chip/",
 colnames(chip.enriched)[1] = "experiment"
 chip.enriched$factor = sub("_.*$", "", chip.enriched$experiment)
 
-# make ChIP factor names lower case (to help match them with
-# motif names), and otherwise tweak them
-i = tolower(chip.enriched$factor) %in% rownames(rr)
-chip.enriched$factor[i] = tolower( chip.enriched$factor[i] )
-chip.enriched$factor = sub("LIN-15B", "lin-15", chip.enriched$factor)
+
+# Function to make ChIP factor names lower case (to help
+# match them with motif names), and otherwise tweak them
+chip.name.improve = function(f) {
+  i = tolower(f) %in% rownames(rr)
+  f[i] = tolower( f[i] )
+  f = sub("LIN-15B", "lin-15", f)
+}
+chip.enriched$factor = chip.name.improve(chip.enriched$factor)
+
 
 # Utility to convert numbers to colors.
 # Args:
@@ -434,9 +439,10 @@ write.cluster = function(x, cl) {
 }
 
 if (TRUE) {
+for(cl in c(30)) {
 # for(cl in c(1,30,52,245,286)) {
 # for(cl in c(1,2,3,30,35,52,245,286)) {
- for(cl in sort(unique(x$Cluster))) {
+# for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
 cat("\n")
