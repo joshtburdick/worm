@@ -30,6 +30,13 @@ wb.gene = useMart("WS220", "wormbase_gene")
 meme.tf = read.table("git/tf/motif/meme.tf.annotate.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
+meme.tf.1 = data.frame(species = "",
+  related.gene = meme.tf$gene,
+  motif.id = meme.tf$id, stringsAsFactors=FALSE)
+meme.tf.1[ meme.tf$organism=="Hs", "species" ] = "H.sapiens"
+meme.tf.1[ meme.tf$organism=="Mm", "species" ] = "M.musculus"
+meme.tf.1[ meme.tf$organism=="Dm", "species" ] = "D.melanogaster"
+
 # Creates table of Ce genes and motif names.
 get.ce.motif.names = function() {
   ce.motif =
@@ -95,6 +102,6 @@ motif.ortholog.2 = motif.ortholog[ motif.ortholog$has.motif != "" , ]
 motif.ortholog.2 =
   motif.ortholog.2[ order(motif.ortholog.2$gene, motif.ortholog.2$related.gene) , ]
 
-# write.table(motif.ortholog.2, file="git/tf/motif.ortholog.2.tsv",
-#   sep="\t", row.names=FALSE, col.names=TRUE)
+write.table(motif.ortholog.2, file="git/tf/motif.ortholog.2.tsv",
+  sep="\t", row.names=FALSE, col.names=TRUE)
 

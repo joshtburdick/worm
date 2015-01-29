@@ -64,7 +64,8 @@ For now, in order to find the corners, we just maximize each
 coordinate separately. This gives $n$ points, but only $m$ of them
 are unique. We just pick distinct points based on distance.
 
-Each maximization is a linear
+Each maximization is a linear programming problem, so this isn't
+exactly cheap. However, it still seems faster than sampling.
 
 \subsection{Accuracy of that approximation}
 
@@ -99,7 +100,10 @@ x.sample = sample.cda(A, b, x0, 1e5, 100)
 
 We then compare with sampling.
 By eye, the marginals estimated this way (in blue) fit the actual
-densities from sampling (in grey) fairly well.
+densities from sampling (in grey) fairly well. In theory, I think
+the mean and variance estimates should be exact; but the gamma
+distribution with that mean and variance won't necessarily match
+the actual distribution (which won't have exactly a gamma distribution.)
 
 <<argCompare1,dev='pdf',fig.width=8,fig.height=4,echo=FALSE>>=
 par(mfrow=c(2,4))
@@ -115,83 +119,20 @@ for(j in 1:8) {
 }
 @
 
-\section{Modelling uncertainty in the sort matrix}
+\section{Summary}
 
-Solving the original problem, in a deterministic (and probably faster) way is nice.
+Finding the mean and variance from the 
+original problem, in a deterministic (and probably faster) way is nice.
 However, the $x \ge 0$ constraint is problematic: while it gives a way of estimating
 uncertainty, it also means that if the sort matrix disagrees too much with the expression
-data, there won't {\em be} a feasible solution. Then again, the constraint also means that
-we can use the expression data to estimate the sort matrix (as many other unmixing
-papers have noted.)
+data, there won't {\em be} a feasible solution.
 
-Arguably, therefore, I should have capitalized the $x$ in the previous formula.
-However, I'll now rewrite it as
-
-\[
-AX = B, A \ge 0, X \ge 0
-\]
-
-Here, $A$, $X$, and $B$ are all matrices, and we want to estimate $A$ and $X$.
-
-We will model the distribution of each entry of $A$ and $X$ with independent gamma
-distributions -- the original case, in which the sort matrix is known exactly,
-corresponds to $A$ being infinitely pointy gamma distributions. For now, we assume
-$B$ is known exactly.
-
-\subsection{ }
-
-When phrased this way, each gene corresponds to a column of $B$, which we can consider
-independently. Writing out one row of this for one gene, we have
-
-\[
-\sum_j A_{ij} X_{jk} = B_{ik}
-\]
-
-If we know $E[A]$, then we can estimate $E[X]$ using the previously-described method.
-
-Presumably, when the estimate of $A$ has noise, then the variance is nonzero, and
-the variance of $X$ will go up, both because of the ``shape'' of the region of possible
-solutions, and the fact that $A$ is uncertain. We address this by looking at second
-moments, squaring both sides:
-
-\[
-( \sum_j A_{ij} X_{jk} )^2 = (B_{ik})^2
-\]
-
-or
-
-\[
-X^TA^TAX = b^Tb
-\]
-
-or
-
-\[
-AXX^TA^T = bb^T
-\]
-
-Since we assumed $A$ and $X$ are independent, this becomes (um, I'm not sure this
-is legit)
-
-\[
-\sum_j (A_{ij} X_{jk} )^2 = (B_{ik})^2
-\]
-
-Again, since they're independent, we can apply Theorem FIXME from the Ross book
-
-\[
-\sum_j (A_{ij})^2 (X_{jk} )^2 = (B_{ik})^2
-\]
-
-In other words, in terms of second moments, it's a similar linear
-problem as before,
-so perhaps we can use the same method to estimate $E[(X_{jk})^2]$.
-
-
-
-
-
-
+Then again, the constraint also means that
+we can use the expression data to estimate the sort matrix. Many other
+papers have done this, but not (as far as I know) when the linear
+system is underdetermined. I would guess that improving the sort
+matrix estimate, at the same time as estimating expression, would
+give somewhat higher accuracy. However, I'm not sure how to do that.
 
 \end{document}
 

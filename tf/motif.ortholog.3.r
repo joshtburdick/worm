@@ -30,7 +30,7 @@ colnames(m1) = c("gene", "motif.id", "motif.name", "method")
 # hughes.motif = read.table("data/tf/hughes/TF_Information_all_motifs.tsv",
 #   sep="\t", header=TRUE, as.is=TRUE)
 
-# later, may use newer annotation...
+# using newer annotation...
 hughes.motif = read.table(gzfile("data/tf/hughes/Caenorhabditis_elegans_2014_12_02_11_30_am/TF_Information_all_motifs_plus.txt.gz"),
   sep="\t", header=TRUE, as.is=TRUE)
 
