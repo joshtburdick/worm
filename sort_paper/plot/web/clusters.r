@@ -215,7 +215,7 @@ tf.list.annotate = function(tf, cl) {
   a = paste(names(r2a), ifelse(is.na(r2a), "", paste0("(", r2a, ")")))
 
   shorter.list =
-    if (length(a) <= 19)
+    if (length(a) <= 21)
       paste(a, collapse=" ")
     else
       paste(paste(a[1:20], collapse=" "), "and", length(a) - 20, "others", collapse=" ")
