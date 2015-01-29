@@ -1,7 +1,7 @@
 # Attempt to annotate the motifs in MEME with
 # "organism" and "gene symbol" in a vaguely-consistent way.
 
-r1 = read.table("data/tf/meme/motifList.tsv",
+r = read.table("data/tf/meme/motifList.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
 r$organism = ""
@@ -67,10 +67,34 @@ r[ i, "gene" ] = sub("_.*", "", r[ i, "id" ])
 r[ i, "organism" ] = ifelse(is.mouse.gene(r[ i, "gene" ]), "Mm", "Hs")
 
 
-r = r[ r$organism != "" & r$gene != "" , ]
+
+# getting more annotation from JASPAR database, somewhat hackily
+matrix = read.table("data/tf/jaspar/MATRIX.txt",
+    sep="\t", header=FALSE, as.is=TRUE)
+colnames(matrix) =  c("motif.id", "motif.collection",
+  "id1", "version", "gene")
+matrix$id = paste0(matrix$id1, ".", matrix$version)
+rownames(matrix) = matrix$id
+matrix = matrix[ !duplicated( matrix$id ) , ]
+
+# omitting species info for now
+if (FALSE) {
+  matrix.species = read.table("data/tf/jaspar/MATRIX_SPECIES.txt",
+      sep="\t", header=FALSE, as.is=TRUE)
+  colnames(matrix.species) = c("motif.id", "species.id")
+  matrix1 = merge(matrix, matrix.species)
+  matrix1$species = ""
+  matrix1[ matrix1$species.id=="7227", "species" ] = "Dm"
+  # matrix1[ matrix1$species.id=="10116", "species" ] = "Hs"
+  # matrix1[ matrix1$species.id=="10090", "species" ] = "Mm"
+}
+
+i = r$id %in% rownames(matrix)
+r[ i, "gene" ] = matrix[ r[i,"id"] , "gene" ]
+
+r = r[ r$gene != "" , ]
+r = r[ !duplicated(r$id) , ]
 
 write.table(r, file="git/tf/motif/meme.tf.annotate.tsv",
-  sep="\t", row.names=FALSE, col.names=TRUE)
-
-
+ sep="\t", row.names=FALSE, col.names=TRUE)
 
