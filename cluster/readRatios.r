@@ -15,7 +15,8 @@ options(stringsAsFactors = FALSE)
 experimentNames = read.table("git/unmix/seq/quant/experimentNames.tsv",
   sep="\t", header=TRUE, row.names=1)
 
-count.path = "git/unmix/seq/quant/readsPerMillion/WS220_20140111/"
+# count.path = "git/unmix/seq/quant/readsPerMillion/WS220_20140111/"
+count.path = "data/expression/seq/WS220_20140111/"
 
 # pseudocount to add to read counts
 pseudocount = 3
