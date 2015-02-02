@@ -42,6 +42,7 @@ gene.groups = rbind(ao.group, wb.cluster)
 # this number is from "git/sort_paper/plot/numEnrichedInFractions.r"
 num.genes = 15683
 
+system("mkdir -p git/sort_paper/enrichment/wormbaseCluster/")
 system("mkdir -p git/sort_paper/enrichment/anatomyEnrichment/")
 
 # compute what's enriched in clusters (old, deprecated version)
@@ -60,8 +61,6 @@ for (f in list.files("git/cluster/hierarchical/")) {
 # compute what's enriched in clusters
 compute.cluster.enrichment = function() {
 
-  system("mkdir -p git/sort_paper/enrichment/wormbaseCluster/")
-  system("mkdir -p git/sort_paper/enrichment/anatomyEnrichment/")
 
   for (f in list.files("git/cluster/hierarchical/")) {
     cat(f, "\n")
