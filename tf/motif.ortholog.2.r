@@ -4,7 +4,8 @@ library("biomaRt")
 
 # ortholog annotation
 ortho = read.table(gzfile(
-  "git/data/homology/ortho.five.methods.tsv.gz"),
+# XXX not rebuilding this
+  "/home/jburdick/gcb/git/data/homology/ortho.five.methods.tsv.gz"),
   sep="\t", header=TRUE, quote="")
 
 
