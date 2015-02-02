@@ -7,6 +7,7 @@ source("git/cluster/readRatios.r")
 
 source("git/cluster/hierarchical.r")
 
+source("git/data/wormbase/anatomy.ontology.group.r")
 
 
 
