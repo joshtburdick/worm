@@ -124,7 +124,7 @@ h.cluster = function(r, r.cluster, output.name, num.clusters.list) {
 
   for (num.clusters in num.clusters.list) {
 
-    output.path.1 = paste("git/cluster/hierarchical_check/",
+    output.path.1 = paste("git/cluster/hierarchical/",
       output.name, ".", num.clusters, ".clusters", sep="")
 
     system(paste("mkdir -p ", output.path.1))
