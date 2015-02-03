@@ -1,6 +1,6 @@
 # Gets orthology information about TFs from WormBase.
 
-library("biomaRt")
+source("git/data/biomart_utils.r")
 
 # list of TFs from wTF 2.1
 wtf = read.table("data/tf/wTF2.1.csv", sep=",", header=TRUE, as.is=TRUE)
@@ -56,12 +56,12 @@ get.tf.ortho.wb = function() {
     mart.convert(ens.dm, "flybasecgid_gene", "flybasename_gene")(
       wb.tf[ i , "homolog_info_accession" ] )
 
-
   wb.tf = wb.tf[ !is.na(wb.tf$homolog_gene) , ]
 
   wb.tf
 }
 
-write.table(get.tf.ortho.wb(), file="git/data/homology/wormbase.tf.ortholog.tsv",
-  sep="\t", row.names=FALSE, col.names=TRUE)
+# XXX freezing this for now
+# write.table(get.tf.ortho.wb(), file="git/data/homology/wormbase.tf.ortholog.tsv",
+#   sep="\t", row.names=FALSE, col.names=TRUE)
 
