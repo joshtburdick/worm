@@ -31,4 +31,3 @@ get.enriched.and.depleted = function(r, cutoff) {
 
 facs.enriched.depleted = get.enriched.and.depleted(r.sort.only.averaged, 2)
 
-

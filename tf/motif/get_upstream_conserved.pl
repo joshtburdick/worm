@@ -10,6 +10,9 @@ use Bio::DB::BigFile;
 use Bio::DB::BigFile::Constants;
 use Bio::DB::Fasta;
 
+# configuration
+
+# conservation cutoffs to use
 my $cutoff = 0.50;
 
 # set this to wherever the .fa files are
@@ -20,15 +23,13 @@ my $fasta = Bio::DB::Fasta->new(
 my $wig = Bio::DB::BigFile->bigWigFileOpen(
   "/murrlab/seq/igv/conservation/ce10.phastCons7way.bw");
 
+### end configuration
+
 while (<>) {
   chomp;
   my($chr, $a, $b, $name, $score, $strand) = split /\t/;
 
   $chr =~ s/chr//;
-
-  # force this to include at least 500 bp
-  # ??? omit this?
-  my $length = $b - $a;
 
   write_conservation_masked_fasta("$name upstream region",
     $chr, $a, $b, $strand);
@@ -68,18 +69,20 @@ sub write_conservation_masked_fasta {
 
   # get the sequence
   my $s = "";
+  my $num_conserved = 0;
   for (my $i=0;$i<$n;$i++) {
     my $c = $conservation[$i];
     if (defined $c && $c >= $cutoff) {
       $s = $s . substr($dna,$i,1);
+      $num_conserved++;
     }
-#    else {
-#      print "N";
-#    }
+    else {
+      $s = $s . "N";
+    }
   }
 
   # if sequence is long enough, print it (with a header)
-  if (length($s) >= 10) {
+  if ($num_conserved >= 10) {
     print ">$name, $chr:$a-$b ($strand), phastCons7way >= $cutoff\n";
     print "$s\n";
   }

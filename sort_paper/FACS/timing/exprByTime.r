@@ -64,6 +64,15 @@ plot.all.expr.by.time = function() {
     }
   }
 
+  # singlet vs. ungated
+  plot.time.profile(r[,"cnd-1 singlets"], r[,"cnd-1 ungated"],
+    "cnd-1 singlets vs ungated")
+  plot.time.profile(r[,"pha-4 singlets"], r[,"pha-4 ungated"],
+    "pha-4 singlets vs ungated")
+
+
+
+
   # Spencer data
   plot.time.profile(s1[,"EE.GLP"], s1[,"EE.reference"], "EE.GLP")
   plot.time.profile(s1[,"EE.BAG"], s1[,"EE.reference"], "EE.BAG")
@@ -155,5 +164,5 @@ if (FALSE) {
 
 #}
 
-# plot.all.expr.by.time()
+plot.all.expr.by.time()
 

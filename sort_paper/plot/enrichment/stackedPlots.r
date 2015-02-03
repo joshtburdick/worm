@@ -15,7 +15,7 @@ anatomy.info.matrix = function(f, ao.or.wbcluster) {
     ao.or.wbcluster, "/", f, ".tsv"),
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
   # XXX
-  r = r[ r$group.name != "Tissue" & !grepl("depleted", r$cluster) , ]
+  r = r[ r$group.name != "Tissue" , ]
 
   r = r[ -log10(r$p.corr) >= 1 , ]    # was 1
    # & r$term.depth <= 4 , ]
@@ -36,8 +36,7 @@ gene.ontology.matrix = function(f) {
 
   r = read.table(file=paste0("git/sort_paper/enrichment/geneOntology/", f, ".tsv"),
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
-  r = r[ -log10(r$p.corr) >= p.cutoff & r$term.depth <= 4 
-    & !grepl("depleted", r$cluster), ]
+  r = r[ -log10(r$p.corr) >= p.cutoff & r$term.depth <= 4 , ]
   a = as.matrix(make.sparse.matrix(r$cluster, r$Term, -log10(r$p.corr))) / max.color.p
   a = a[ , pick.top.few.columns(a, 2) ]
   a
@@ -47,7 +46,7 @@ motif.chip.matrix = function(f, p.cutoff=1, max.color.p=20, num.to.include=2) {
   r = read.tsv(paste0("git/sort_paper/tf/summary/",
     f, ".tsv"))
 
-  r = r[ -log10(r$p.corr) >= p.cutoff & !grepl("depleted", r$group) , ]
+  r = r[ -log10(r$p.corr) >= p.cutoff , ]
   a = as.matrix(make.sparse.matrix(r$group, r$motif, -log10(r$p.corr))) / max.color.p
 #  a[ a > 1e10 ] = 1e10
   a = a[ , pick.top.few.columns(a, num.to.include) ]
@@ -141,7 +140,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
   color.scale = hsv(0, 0, 255:0/255)
 
   r[ r==0 ] = NA
-  rownames(r) = sub(" enriched", "", rownames(r))
+#  rownames(r) = sub(" enriched", "", rownames(r))
 
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
   axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
@@ -223,8 +222,8 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=2.8, height=5.5)
-par(mar=c(3.5,8,0.1,0.1))
+  width=4.5, height=8)
+par(mar=c(5,8,0.1,0.1))
 plot.stacked("facs")
 dev.off()
 
