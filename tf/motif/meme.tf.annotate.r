@@ -12,9 +12,9 @@ is.mouse.gene = function(x) grepl("^[A-Z][a-z]", x)
 
 # first, include any motifs that had exactly the same
 # name as an ortholog.
-# wb.ortholog = read.table("git/tf/wb.ortholog.tsv",
-#   sep="\t", header=TRUE, as.is=TRUE)
-wb.ortholog = read.table("git/data/homology/wormbase.tf.ortholog.tsv",
+# XXX using previous version of this
+wb.ortholog = read.table(
+  "/home/jburdick/gcb/git/data/homology/wormbase.tf.ortholog.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
 
 i = r$name %in% wb.ortholog[
@@ -97,6 +97,6 @@ r[ i, "gene" ] = matrix[ r[i,"id"] , "gene" ]
 r = r[ r$gene != "" , ]
 r = r[ !duplicated(r$id) , ]
 
-write.table(r, file="git/tf/motif/meme.tf.annotate.tsv",
-  sep="\t", row.names=FALSE, col.names=TRUE)
+# write.table(r, file="git/tf/motif/meme.tf.annotate.tsv",
+#   sep="\t", row.names=FALSE, col.names=TRUE)
 
