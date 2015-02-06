@@ -78,9 +78,12 @@ most.significant.results.motif = function(name) {
   r
 }
 
-r = most.significant.results.motif("hier.300.clusters")
 system("mkdir -p git/sort_paper/tf/motif/hyperg/table/")
-write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
+for(a in c("facs_0.892")) {
+  r = most.significant.results.motif(a)
+  write.tsv(r, gzfile(paste0("git/sort_paper/tf/motif/hyperg/table/",
+    a, ".tsv.gz")))
+}
 
 # r = most.significant.results("facs")
 # write.tsv(r, gzfile("git/sort_paper/tf/motif/hyperg/table/facs.tsv.gz"))

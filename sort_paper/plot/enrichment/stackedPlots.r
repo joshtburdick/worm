@@ -43,8 +43,9 @@ gene.ontology.matrix = function(f) {
 }
 
 motif.chip.matrix = function(f, p.cutoff=1, max.color.p=20, num.to.include=2) {
-  r = read.tsv(paste0("git/sort_paper/tf/summary/",
-    f, ".tsv"))
+  r = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/",
+    f, ".tsv.gz")))
+  colnames(r)[[1]] = "motif"
 
   r = r[ -log10(r$p.corr) >= p.cutoff , ]
   a = as.matrix(make.sparse.matrix(r$group, r$motif, -log10(r$p.corr))) / max.color.p
@@ -73,12 +74,12 @@ plot.stacked = function(f, cluster.subset = NULL) {
   anatomy.m = anatomy.info.matrix(f, "anatomyEnrichment")
   cluster.m = anatomy.info.matrix(f, "wormbaseCluster")
   go.m = gene.ontology.matrix(f)
-  motif.m = motif.chip.matrix(paste0("motif/", f),
-    p.cutoff=4, max.color.p = 7, num.to.include=1)
-  chip.m = motif.chip.matrix(paste0("chip/", f),
-    p.cutoff=1, max.color.p = 4, num.to.include=1)
 
-# browser()
+  motif.m = motif.chip.matrix(paste0("table/", f),
+    p.cutoff=0, max.color.p = 30, num.to.include=10)
+  chip.m = motif.chip.matrix(paste0("chipTable/", f),
+    p.cutoff=0, max.color.p = 4, num.to.include=1)
+
   # possibly subset these
   if (!is.null(cluster.subset)) {
     f = function(a, num.to.keep) {
@@ -90,7 +91,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
     anatomy.m = f(anatomy.m, 1)
     cluster.m = f(cluster.m, 1)
     go.m = f(go.m, 2)
-    motif.m = f(motif.m, 1)
+    motif.m = f(motif.m, 10)
     chip.m = f(chip.m, 1)
   }
 
@@ -135,6 +136,12 @@ plot.stacked = function(f, cluster.subset = NULL) {
 
   # only keep cases in which something is present
   r = r[ , apply(r>0, 2, any) ]
+
+  # XXX hack to show ordering by "number of genes in group"
+  source("git/sort_paper/FACS/enrichedInFraction.r")
+  sort.by.count = sort(sapply(facs.enriched.depleted, sum))
+  sort.by.count = sort.by.count[ sort.by.count > 0 ]
+  r = r[ names(sort.by.count) , ]
 
 #  color.scale = hsv(2/3, 0:255/255, 0.75)
   color.scale = hsv(0, 0, 255:0/255)
@@ -195,6 +202,8 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
+if (FALSE) {
+
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
   width=3, height=5.5)
@@ -206,6 +215,7 @@ plot.stacked("hier.300.clusters", cl.subset)
      # , as.character(c(1,2,30,52,79,223,286)))
 dev.off()
 
+
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
   width=17.5, height=16.5)
 par(mar=c(1,10,0.1,0.1))
@@ -213,17 +223,17 @@ par(mar=c(1,10,0.1,0.1))
 plot.stacked("hier.300.clusters")
 
 # possibly interesting clusters
-# highlight.column(rownames(r), "52", 0)
+# highlight.column":(rownames(r), "52", 0)
 # highlight.column(rownames(r), "110", 1/4)
 # highlight.column(rownames(r), "286", 2/4)
 
 dev.off()
-
+}
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.5, height=8)
-par(mar=c(5,8,0.1,0.1))
+  width=5.5, height=18)
+par(mar=c(5,10,0.1,0.1))
 plot.stacked("facs")
 dev.off()
 

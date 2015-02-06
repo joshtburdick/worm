@@ -29,5 +29,5 @@ motifs = c(known.motifs, de.novo.motifs)
 dists = motifDistances(motifs)
 motif.clusters = hclust(dists)
 
-# save(motif.clusters, known.motifs, file="git/tf/motif/# clusterUsingMotIV_20141006.Rdata")
+# save(motif.clusters, known.motifs, file="git/tf/motif/clusterUsingMotIV_20141006.Rdata")
 

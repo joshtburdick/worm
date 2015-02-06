@@ -1,0 +1,94 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+\usepackage{hyperref}
+
+\newcommand{\funname}[1]{\texttt{#1}}
+
+\title{Debugging motif enrichment}
+\author{Josh Burdick}
+
+\begin{document}
+
+\maketitle
+
+<<intro,echo=FALSE>>=
+library("MASS")
+wd = getwd()
+setwd("../../../../..")
+source("git/utils.r")
+
+source("git/tf/motif/enrichment/motifHyperg.r")
+source("git/sort_paper/FACS/enrichedInFraction.r")
+
+r = read.tsv("git/sort_paper/tf/motif/hyperg/table/facs_0.892.tsv.gz")
+ed1 = get.enriched.and.depleted(r.sort.only.averaged, 0.892)
+setwd(wd)
+@
+
+In the FACS-sorted samples, some of the motif enrichments
+seem very high.
+The proportion of motifs enriched, across all samples, at
+an FDR of 0.05, is 
+\Sexpr{mean(r$p.corr <= 0.05)}
+on average.
+Some of the most significant enrichments are
+
+{\footnotesize
+<<c1,echo=FALSE>>=
+kable(r[1:5,c(2,3,7:11),])
+@
+}
+
+
+<<plot1,dev='pdf',fig.width=8,fig.height=4,echo=FALSE>>=
+par(mfrow=c(1,2))
+hist(-log10(r$p.corr), breaks=100, col="red")
+hist(r$enrich, breaks=100, col="blue")
+@
+
+\vspace{3mm}
+
+The ``total number of genes considered'' depends on the sort fraction
+(since we're comparing ``depleted'' to ``neither enriched nor depleted.'')
+In the case of {\em cnd-1}, \Sexpr{sum(ed1$"cnd-1 depleted")} out of
+30,027 genes are in the cluster. This
+corresponds to an enrichment and $p$-value which agrees with the
+uncorrected number in the table (when not rounded.)
+
+<<check1>>=
+(1818 / 2591) / (13295 / 30027)
+motif.enrich.hyperg(1818, 2591, 13295, 30027)
+motif.enrich.hyperg.naive(1818, 2591, 13295, 30027)
+r$p[1]
+@
+
+Thus, this superficially looks right. There could still be a
+bug in how the counts going into this are computed.
+
+\section*{Comparison with random sets of genes}
+
+One question is whether random sets of genes also have these
+sorts of enrichments. I'm also wondering if the number of genes in
+the sets of genes has an effect.
+
+Therefore, I picked some random sets of genes, and ran the enrichment
+analysis on those sets of genes.
+
+<<random1,fig.width=5,fig.height=8,echo=FALSE>>=
+load("enrichInRandomGenes.Rdata")
+par(mfrow=c(4,2))
+for(s in c(200, 1000, 2000, 3000)) {
+  hist(-log10(random.enrich[,paste0("random.", s),"p.corr",,,]),
+    main=paste(s, "genes"), xlab="-log10(p)", breaks=100, col="red")
+  hist(random.enrich[,paste0("random.", s),"enrich",,,],
+    main=paste(s, "genes"), xlab="enrichment", breaks=100, col="blue")
+}
+@
+
+Overall, the proportion of significant motif-group pairs is
+\Sexpr{mean(random.enrich[,,"p.corr",,,] <= 0.05)}. So, randomly-chosen
+genes don't seem to have these enrichments.
+
+\end{document}
+

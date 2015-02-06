@@ -13,9 +13,9 @@ motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 # add representative motif name, from the motif clustering
 motif.ortholog$canonical.motif =
   motif.filter[ motif.ortholog$motif.id, "canonical.name" ]
-motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
+# motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
 # for each motif, list of potential orthologs
-motif.info = by(motif.ortholog$gene, motif.ortholog$canonical.motif,
+motif.info = by(motif.ortholog$gene, motif.ortholog$motif.id,
   function(g) {
     g = unique(as.character(g))
 

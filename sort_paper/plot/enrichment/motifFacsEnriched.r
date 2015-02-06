@@ -7,6 +7,9 @@ source("git/sort_paper/tf/motifInfo.r")
 source("git/tf/motif/motifName.r")
 source("git/data/wormbase/wb.cluster.name.r")
 
+load("git/sort_paper/tf/motif/
+
+
 motif.chip.matrix = function(f, p.cutoff=1, max.color.p=20, num.to.include=2) {
   r = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/",
     f, ".tsv.gz")))

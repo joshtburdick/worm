@@ -1,5 +1,5 @@
-# R script to re-run, if not all, then at least a
-# substantial part of the analysis.
+# R script to re-run, if not all, then at least
+# some of the analysis.
 # FIXME: automate dependency checking?
 
 source("git/unmix/seq/timing/deconvolved_embryo_ts.r")
