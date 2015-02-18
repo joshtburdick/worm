@@ -10,7 +10,10 @@ source("git/utils.r")
 # Returns: function which finds the nearest X (note
 # that this avoids recomputing A's pseudoinverse)
 lin.constraint = function(A, B) {
-  P = t(A) %*% pseudoinverse( A %*% t(A) )
+# was:
+#  P = t(A) %*% pseudoinverse( A %*% t(A) )
+  Ap = pseudoinverse(A)
+  P = t(A) %*% t(Ap) %*% Ap
   function(X) {
     X - P %*% ( A %*% X - B ) 
   }
@@ -43,10 +46,12 @@ move.pos = function(A, B) {
 #   A, B - these give the matrix
 #   X - the starting point (if NULL, the "truncated pseudoinverse"
 #     is used)
+#   normalize.rows - whether to normalize rows
 #   max.iters, eps - stopping criteria
 # Returns: a positive solution of X (or, if there isn't such,
 #   then the closest positive solution by least squares.)
-pos.linear.solve = function(A, B, X=NULL, max.iters=50, eps=1e-10) {
+pos.linear.solve = function(A, B, X=NULL, normalize.rows=FALSE,
+    max.iters=50, eps=1e-13) {
   update.stats = NULL
   lc = lin.constraint(A, B)
 
@@ -62,8 +67,14 @@ pos.linear.solve = function(A, B, X=NULL, max.iters=50, eps=1e-10) {
     # move toward the closest point satisfying the constraints
     X1 = move.pos(X, lc(X))
 
+    # also possibly normalize rows
+    if (normalize.rows) {
+      X1 = X1 / apply(X1, 1, sum)
+      X1[ X1 < 0 ] = 0
+    }
+
     update.size = max(abs(X1 - X), na.rm=TRUE)
-print(paste(iter, update.size, "\n"))
+write.status(paste(iter, update.size, "\n"))
     update.stats = rbind(update.stats,
       data.frame(update.size = update.size))
     X = X1

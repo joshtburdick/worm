@@ -32,11 +32,11 @@ write.motif.svg.orig = function(pwm, output.file) {
   dev.off()
 }
 
-output.dir = "git/tf/motif/plot/motifSvg/"
+output.dir = "git/tf/motif/plot/motifSvg_test/"
 system(paste("mkdir -p", output.dir))
 
 # for (m in "GATA3_DBD") {
-for (m in intersect(rownames(motif.filter), known.motifs)) {
+for (m in intersect(rownames(motif.filter), known.motifs)[1:50]) {
 
   write.status(m)
   write.motif.svgz(meme.format.pwm[[m]],

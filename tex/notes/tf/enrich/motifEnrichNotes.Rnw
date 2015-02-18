@@ -90,5 +90,8 @@ Overall, the proportion of significant motif-group pairs is
 \Sexpr{mean(random.enrich[,,"p.corr",,,] <= 0.05)}. So, randomly-chosen
 genes don't seem to have these enrichments.
 
+
+
+
 \end{document}
 

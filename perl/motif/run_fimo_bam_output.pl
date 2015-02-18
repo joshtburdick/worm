@@ -51,9 +51,16 @@ foreach my $f (@meme_files) {
 # fimo_to_bedGraph("/murrlab/jburdick/src/tf/meme/TCF_LEF.meme",
 #   "/home/jburdick/tmp/fimo_TCF_LEF");
 
+# fimo_to_bedGraph(
+#   "/home/jburdick/gcb/git/data/tf/hughes_motif_20141202.meme",
+#   "/home/jburdick/tmp/fimo_hughes_20141202.meme");
+
+# fimo_to_bedGraph(
+#   "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/jolma2013_shuffled.meme",
+#   "/home/jburdick/tmp/fimo/jolma2013_shuffled/");
 fimo_to_bedGraph(
-  "/home/jburdick/gcb/git/data/tf/hughes_motif_20141202.meme",
-  "/home/jburdick/tmp/fimo_hughes_20141202.meme");
+  "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/hughes_motif_20141202_shuffled.meme",
+  "/home/jburdick/tmp/fimo/hughes_motif_20141202_shuffled/");
 
 # Utility to convert from .sam to .bam .
 # Also erases the .sam file, and indexes the .bam file.

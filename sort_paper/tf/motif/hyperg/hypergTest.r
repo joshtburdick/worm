@@ -16,6 +16,7 @@ orig.motif.list = {
 enrich.test.one.clustering = function(cl, name) {
   output.dir = "git/sort_paper/tf/motif/hyperg/allResults/"
 
+if (FALSE) {
   system(paste0("mkdir -p ", output.dir, "chip/"))
   enrich = enrich.test.many.motifs(
     "git/tf/chip/count/upstreamChipCount/", cl)
@@ -34,6 +35,13 @@ enrich.test.one.clustering = function(cl, name) {
     "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)
   save(enrich, file=
     paste0(output.dir, "hughes/", name, ".Rdata"))
+}
+
+  system(paste0("mkdir -p ", output.dir, "jolma2013_shuffled/"))
+  enrich = enrich.test.many.motifs(
+    "git/tf/motif/count/upstreamMotifCount/jolma2013_shuffled/", cl, orig.motif.list)
+  save(enrich, file=
+    paste0(output.dir, "jolma2013_shuffled/", name, ".Rdata"))
 }
 
 if (TRUE) {

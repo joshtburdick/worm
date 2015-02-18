@@ -17,6 +17,9 @@ test1 = function(A, B) {
 
 # Comparison with lsei().
 lsei.test.1 = function(A, B) {
+  A = A / apply(A, 1, sum)
+  B = B / apply(B, 1, sum)
+
   X = pos.linear.solve(A, B)$X
 
   X.lsei = X + NA    # XXX
@@ -46,7 +49,8 @@ for(iter in 1:3) {
   print(lsei.test.1(A3, B3))
 }
 
-# can it do least squares?
+# can it do least squares? what happens if the system
+# is _over_determined?
 A4 = matrix(rgamma(10, shape=1, scale=1), nrow=5)
 X4 = matrix(rgamma(10, shape=1, scale=1), nrow=2)
 B4 = A4 %*% X4

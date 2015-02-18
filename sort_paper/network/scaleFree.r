@@ -2,15 +2,15 @@
 # superficially.
 
 if (TRUE) {
-load("git/sort_paper/tf/motif/hyperg/allResults/5kb/hier.300.Rdata")
+load("git/sort_paper/tf/motif/hyperg/allResults/5kb/hier.300.clusters.Rdata")
 motif1.min.p = apply(enrich[,,"p.corr",,,], c(1,2), min)
 
-load("git/sort_paper/tf/motif/hyperg/allResults/5kb/hier.300.Rdata")
+load("git/sort_paper/tf/motif/hyperg/allResults/hughes/hier.300.clusters.Rdata")
 hughes.min.p = apply(enrich[,,"p.corr",,,], c(1,2), min) 
 
 motif.min.p = rbind(hughes.min.p, motif1.min.p)
 
-load("git/sort_paper/tf/motif/hyperg/allResults/chip/hier.300.Rdata")
+load("git/sort_paper/tf/motif/hyperg/allResults/chip/hier.300.clusters.Rdata")
 chip.min.p = apply(enrich[,,"p.corr",,,], c(1,2), min) 
 }
 
@@ -40,5 +40,12 @@ for (min.p in 10^c(-1:-7)) {
   scale.free.regress(chip.min.p <= min.p, "ChIP signals")
   scale.free.regress(t(chip.min.p <= min.p), "Clusters (ChIP signals)")
 }
+
+# plot just the most significant
+scale.free.regress(motif.min.p <= 1e-7, "Motifs")
+scale.free.regress(t(motif.min.p <= 1e-2), "Clusters (motifs)")
+scale.free.regress(chip.min.p <= 1e-7, "ChIP signals")
+scale.free.regress(t(chip.min.p <= 1e-7), "Clusters (ChIP signals)")
+
 dev.off()
 

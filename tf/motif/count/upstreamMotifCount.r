@@ -11,7 +11,8 @@ gene.names = read.table(
 
 # motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
 # motif.gene.dir = "git/cluster/motif/distAndConservation/5kb_TCF_LEF/"
-motif.gene.dir = "/home/jburdick/tmp/distAndConservation/5kb_hughes_20141202/"
+# motif.gene.dir = "/home/jburdick/tmp/distAndConservation/5kb_hughes_20141202/"
+motif.gene.dir = "/home/jburdick/tmp/distAndConservation/jolma2013_shuffled/"
 
 # Gets motif occurrences relative to genes from a file
 # (the output of "distAndConservation.py").
@@ -89,6 +90,7 @@ r = count.motifs.at.cutoffs(motifs,
     conservation = c(0, 0.5, 0.7, 0.9),
     score = c(30, 35, 40)),
   get.motifs.from.file(motif.gene.dir),
-  "git/tf/motif/count/upstreamMotifCount/hughes_20141202/")
+#  "git/tf/motif/count/upstreamMotifCount/hughes_20141202/")
+  "git/tf/motif/count/upstreamMotifCount/jolma2013_shuffled/")
 }
 

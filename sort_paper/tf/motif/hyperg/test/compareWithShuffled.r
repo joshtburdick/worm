@@ -1,5 +1,7 @@
 # Comparing enrichments with shuffled versions of same.
 
+library("reshape2")
+
 # versions with shuffled motifs
 load("git/sort_paper/tf/motif/hyperg/allResults/jolma2013_shuffled/facs_0.892.Rdata")
 facs.892.shuffled.motif.enrich = enrich
@@ -37,7 +39,7 @@ plot.it = function(x, y, main) {
   lim = range(c(x,y))
   plot(x, y, xlim=lim, ylim=lim,
     main=main, xlab="not shuffled", ylab="shuffled",
-    pch=20, col="#00000020")
+    pch=183, font=5, cex=2, col="#00000020")
   abline(0,1)
 }
 
@@ -56,4 +58,15 @@ plot.it(p1(hier.300.enrich), p1(hier.300.shuffled.motif.enrich),
   main="300 clusters, -log10(p)")
 
 dev.off()
+
+# show motif-cluster pairs which are "more significant before shuffling"
+neg.log.p.cluster = melt(hier.300.enrich[,,"p.corr",,,])
+neg.log.p.cluster[,6] = -log10(neg.log.p.cluster[,6])
+colnames(neg.log.p.cluster)[[6]] = "nlp"
+neg.log.p.cluster$shuffled.nlp =
+  -log10(melt(hier.300.shuffled.motif.enrich[,,"p.corr",,,])$value)
+neg.log.p.cluster = neg.log.p.cluster[
+  neg.log.p.cluster$nlp >= 10 & neg.log.p.cluster$shuffled.nlp <= 1 , ]
+
+table(paste(neg.log.p.cluster[,1], neg.log.p.cluster[,2]))
 

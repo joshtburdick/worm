@@ -1,5 +1,9 @@
 # hacked version of seqLogo which doesn't clear the screen.
 
+library(grid)
+# library(MotIV)
+# library(latticeExtra)
+
 ## get information content profile from PWM
 pwm2ic<-function(pwm) {
     npos<-ncol(pwm)
@@ -258,9 +262,9 @@ seqLogoSmall <- function(pwm, ic.scale=TRUE, xaxis=FALSE, yaxis=FALSE, xfontsize
 # jtb: omitting this
 #  grid.newpage()
 
-#  bottomMargin = ifelse(xaxis, 2 + xfontsize/3.5, 2)
-#  leftMargin = ifelse(yaxis, 2 + yfontsize/3.5, 2)
-#  pushViewport(plotViewport(c(bottomMargin,leftMargin,2,2)))
+  bottomMargin = ifelse(xaxis, 2 + xfontsize/3.5, 2)
+  leftMargin = ifelse(yaxis, 2 + yfontsize/3.5, 2)
+  pushViewport(plotViewport(c(bottomMargin,leftMargin,2,2)))
   pushViewport(dataViewport(0:ncol(pwm),0:ylim,name="vp1"))
   grid.polygon(x=unit(letters$x,"native"), y=unit(letters$y,"native"),
                id=letters$id,
@@ -276,7 +280,7 @@ seqLogoSmall <- function(pwm, ic.scale=TRUE, xaxis=FALSE, yaxis=FALSE, xfontsize
     grid.text(ylab,x=unit(-3,"lines"),rot=90, gp=gpar(fontsize=yfontsize))
   }
   popViewport()
-#  popViewport()
+  popViewport()
   par(ask=FALSE)
 }
 

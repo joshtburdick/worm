@@ -7,15 +7,15 @@ source("git/sort_paper/tf/motifInfo.r")
 source("git/tf/motif/motifName.r")
 source("git/data/wormbase/wb.cluster.name.r")
 
-load("git/sort_paper/tf/motif/
-
 
 motif.chip.matrix = function(f, p.cutoff=1, max.color.p=20, num.to.include=2) {
   r = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/",
     f, ".tsv.gz")))
   colnames(r)[[1]] = "motif"
 
-  r = r[ -log10(r$p.corr) >= p.cutoff , ]
+  enrich.cutoff = 1.8
+
+  r = r[ -log10(r$p.corr) >= p.cutoff & r$enrich >= enrich.cutoff , ]
   a = as.matrix(make.sparse.matrix(r$group, r$motif, -log10(r$p.corr))) / max.color.p
 
 # disabling this for now
@@ -95,7 +95,7 @@ print(dim(r))
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/motifFacsEnriched.pdf",
-  width=5.5, height=100)
+  width=5.5, height=30)
 par(mar=c(5,15,0.1,0.1))
 plot.1("facs_0.892")
 dev.off()
