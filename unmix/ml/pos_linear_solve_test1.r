@@ -27,7 +27,7 @@ lsei.test.1 = function(A, B) {
     r = ldei(A, B[,j], diag(ncol(A)), rep(0, ncol(A)))
     X.lsei[,j] = r$X
   }
-
+  cat("\n")
   c(err = max(abs(A %*% X - B)), min=min(X),
     ldei.diff = max(abs(X - X.lsei)))
 }

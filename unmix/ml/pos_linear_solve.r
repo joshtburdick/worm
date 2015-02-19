@@ -46,11 +46,12 @@ move.pos = function(A, B) {
 #   A, B - these give the matrix
 #   X - the starting point (if NULL, the "truncated pseudoinverse"
 #     is used)
-#   normalize.rows - whether to normalize rows
+#   normalize - indicates whether to normalize "rows", "columns"
+#     or (the default, if "none") neither
 #   max.iters, eps - stopping criteria
 # Returns: a positive solution of X (or, if there isn't such,
 #   then the closest positive solution by least squares.)
-pos.linear.solve = function(A, B, X=NULL, normalize.rows=FALSE,
+pos.linear.solve = function(A, B, X=NULL, normalize="none",
     max.iters=50, eps=1e-13) {
   update.stats = NULL
   lc = lin.constraint(A, B)
@@ -67,9 +68,13 @@ pos.linear.solve = function(A, B, X=NULL, normalize.rows=FALSE,
     # move toward the closest point satisfying the constraints
     X1 = move.pos(X, lc(X))
 
-    # also possibly normalize rows
-    if (normalize.rows) {
+    # also possibly normalize rows or columns
+    if (normalize == "rows") {
       X1 = X1 / apply(X1, 1, sum)
+      X1[ X1 < 0 ] = 0
+    }
+    if (normalize == "columns") {
+      X1 = t( t(X1) / apply(X1, 2, sum) )
       X1[ X1 < 0 ] = 0
     }
 

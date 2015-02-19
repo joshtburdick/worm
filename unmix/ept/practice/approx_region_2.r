@@ -300,7 +300,7 @@ approx.region.gamma.3 = function(A, b, b.var,
 #  t.m = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
   # the "constraint" term
-  t.c = gamma.mv2n(rbind(m=rep(1e3,n), v=rep(1e6,n)))
+  t.c = gamma.mv2n(rbind(m=rep(1,n), v=rep(1,n)))
 
   # the linear constraints
   lc = lin.constraint.gamma(A, b, b.var)
@@ -320,12 +320,12 @@ approx.region.gamma.3 = function(A, b, b.var,
   for(iter in 1:max.iters) {
 #  print(gamma.n2mv(terms))
 print(iter)
-    t.c = q - t.c  # was t.m
+    t.m = q - t.c  # was t.m
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    # q.new = lcp(q - t.c)
+    q.new = lcp(t.m)
 # XXX trying new constraint code
-   q.new = lcg(q - t.c)
+    # q.new = lcg(q - t.c)
 
     t.c = t.c + (q.new - q)
 # print(q.new)
