@@ -70,10 +70,12 @@ pos.linear.solve = function(A, B, X=NULL, normalize="none",
 
     # also possibly normalize rows or columns
     if (normalize == "rows") {
+      X1 = X1 + 1e-11
       X1 = X1 / apply(X1, 1, sum)
       X1[ X1 < 0 ] = 0
     }
     if (normalize == "columns") {
+      X1 = X1 + 1e-11
       X1 = t( t(X1) / apply(X1, 2, sum) )
       X1[ X1 < 0 ] = 0
     }

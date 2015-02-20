@@ -43,15 +43,13 @@ rpm$"pha-4 (-)" = apply(
   1, mean)
 rpm = as.matrix(rpm[ , rownames(m1) ])
 
-# restrict to genes with at least some amount of expression)
-expressed = which( apply(rpm, 1, max) >= 5 )
-
 # normalize columns
 rpm = t( t(rpm) / apply(rpm, 2, sum) )
 
-# only include a random subset of these
-set.seed(42)
-rpm = rpm[ sample(expressed, 5000) , ]
+# just using the genes with highest max expression
+# in some sort fraction
+max.expr = sort(apply(rpm, 1, max), decreasing=TRUE)
+rpm = rpm[ names(max.expr)[ 1:5000 ] , ]
 
 # tack on sum of other genes (in rpm)
 x.other = 1 - apply(rpm, 2, sum)
@@ -117,7 +115,9 @@ unmix.ml.crossval = function(rpm, m, f) {
   s = setdiff(rownames(m),
     c(double.sorted.fractions, f.plus, f.minus))
 print(s)
-  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
+#  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
+
+  x = 1e6 * t( unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]))$x )
 
   # name of the fraction to use for sim. sorting
   sim.f = f
@@ -142,10 +142,10 @@ unmix.ml.all = function() {
   r
 }
 
-x1 = unmix.expr.and.sort.matrix.1(m1, t(rpm))
+# x1 = unmix.expr.and.sort.matrix.1(m1, t(rpm))
 
 # crossval.r = unmix.ml.crossval(rpm, m1, "mls-2")
 
-# unmix.corr = unmix.ml.all()
+unmix.corr = unmix.ml.all()
 
 
