@@ -2,6 +2,8 @@
 # "Algorithms for Non-negative Matrix Factorization".
 # FIXME find a citation
 
+source("git/utils.r")
+
 # The Euclidean rule, from (4) in that paper.
 # I'm only implementing the case for updating H, since
 # updating W is symmetric.
@@ -34,7 +36,7 @@ nmf.div.update = function(W, H, V) {
 nmf.1 = function(W, H, V, update.rule, iters=50) {
   update.stats = NULL
 
-  for(i in 1:iters) {
+  for(iter in 1:iters) {
     H1 = update.rule(W, H, V)
     W1 = t( update.rule(t(H1), t(W), t(V)) )
     update.stats = rbind(update.stats,
@@ -47,8 +49,51 @@ nmf.1 = function(W, H, V, update.rule, iters=50) {
   list(W = W, H = H, update.stats = update.stats)
 }
 
+# Unmixing, mostly based on this NMF method.
+# (This also enforces that certain things add up to
+# 1, though I don't know if that's needed.)
+# Args:
+#   m - the sort matrix (with one row per sort fraction,
+#     and one column per cell)
+#   r - the read data (with one row per gene)
+#   x - starting point for expression (optional)
+#   max.iters - max. updates to do
+#   eps - stop when updates are smaller than this
+# Returns: a list with components
+#   m - the modified sort matrix
+#   x - the unmixed data
+#   update.stats - stats about convergence
+unmix.nmf = function(m, r, x=NULL, max.iters=100, eps=1e-10) {
+  # XXX transposing this, because it's what I'm used to
+  r = t(r)
+  update.rule = nmf.div.update
+  update.stats = NULL
 
+  if (is.null(x)) {
+    x = matrix(1, nrow=ncol(m), ncol=ncol(r))
+    rownames(x) = colnames(m)
+    colnames(x) = colnames(r)
+  }
 
+  for(iter in 1:max.iters) {
+# browser()
+    x1 = update.rule(m, x, r)
+    x1 = x1 / apply(x1, 1, sum)
+    m1 = t( update.rule(t(x1), t(m), t(r)) )
+    m1 = m1 / apply(m1, 1, sum)
 
+    s1 = c(x = max(abs(x-x1)), m = max(abs(m-m1)),
+        abs.diff = max(abs(m %*% x - r)))
+write.status(paste(iter, s1[1], s1[2], s1[3]))
+    if (max(s1) <= eps)
+      break
+    update.stats = rbind(update.stats, s1)
+    
+    x = x1
+    m = m1
+  }
 
+  rownames(update.stats) = 1:nrow(update.stats)
+  list(m = m, x = t(x), update.stats = update.stats)
+}
 
