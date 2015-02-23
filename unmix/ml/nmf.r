@@ -85,7 +85,7 @@ unmix.nmf = function(m, r, x=NULL, max.iters=100, eps=1e-10) {
     s1 = c(x = max(abs(x-x1)), m = max(abs(m-m1)),
         abs.diff = max(abs(m %*% x - r)))
 write.status(paste(iter, s1[1], s1[2], s1[3]))
-    if (max(s1) <= eps)
+    if (max(s1, na.rm=TRUE) <= eps)
       break
     update.stats = rbind(update.stats, s1)
     

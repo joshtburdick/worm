@@ -125,7 +125,7 @@ unmix.ml.crossval = function(rpm, m, f, plot=FALSE) {
 print(s)
 #  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
 #  x = 1e6 * t( unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]))$x )
-  r = unmix.nmf(m, rpm / 1e6, max.iters=10)
+  r = unmix.nmf(m[s,], rpm[,s] / 1e6, max.iters=100)
   x = 1e6 * r$x
 
   # name of the fraction to use for sim. sorting
@@ -142,7 +142,7 @@ print(s)
 unmix.ml.all = function() {
   r = NULL
 
-  for(f in setdiff(rownames(m)[1:14], c("hlh-16", "irx-1"))) {
+  for(f in setdiff(rownames(m)[1:14], c("hlh-16", "irx-1", "pha-4"))) {  #
     write.status(f)
     a = unmix.ml.crossval(rpm, m1, f)
     r[[f]] = cor(a$sim.r, a$actual.r)
@@ -186,3 +186,4 @@ write.crossval.graphs.png = function() {
 # unmix.corr = unmix.ml.all()
 
 write.crossval.graphs.png()
+
