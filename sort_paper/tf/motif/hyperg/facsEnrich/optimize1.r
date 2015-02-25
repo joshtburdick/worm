@@ -16,7 +16,7 @@ shuffled.motifs = sub(".Rdata", "",
 motifs = intersect(orig.motif.list, shuffled.motifs)
 
 # for testing
-foxb.motifs = c("FOXB1_DBD", "FOXB1_DBD_2") # , "FOXB1_DBD_3", "FOXB1_full")
+foxb.motifs = c("FOXB1_DBD", "FOXB1_DBD_2", "FOXB1_DBD_3", "FOXB1_full")
 
 # Max. expression in reads per million
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
@@ -75,12 +75,12 @@ enrich.test = function(s) {
 
   r1 = enrich.test.gene.sets.many.motifs(
     "git/tf/motif/count/upstreamMotifCount/5kb/",
-    s, foxb.motifs)
+    s, motifs)    # was foxb.motifs
   r = melt(r1[,,"p",3,3,3])
 
   r1.shuffled = enrich.test.gene.sets.many.motifs(
     "git/tf/motif/count/upstreamMotifCount/jolma2013_shuffled/",
-    s, foxb.motifs)
+    s, motifs)   # was foxb.motifs)
   r.shuffled = melt(r1.shuffled[,,"p",3,3,3])
 
   colnames(r)[[2]] = "sort_marker"
@@ -158,7 +158,7 @@ motif.enrichment.compare = function(a, cutoff) {
       method = "enriched vs no change", cutoff = cutoff,
       enrich.test(enriched.vs.no.change(a, cutoff))),
     data.frame(
-      method = "depleted vs change", cutoff = cutoff,
+      method = "depleted vs no change", cutoff = cutoff,
       enrich.test(enriched.vs.no.change(-a, cutoff))),
 
     data.frame(
