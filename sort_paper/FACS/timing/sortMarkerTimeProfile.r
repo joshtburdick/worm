@@ -26,6 +26,9 @@ xlim=range(as.numeric(c(colnames(r.ts.facs), colnames(r.y))))
 ylim.ts = range(r.ts.facs, na.rm=TRUE)
 ylim.y = range(r.y)
 
+# XXX for lin-3
+r.ts.facs = r.ts
+
 # Plots timeseries data from both datasets for one gene.
 plot.ts = function(g) {
 
@@ -44,12 +47,13 @@ plot.ts = function(g) {
     side=4, line=3, col="#0000ffff", cex=0.75)
 }
 
-pdf("git/sort_paper/FACS/timing/sortMarkerTimeProfile.pdf",
-  width=7.5, height=9)
-par(mfrow=c(3,2))
+pdf("git/sort_paper/FACS/timing/lin-3.pdf",
+  width=6, height=4)
+#  width=7.5, height=9)
+# par(mfrow=c(3,2))
 par(mar=c(5,4,4,5)+0.1)
 
-for(g in facs.genes)
+for(g in c("lin-3"))   # facs.genes)
   plot.ts(g)
 
 # the original graph, with all the genes from the modENCODE timeseries

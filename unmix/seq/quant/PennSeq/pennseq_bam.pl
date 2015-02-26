@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # 20140606, jtb: changing to loop through a set of BAM files instead
+# of only one.
 # Also, for now, only runs on chromosome I (due to
 # memory limitations.)
 
