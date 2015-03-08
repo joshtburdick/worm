@@ -1,77 +1,98 @@
-# Fiji script to merge stacks.
+# Fiji script to merge stacks of FISH, one stack per embryo.
 #
 # Loosely based on code at
 # http://www.ini.uzh.ch/~acardona/fiji-tutorial/#RGB-stack-to-hyperstack
 
+import os
 import sys
 from ij import IJ, ImagePlus, ImageStack, CompositeImage
 from ij.io import FileSaver
 from ij.process import LUT
 
-imgPath = "/home/jburdick/gcb/data/image/FISH/20150208_Elicia_hlh-6_GFPprobe/"
+# directory containing images
+imgPath = "/media/jburdick/disk2/data/FISH/2015_02_24 ElegansEmbryos/"
 
-# IJ.debugMode = True
+# directory in which to write output
+outputDir = "/media/jburdick/disk2/data/FISH/merged/"
 
 # names of the channels to add, in order of colors given in
 # the CompositeImage source code (since I haven't been able
 # to set LUTs "by hand")
-channelNames = ["cy", "gfp", "dapi", "trans", "alexa", "tmr"]
+# XXX omitting "trans", as it has a different number of planes
+# channelNames = ["cy", "gfp", "dapi", "trans", "alexa", "tmr"]
+channelNames = ["cy", "gfp", "dapi", "alexa", "tmr"]
 
-# read in images
-img1 = IJ.openImage(imgPath + "/" + "alexa005.tif")
-img2 = IJ.openImage(imgPath + "/" + "dapi005.tif")
+# number of stacks to include
+numStacks = 10   # XXX debugging
 
+# IJ.debugMode = True
+try:
+  os.makedirs(outputDir)
+except OSError:
+  print "failure in making directory\n"
 
-ip1 = ImagePlus("ip1", img1.getImageStack())
-ip2 = ImagePlus("ip2", img2.getImageStack())
+# loop through the stacks
+for s in xrange(1, numStacks+1):
 
-# XXX temp hack
-# ip1.setCalibration(img1.getCalibration().copy())  
+  # the IJ objects; hopefully we'll be able to close
+  # these, and free up memory
+  ijs = {}
 
-# create stack containing the images
-stack1 = ip1.getImageStack()
-stack2 = ip2.getImageStack()
+  # the new stack, and the number of slices
+  # (both set after we see an image)
+  newStack = None
+  numSlices = 0
 
-stackNew = ImageStack(img1.width, img1.height)
+  # pad the "stack" string with 0's
+  if s < 10:
+    s1 = "00" + str(s)
+  else:
+    s1 = "0" + str(s)
 
-for i in xrange(1, 4):  # img1.getNSlices()+1):  
-  for(ch in
-  # Extract the channels as FloatProcessor  
-  i1 = stack1.getProcessor(i).toFloat(0, None)
-  i2 = stack2.getProcessor(i).toFloat(0, None)
+  # read in all the channels for this stack
+  imgStack = {}
+  for ch in channelNames:
+    f = imgPath + "/" + ch + s1 + ".tif"
+    print("reading " + f)
 
-  # Add both to the new stack
-  stackNew.addSlice("ch1 " + str(i), i1)
-  stackNew.addSlice("ch2 " + str(i), i2)
+    ij = IJ.openImage(f)
+    ijs[ch] = ij
 
-imp2 = ImagePlus("merged", stackNew)
-# imp2.setCalibration(img1.getCalibration().copy())  
+    print(ij)
+    imgStack[ch] = ij.getImageStack()
+    numSlices = ij.getNSlices()
 
-print(imp2.toString())
-nChannels = 6
-nSlices = stackNew.getSize() # the number of slices of the original stack  
-nFrames = 10             # number of time points
-imp2.setDimensions(nChannels, stackNew.getSize(), nFrames)
-print(imp2.toString())
-print(imp2.getStatistics())
+    # possibly create the stack to hold the new images
+    # (now that we know its size)
+    if (newStack is None):
+      newStack = ImageStack(ij.width, ij.height)
 
-comp = CompositeImage(imp2, CompositeImage.COLOR)  
-comp.setCalibration(img1.getCalibration().copy())
+  # add the slices
+  for slice in xrange(1, numSlices+1):  
+    for ch in channelNames:
 
-# comp.show()
+      # Extract the channel as FloatProcessor
+      ip = imgStack[ch].getProcessor(slice).toFloat(0, None)
 
-IJ.save(comp, "/home/jburdick/merged.tif")
+      # add to the new stack
+      newStack.addSlice(ch + " " + str(slice), ip)
 
-# XXX various attempts at saving the result
+  # create the merged stack
+  imp = ImagePlus("merged " + s1, newStack)
 
-# fs = FileSaver(comp)
-# fs.saveAsTiffStack("/home/jburdick/merged.tif")
+  numChannels = len(channelNames)
+  numSlicesTotal = newStack.getSize()
+# imp.setDimensions(len(channelNames), numSlicesTotal, 1)
+#    numSlicesTotal / len(channelNames))
+  imp.setDimensions(len(channelNames), numSlices, 1)
 
-# IJ.runPlugIn("loci.plugins.LociExporter",
-#   "imageid=" + str(img1.getID()) + " " +
-#   "outfile=/home/jburdick/merged.tif " +
-#   "splitz=false splitc=false splitt=false saveroi=false ")  # +
-#  "compression-type=Uncompressed")
+  comp = CompositeImage(imp, CompositeImage.COLOR)
+#  comp.setCalibration(img1.getCalibration().copy())
+  IJ.save(comp, outputDir + s1 + ".tif")
 
-
+  # free up images we saved
+  for ch in channelNames:
+    ijs[ch].close()
+  imp.close()
+  comp.close()
 
