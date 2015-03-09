@@ -1,7 +1,6 @@
 # Compares motifs with shuffled versions of themselves.
 
 library("MotIV")
-library("snow")
 
 source("git/utils.r")
 
@@ -47,7 +46,7 @@ shuffled.motif.dist.1 = function(m, num.shuffles=1000) {
 #   num.shuffles - number of times to shuffle these
 write.shuffled.motif.dist = function(motif.names, num.shuffles=1000) {
   for(m in motif.names) {
-    cat(paste0(m, " "))
+    write.status(m)
     if (m %in% names(meme.format.pwm)) {
       shuffled.motif.dist = shuffled.motif.dist.1(meme.format.pwm[[m]], num.shuffles)
       save(shuffled.motif.dist, file=paste0(output.dir, "/", m, ".Rdata"))
@@ -55,30 +54,16 @@ write.shuffled.motif.dist = function(motif.names, num.shuffles=1000) {
   }
 }
 
-# Runs this on one "chunk" of 100 motifs.
-run.chunk = function(i) {
-  print(paste0("\n[Running on chunk ", i, "]\n"))
-  low = 10 * i
-  hi = low + 9
-  if (hi > length(motif.list))
-    hi = length(motif.list)
+# Runs this on one "chunk" of motifs.
+run.chunk = function(low, hi) {
+
   write.shuffled.motif.dist(motif.list[low:hi])
 }
 
-
-cl = makeCluster(5, type="SOCK")
-clusterExport(cl, c("meme.format.pwm", "motif.list",
-  "run.chunk", "write.shuffled.motif.dist", "shuffled.motif.dist.1"))
-
-
-
-# Runs this on various chunks, using "snow" package.
-write.shuffled.snow = function() {
-  clusterApply(cl, 1:15, run.chunk)
-  stopCluster(cl)
-}
-
-# write.shuffled.motif.dist(motif.list[1:100])
-
-write.shuffled.snow()
+# XXX amazingly lame parallelism: run each of these "by hand"
+# run.chunk(1, 499)
+# run.chunk(500, 799)
+# run.chunk(800, 1099)
+# run.chunk(1100, 1299)
+# run.chunk(1300, 1497)
 
