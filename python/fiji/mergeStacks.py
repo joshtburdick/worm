@@ -28,11 +28,14 @@ outputPath = "mergedImages";
 img1 = IJ.openImage(imgPath + "/" + "alexa005.tif")
 img2 = IJ.openImage(imgPath + "/" + "dapi005.tif")
 
-
 ip1 = ImagePlus("ip1", img1.getImageStack())
 ip2 = ImagePlus("ip2", img2.getImageStack())
 
-# XXX temp hack
+# this seems to work fine
+# IJ.save(ip1, "/home/jburdick/ip1.tif")
+# System.exit(0)
+
+# XXX temp hack; doesn't seem to be helping
 # ip1.setCalibration(img1.getCalibration().copy())  
 
 # create stack containing the images
@@ -40,12 +43,14 @@ stack1 = ip1.getImageStack()
 stack2 = ip2.getImageStack()
 
 stackNew = ImageStack(img1.width, img1.height)
+print("stackNew = " + stackNew.toString())
 
-for i in xrange(1, 4):  # img1.getNSlices()+1):  
+
+for i in xrange(1, 7):  # img1.getNSlices()+1):  
 
   # Extract the channels as FloatProcessor  
-  i1 = stack1.getProcessor(i).toFloat(0, None)
-  i2 = stack2.getProcessor(i).toFloat(0, None)
+  i1 = stack1.getProcessor(i)  # .toFloat(0, None)
+  i2 = stack2.getProcessor(i)  # .toFloat(0, None)
 
   # Add both to the new stack
   stackNew.addSlice("ch1 " + str(i), i1)
@@ -58,20 +63,26 @@ print(imp2.toString())
 nChannels = 2              # two color channels  
 nSlices = stackNew.getSize() # the number of slices of the original stack  
 nFrames = 1                # only one time point   
-imp2.setDimensions(nChannels, stackNew.getSize() / 2, nFrames)
+imp2.setDimensions(2, stackNew.getSize() / 2, nFrames)
 print(imp2.toString())
 print(imp2.getStatistics())
 
-comp = CompositeImage(imp2, CompositeImage.COLOR)  
+comp = CompositeImage(imp2, CompositeImage.COMPOSITE)  
 comp.setCalibration(img1.getCalibration().copy())
+
+print "printing comp:"
+print comp
+# print "displayRanges"
+# print comp.displayRanges
+
 
 from jarray import array
 lut1 = comp.createLutFromColor(Color.red)
-lut1.min = 500
-lut1.max=4000
+# lut1.min = 500
+# lut1.max=4000
 lut2 = comp.createLutFromColor(Color.blue)
-lut2.min=500
-lut2.max=4000
+# lut2.min=500
+# lut2.max=4000
 
 luts = array([lut1, lut2], LUT)
 
@@ -84,17 +95,21 @@ comp.setLuts(luts)
 # comp.resetDisplayRanges()
 
 # XXX various attempts at saving the result
-# IJ.save(comp, "/home/jburdick/merged.png")
-fs = FileSaver(comp)
-fs.saveAsTiffStack("/home/jburdick/merged.tif")
+IJ.save(comp, "/home/jburdick/merged.tif")
 
-comp.show() 
+# fs = FileSaver(comp)
+# fs.saveAsTiffStack("/home/jburdick/merged.tif")
+
+# comp.show() 
 
 # IJ.runPlugIn("loci.plugins.LociExporter",
 #   "imageid=" + str(comp.getID()) + " " +
 #   "outfile=/home/jburdick/merged.tif " +
 #   "splitz=false splitc=false splitt=false saveroi=false " +
-#   "compression-type=Uncompressed")
+#   "compression=None")
 
+# IJ.runPlugIn("Bio-Formats Exporter", "compression=Uncompressed save=blah.ome.tiff");
+
+# print("\nwrote file\n")
 
 
