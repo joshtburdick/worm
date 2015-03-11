@@ -8,6 +8,8 @@ import sys
 from ij import IJ, ImagePlus, ImageStack, CompositeImage
 from ij.io import FileSaver
 from ij.process import LUT
+from java.awt import Color
+from jarray import array
 
 # directory containing images
 imgPath = "/media/jburdick/disk2/data/FISH/2015_02_24 ElegansEmbryos/"
@@ -22,14 +24,28 @@ outputDir = "/media/jburdick/disk2/data/FISH/merged/"
 # channelNames = ["cy", "gfp", "dapi", "trans", "alexa", "tmr"]
 channelNames = ["cy", "gfp", "dapi", "alexa", "tmr"]
 
-# number of stacks to include
-numStacks = 10   # XXX debugging
+# colors of the channels (for now, these are the same as the defaults,
+# but I think they theoretically could be altered)
+colors = [Color.red, Color.green, Color.blue, Color.white, Color.cyan]
 
-# IJ.debugMode = True
+# number of stacks to include
+numStacks = 3   # XXX debugging
+
+# create directory to hold output
 try:
   os.makedirs(outputDir)
 except OSError:
   print "failure in making directory\n"
+
+# Utility to update statistics in a dictionary.
+# XXX this probably should be a class
+def updateMinMax(stats, a, aMin, aMax):
+  if a in stats:
+    stats[a] = {
+      "min": min(stats[a]["min"], aMin),
+      "max": max(stats[a]["max"], aMax) }
+  else:
+    stats[a] = {"min": aMin, "max": aMax}
 
 # loop through the stacks
 for s in xrange(1, numStacks+1):
@@ -37,6 +53,9 @@ for s in xrange(1, numStacks+1):
   # the IJ objects; hopefully we'll be able to close
   # these, and free up memory
   ijs = {}
+
+  # min and max stats for each channel (over all images)
+  minMax = {}
 
   # the new stack, and the number of slices
   # (both set after we see an image)
@@ -69,10 +88,16 @@ for s in xrange(1, numStacks+1):
 
   # add the slices
   for slice in xrange(1, numSlices+1):  
-    for ch in channelNames:
+    for i in xrange(0, len(channelNames)):
+      ch = channelNames[i]
 
       # Extract the channel as FloatProcessor
-      ip = imgStack[ch].getProcessor(slice).toFloat(0, None)
+      ip = imgStack[ch].getProcessor(slice)
+
+      # get statistics for that ImageProcessor
+#      print(str(slice) + " " + ch + " range = " +
+#        str(ip.getMin()) + " to " + str(ip.getMax()))
+      minMax[ch] = {"min": ip.getMin(), "max": ip.getMax() }
 
       # add to the new stack
       newStack.addSlice(ch + " " + str(slice), ip)
@@ -82,15 +107,23 @@ for s in xrange(1, numStacks+1):
 
   numChannels = len(channelNames)
   numSlicesTotal = newStack.getSize()
-# imp.setDimensions(len(channelNames), numSlicesTotal, 1)
-#    numSlicesTotal / len(channelNames))
   imp.setDimensions(len(channelNames), numSlices, 1)
 
-  comp = CompositeImage(imp, CompositeImage.COLOR)
-#  comp.setCalibration(img1.getCalibration().copy())
+  comp = CompositeImage(imp, CompositeImage.COMPOSITE)
+
+  # set the colors, and per-channel ranges
+  luts = []
+  for j in xrange(0, len(channelNames)):
+    ch = channelNames[j]
+    l1 = comp.createLutFromColor(colors[j])
+    l1.min = minMax[ch]["min"]
+    l1.max = minMax[ch]["max"]
+    luts[j:j] = [l1]      # XXX odd looking, but works
+  comp.setLuts(array(luts, LUT))
+
   IJ.save(comp, outputDir + s1 + ".tif")
 
-  # free up images we saved
+  # free up images
   for ch in channelNames:
     ijs[ch].close()
   imp.close()
