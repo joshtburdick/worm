@@ -12,40 +12,30 @@ from java.awt import Color
 from jarray import array
 
 # directory containing images
-imgPath = "/media/jburdick/disk2/data/FISH/2015_02_24 ElegansEmbryos/"
+imgPath = "/media/jburdick/disk2/data/FISH/2015_02_25/"
 
 # directory in which to write output
-outputDir = "/media/jburdick/disk2/data/FISH/merged/"
+outputDir = "/media/jburdick/disk2/data/FISH/merged/2015_02_25/"
+
+# number of stacks to include (FIXME: should be autodetected)
+numStacks = 10
 
 # names of the channels to add, in order of colors given in
 # the CompositeImage source code (since I haven't been able
 # to set LUTs "by hand")
 # XXX omitting "trans", as it has a different number of planes
 # channelNames = ["cy", "gfp", "dapi", "trans", "alexa", "tmr"]
-channelNames = ["cy", "gfp", "dapi", "alexa", "tmr"]
+channelNames = ["alexa", "gfp", "dapi", "cy", "tmr"]
 
 # colors of the channels (for now, these are the same as the defaults,
 # but I think they theoretically could be altered)
-colors = [Color.red, Color.green, Color.blue, Color.white, Color.cyan]
-
-# number of stacks to include
-numStacks = 3   # XXX debugging
+colors = [Color.red, Color.green, Color.blue, Color.cyan, Color.yellow]
 
 # create directory to hold output
 try:
   os.makedirs(outputDir)
 except OSError:
   print "failure in making directory\n"
-
-# Utility to update statistics in a dictionary.
-# XXX this probably should be a class
-def updateMinMax(stats, a, aMin, aMax):
-  if a in stats:
-    stats[a] = {
-      "min": min(stats[a]["min"], aMin),
-      "max": max(stats[a]["max"], aMax) }
-  else:
-    stats[a] = {"min": aMin, "max": aMax}
 
 # loop through the stacks
 for s in xrange(1, numStacks+1):
@@ -121,7 +111,7 @@ for s in xrange(1, numStacks+1):
     luts[j:j] = [l1]      # XXX odd looking, but works
   comp.setLuts(array(luts, LUT))
 
-  IJ.save(comp, outputDir + s1 + ".tif")
+  IJ.save(comp, outputDir + "/" + s1 + ".tif")
 
   # free up images
   for ch in channelNames:
