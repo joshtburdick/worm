@@ -1,5 +1,6 @@
 # Gets Ce orthologs from metaPhOrs database.
 
+source("git/utils.r")
 source("git/data/name_convert.r")
 
 data.dir = "~/data/ftp/phylomedb.org/metaphors/release-201405/"
@@ -17,5 +18,11 @@ colnames(ids) = c("extid", "dbid", "version", "protid")
 
 ids$extid = rename.gene.name.vector(ids$extid)
 
+# limit to known gene names
+ids = ids[ ids$extid %in% gene.ids$gene.name, c("extid", "protid") ]
+ids = ids[ ! duplicated(ids$extid) , ]
 
+colnames(ids) = c("gene.name", "protid")
+
+write.tsv(ids, "git/data/homology/metaPhOrs/ceOrthologs.tsv")
 
