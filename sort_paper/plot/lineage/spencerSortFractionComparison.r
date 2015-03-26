@@ -32,6 +32,36 @@ cor.dist = function(a) {
   a
 }
 
+# annotation of which tissues are in which cell, and coloring
+# of them
+tissues.per.cell = read.table("data/worm/TissuesPerCell.tsv",
+  sep="\t", quote="", header=TRUE, row.names=1, as.is=TRUE)
+tissues.per.cell.1 = sapply(lin.node.names,
+  function(cell) {
+    leaves = names(which(leaf.lineage.matrix[ cell , ] == 1))
+    tissues = tissues.per.cell[ leaves, "Tissue" ]
+    if (mean(tissues == tissues[1]) == 1)
+      tissues[1]
+    else
+      ""
+  })
+# various tweaks and simplifications
+tissues.per.cell.1[ tissues.per.cell.1 == "Arcade" ] = "Pharynx"
+tissues.per.cell.1[ tissues.per.cell.1 == "Nervous" ] = "Neuron"
+
+tissue.to.color = NULL
+tissue.to.color["Death"] = "pink"
+tissue.to.color["Epidermis"] = "lightblue"
+tissue.to.color["Glia"] = "orange"
+tissue.to.color["Intestine"] = "darkgreen"
+tissue.to.color["Muscle"] = "magenta"
+tissue.to.color["Neuron"] = "blue"
+tissue.to.color["Pharynx"] = "green"
+
+
+cell.tissue.colors = tissue.to.color[ tissues.per.cell.1 ]
+names(cell.tissue.colors) = lin.node.names
+cell.tissue.colors[ is.na(cell.tissue.colors) ] = "grey"
 
 plot.it.orig = function() {
   h = hclust(cor.dist(m1))
@@ -87,8 +117,12 @@ plot.separately = function() {
   names(a) = lin.node.names
   par(new=TRUE)
   par(mar=c(0,16,0,0.1))
-  plot.segments.per.cell(a, main="", root="P0", times=c(0,339),
+  plot.segments.per.cell(cell.tissue.colors, main="", root="P0", times=c(0,339),
       lwd=1.5, yaxt="n", int.n.to.label=lin.12.cell, add=TRUE)
+
+  # XXX hack to draw legend outside the plot region
+  legend(-100,50, legend=names(tissue.to.color), fill=tissue.to.color,
+    bty="n", xpd=NA, cex=1.3)
 
   plot.one(m.leaf, 0)
   plot.one(spencer.m.leaf, 1/6)
