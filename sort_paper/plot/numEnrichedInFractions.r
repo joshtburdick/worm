@@ -41,6 +41,11 @@ num.fractions = apply(rpm.facs >= 1, 1, sum)
 
 dev.off()
 }
+
+cat("num. expressed in at least one sample =",
+  sum(apply(rpm.facs>=1, 1, any)), "\n")
+
+
 cat("range of genes in any individual sample =",
   paste(range(apply(rpm.facs>=1, 2, sum))), "\n")
 
