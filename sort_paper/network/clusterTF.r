@@ -1,8 +1,9 @@
 # Writes a large TSV file, listing clusters and TF-related enrichments.
 
-library("hwriter")
+# library("hwriter")
 
 source("git/utils.r")
+source("git/data/name_convert.r")
 
 clustering.dir = "git/cluster/hierarchical/"
 output.dir = "git/sort_paper/plot/web/clusters"
@@ -11,19 +12,52 @@ output.dir = "git/sort_paper/plot/web/clusters"
 clustering.name = "hier.300.clusters"
 
 # get all enriched motif and ChIP signals (not just significant cases)
-motif.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/summary/motif/",
-  clustering.name, "_merged.tsv.gz")))
+motif.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/table/",
+  clustering.name, ".tsv.gz")))
 
-chip.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/summary/chip/",
-  clustering.name, "_unfiltered.tsv.gz")))
+chip.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/chipTable/",
+  clustering.name, ".tsv.gz")))
 colnames(chip.enriched.all)[1] = "experiment"
 chip.enriched.all$factor = sub("_.*$", "", chip.enriched.all$experiment)
+
+# read in data to cluster
+x = read.table(paste0(clustering.dir, "/", clustering.name, "/cluster.cdt"),
+  sep="\t", quote="", fill=TRUE, header=TRUE, check.names=FALSE, as.is=TRUE)
+x = x[ c(-1,-2) , ]
+for(j in c(12:51)) {
+  x[ , j ] = as.numeric( x[ , j ])
+}
+
+# for comparing cluster centers and TF expression profiles
+cluster.means.1 = read.tsv(
+  paste0("git/sort_paper/cluster/centroids/", clustering.name, "_means.tsv"))
+cluster.means = cluster.means.1[,1:23]      # ??? convert to a matrix?
+
+rr = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
+rr = rr[,1:23]
+
+# correlation of each cluster with known TFs
+wtf = read.csv("data/tf/wTF2.1.csv", as.is=TRUE)
+tf1 = unique(rename.gene.name.vector(
+  union(wtf$Sequence.name.variant, wtf$Gene.public.name)))
+# only consider genes which have at least some reads
+tf2 = intersect(tf1, x[,3])
+tf.cluster.cor = cor(t(cluster.means), t(rr[tf2,]))
+
+# reads per million (for computing average of maximum)
+rpm = read.tsv("git/cluster/readsPerMillion.tsv")
+rpm = rpm[ x[,3], !grepl("^(HS|RNAi)", colnames(rpm)) ]
+max.rpm = apply(rpm, 1, max)
+mean.max.rpm = tapply(max.rpm, x[,8], mean)
 
 # make ChIP factor names lower case (to help match them with
 # motif names), and otherwise tweak them
 i = tolower(chip.enriched.all$factor) %in% rownames(rr)
 chip.enriched.all$factor[i] = tolower( chip.enriched.all$factor[i] )
 chip.enriched.all$factor = sub("LIN-15B", "lin-15", chip.enriched.all$factor)
+
+# genes and orthologs
+motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
 
 # Summary of per-cluster information.
 cluster.tf.table = function() {
@@ -75,21 +109,6 @@ cluster.tf.table = function() {
   r
 }
 
-# Writes an index page.
-# (FIXME For now, this will be a .tsv file.)
-write.index = function() {
-
-  b = ""
-
-  s = paste0("<!DOCTYPE html>",
-    "<html><head><title>Clustered FACS-sorted cells</title>",
-    "<style type=\"text/css\">", css, "</style>", "</head>",
-    "<body>", n, "</body></html>")
-  
-
-  cat(s, file=paste0(output.dir, "/", clustering.name, "/index.html"))
-}
-
 r = cluster.tf.table()
-write.tsv(r, "git/sort_paper/network/clusterTF.tsv")
+write.tsv(r, gzfile("git/sort_paper/network/clusterTF.tsv.gz"))
 
