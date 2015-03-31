@@ -34,7 +34,7 @@ We have been treating unmixing as a constrained linear system
 Ax = b, x \ge 0
 \]
 
-This defines a space of solutions; we then chose $x$ uniformly
+This defines a linear space of solutions; we then chose $x$ uniformly
 at random from that space, and used that distribution as the range
 of possible levels of expression. Previously, we used sampling
 and EP to estimate these. EP was much faster, but had convergence
@@ -44,7 +44,8 @@ normal distribution. This is partly motivated by the fact that the
 actual marginals (from sampling) look more like gamma distributions
 than normal distributions.
 
-The solutions to the above form a convex linear space. As such,
+Another approach uses the fact that
+the solutions to the above form a convex linear space. As such,
 if we can find the corners of that region, the boundaries between
 the corners are straight lines, and we can linearly transform the
 region to the standard unit simplex
@@ -54,25 +55,29 @@ region to the standard unit simplex
 \]
 
 Note that this has the same number of ``corners'' as the original
-space, and this will be less than $n$ (the ``number of cells'', or
+space, which will be less than $n$ (the ``number of cells'', or
 length of $x$.) The moments of this are easy to find: if $m$ is
 the number of corners,
 then each marginal distribution
-has a $\mathrm{Beta}(m-1, 1)$ distribution.
+has a $\mathrm{Beta}(m-1, 1)$ distribution. We then compute the
+moments of the original distribution using the inverse of the
+linear transformation.
 
-For now, in order to find the corners, we just maximize each 
+This leaves the problem of finding the corners; for now,
+ we just maximize each 
 coordinate separately. This gives $n$ points, but only $m$ of them
 are unique. We just pick distinct points based on distance.
 
 Each maximization is a linear programming problem, so this isn't
-exactly cheap. However, it still seems faster than sampling.
+exactly cheap. (In our case, this is 1,341 linear programming problems
+per gene.) However, it still seems faster than sampling.
 
 \subsection{Accuracy of that approximation}
 
-To validate this approach, we compare its marginals to those from
-sampling (at least on some toy examples.)
+To test this approach, we compare its marginals to those from
+sampling (at least on a toy problem.)
 
-First, we design a very toy problem:
+First, we design a {\em very} toy problem:
 
 <<toy1,echo=TRUE>>=
 A = matrix(sample(0:5, 32, replace=TRUE), nrow=4)
@@ -100,7 +105,7 @@ x.sample = sample.cda(A, b, x0, 1e5, 100)
 
 We then compare with sampling.
 By eye, the marginals estimated this way (in blue) fit the actual
-densities from sampling (in grey) fairly well. In theory, I think
+densities from sampling (in grey) reasonably. In theory, I think
 the mean and variance estimates should be exact; but the gamma
 distribution with that mean and variance won't necessarily match
 the actual distribution (which won't have exactly a gamma distribution.)
