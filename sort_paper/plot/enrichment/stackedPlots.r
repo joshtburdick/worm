@@ -71,12 +71,19 @@ add.rows = function(a, rows) {
 # Side effects: plots a heatmap.
 plot.stacked = function(f, cluster.subset = NULL) {
 
+  # read various enrichments
   anatomy.m = anatomy.info.matrix(f, "anatomyEnrichment")
   cluster.m = anatomy.info.matrix(f, "wormbaseCluster")
   go.m = gene.ontology.matrix(f)
 
+  # read motif / ChIP signal enrichment
+  # XXX filenames not yet changed over
+  f.cm = f
+  if (f == "facs")
+    f.cm = "facs_enrichedVsOpposite"
+
   motif.m = motif.chip.matrix(paste0("table/", f),
-    p.cutoff=0, max.color.p = 30, num.to.include=10)
+    p.cutoff=0, max.color.p = 20, num.to.include=1)
   chip.m = motif.chip.matrix(paste0("chipTable/", f),
     p.cutoff=0, max.color.p = 4, num.to.include=1)
 
@@ -91,7 +98,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
     anatomy.m = f(anatomy.m, 1)
     cluster.m = f(cluster.m, 1)
     go.m = f(go.m, 2)
-    motif.m = f(motif.m, 10)
+    motif.m = f(motif.m, 1)
     chip.m = f(chip.m, 1)
   }
 
@@ -138,10 +145,12 @@ plot.stacked = function(f, cluster.subset = NULL) {
   r = r[ , apply(r>0, 2, any) ]
 
   # XXX hack to show ordering by "number of genes in group"
-  source("git/sort_paper/FACS/enrichedInFraction.r")
-  sort.by.count = sort(sapply(facs.enriched.depleted, sum))
-  sort.by.count = sort.by.count[ sort.by.count > 0 ]
-  r = r[ names(sort.by.count) , ]
+  if (FALSE) {
+    source("git/sort_paper/FACS/enrichedInFraction.r")
+    sort.by.count = sort(sapply(facs.enriched.depleted, sum))
+    sort.by.count = sort.by.count[ sort.by.count > 0 ]
+    r = r[ names(sort.by.count) , ]
+  }
 
 #  color.scale = hsv(2/3, 0:255/255, 0.75)
   color.scale = hsv(0, 0, 255:0/255)
@@ -167,7 +176,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
 
     axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
-    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=ortho, las=2, cex.axis=0.3, line=1, tick=FALSE)
+    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=ortho, las=2, cex.axis=0.3, line=4.0, tick=FALSE)
 
   # color different portions of the graph
 #  rect(0, 0, 1, 1, border=NA,
@@ -202,12 +211,12 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (FALSE) {
+if (TRUE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
-  width=3, height=5.5)
-par(mar=c(1,9,0.1,0.1))
+  width=3.3, height=5.5)
+par(mar=c(1,10,0.1,0.1))
 ao = anatomy.info.matrix("hier.300.clusters", "anatomyEnrichment")
 wbc = anatomy.info.matrix("hier.300.clusters", "wormbaseCluster")
 cl.subset = unique(c(rownames(ao), sort(rownames(wbc), decreasing=TRUE)[1:5]))
@@ -232,7 +241,7 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=5.5, height=18)
+  width=4.8, height=9.5)
 par(mar=c(5,10,0.1,0.1))
 plot.stacked("facs")
 dev.off()
