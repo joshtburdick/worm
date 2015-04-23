@@ -8,9 +8,10 @@ working.dir = "git/sort_paper/cluster/datasetComparison/"
 source("git/utils.r")
 source("git/data/name_convert.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
-source("git/sort_paper/tf/motif/motifEnrichment2.r")
+# source("git/sort_paper/tf/motif/motifEnrichment2.r")
+source("git/sort_paper/tf/motif/hyperg/hypergTestGroups.r")
 
-system(paste0("mkdir -p ", clustering.dir, "/clustering/"))
+system(paste0("mkdir -p ", working.dir, "/clustering/"))
 
 # Reads per million (not including the HS or RNAi data.)
 rpm = as.matrix(read.tsv("git/cluster/readsPerMillion.tsv"))
@@ -163,8 +164,6 @@ shuffle.cluster.enrich = function(r, output.base, n) {
 
 
 
-
-
 # Does enrichment analysis for one clustering.
 # Args:
 #   motif.set.name - the name of the set of motifs
@@ -190,22 +189,6 @@ enrichment.analysis.1 =
   }
 }
 
-
-# Legacy shim (not yet tested.)
-enrichment.analysis = function(motif.set.name)
-  enrichment.analysis.1(motif.set.name,
-    paste0(working.dir, "/clustering"),
-    paste0(working.dir, "/", motif.set.name, "/"))
-
-shuffle.cluster.labels = function() {
-  cl = as.matrix(read.tsv(
-    "git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))[,2]
-
-  cl1 = sample(cl)
-  names(cl1) = names(cl)
-
-  write.tsv(cl1, "git/sort_paper/cluster/datasetComparison/clustering/shuffled.labels.facs/1.tsv")
-}
 
 
 # cluster.datasets()
