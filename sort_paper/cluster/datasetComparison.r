@@ -37,6 +37,13 @@ r.facs.orig = r[ apply(r.facs.orig, 1, non.const.row) , ]
 # filter 
 r = r[ apply(!is.na(r), 1, all) , ]
 
+# copy over the original clustering
+cl = read.tsv(
+  "git/cluster/hierarchical/hier.300.clusters/clusters.tsv")[,"cluster",drop=FALSE]
+colnames(cl) = "x"
+write.tsv(cl, paste0(working.dir, "clustering/facsOrig.tsv"))
+
+
 # read Spencer data
 load("data/expression/spencer.expr.Rdata")
 se = as.matrix(cbind(
