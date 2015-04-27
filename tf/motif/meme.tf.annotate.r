@@ -32,6 +32,9 @@ i = r$name %in% wb.ortholog[
 r[ i, "gene" ] = r[ i, "name" ]
 r[ i, "organism" ] = "Dm"
 
+i = r$id %in% r[ r$database=="JASPAR_CORE_2009_nematodes", "id" ]
+r[ i, "gene" ] = r[ i, "name" ]
+r[ i, "organism" ] = "Ce"
 
 r[ r$database %in% c("chen2008", "wei2010_human_mws") ,
   "organism" ] = "Hs"
@@ -70,6 +73,7 @@ r[ i, "organism" ] = ifelse(is.mouse.gene(r[ i, "gene" ]), "Mm", "Hs")
 
 
 
+
 # getting more annotation from JASPAR database, somewhat hackily
 matrix = read.table("data/tf/jaspar/MATRIX.txt",
     sep="\t", header=FALSE, as.is=TRUE)
@@ -97,6 +101,6 @@ r[ i, "gene" ] = matrix[ r[i,"id"] , "gene" ]
 r = r[ r$gene != "" , ]
 r = r[ !duplicated(r$id) , ]
 
-# write.table(r, file="git/tf/motif/meme.tf.annotate.tsv",
-#   sep="\t", row.names=FALSE, col.names=TRUE)
+write.table(r, file="git/tf/motif/meme.tf.annotate.tsv",
+  sep="\t", row.names=FALSE, col.names=TRUE)
 

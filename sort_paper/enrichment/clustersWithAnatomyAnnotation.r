@@ -8,10 +8,11 @@ anatomy.term = read.tsv(
 wb.cluster = read.tsv(
   "git/sort_paper/enrichment/summary/wormbaseCluster/hier.300.clusters.tsv")
 
-# pick WormBase clusters which are anatomy-specific (e.g. from
-# Spencer data), and embryonic (at least for now)
+# pick WormBase clusters which are anatomy-specific (e.g. from Spencer data)
 wb.cluster = wb.cluster[ grep("WBPaper00037950", wb.cluster$group) , ]
-wb.cluster = wb.cluster[ grep("Embryo|embryo", wb.cluster$group) , ]
+
+# embryonic subset of clusters
+wb.cluster.embryonic = wb.cluster[ (grepl("Embryo|embryo", wb.cluster$group) | grepl("Embryo|embryo", wb.cluster$group.name)) , ]
 
 # remove some trivial annotation
 anatomy.term = anatomy.term[ anatomy.term$group.name != "Tissue" , ]
@@ -38,4 +39,7 @@ anatomy.annotated = anatomy.annotated[ order(anatomy.annotated$p.corr) , ]
 
 write.tsv(anatomy.annotated,
   "git/sort_paper/enrichment/clustersWithAnatomyAnnotation.tsv")
+
+wb.cluster.nonembryonic =
+  wb.cluster[ ! ( wb.cluster$cluster %in% wb.cluster.embryonic$cluster ) , ]
 

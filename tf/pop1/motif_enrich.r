@@ -3,6 +3,7 @@
 source("git/utils.r")
 source("git/tf/motif/enrichment/motifHyperg.r")
 source("git/tf/motif/enrichment/motifHypergSummarize.r")
+source("git/tf/motif/motifName.r")
 
 # genes to include
 g = read.table("git/tf/pop1/anterior_genes.tsv", as.is=TRUE)[,1]
@@ -15,6 +16,10 @@ orig.motif.list = {
   load("git/sort_paper/tf/allResults/motif/hier.300.clusters.Rdata")
   dimnames(enrich)[[1]]
 }
+
+orthologs.by.motif.1 = sapply(orthologs.by.motif,
+  function(a) paste(a, collapse=" "))
+
 
 # compute vector for clustering
 load(paste0(motif.count.base, "/hughes_20141202/M0103_1.01.Rdata"))
@@ -40,5 +45,7 @@ r.facs = enrich.to.table(enrich.5kb)
 
 r = rbind(r.hughes, r.facs)
 r = r[ order(r$p.corr) , ]
+r$orthologs = orthologs.by.motif.1[ r$motif ]
+r[ is.na(r$orthologs), "orthologs" ] = ""
 write.tsv(r, "git/tf/pop1/anterior_motifs.tsv")
 

@@ -61,5 +61,5 @@ motif.ortholog.3[ i , "motif.name.1" ] =
   meme.tf.annotate[ motif.ortholog.3[ i , "motif.name.1" ], "name.1" ]
 
 motif.ortholog.3 = motif.ortholog.3[ order(motif.ortholog.3$gene) , ]
-# write.tsv(motif.ortholog.3, "git/tf/motif.ortholog.3.tsv")
+write.tsv(motif.ortholog.3, "git/tf/motif.ortholog.3.tsv")
 

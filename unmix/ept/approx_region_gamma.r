@@ -153,7 +153,7 @@ gamma.conditional.approx.vec = function(x, A, b) {
 
 }
 
-if (FALSE) {
+if (TRUE) {
 
 A0 = t(rep(1,4))
 r = approx.region.gamma(A0, 1, max.iters=100)

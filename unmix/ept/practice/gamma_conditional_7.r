@@ -13,7 +13,9 @@ source("git/unmix/ept/practice/simplex_corner.r")
 # One approximation of marginals of
 #   x ~ Gamma(s_i, r_i) | sum(x) = 1
 # by basically rescaling all the parameters.
-# XXX trying gamma.conditional.approx.1.beta instead.
+# XXX this does in fact rescale things so that they sum up
+# to that number. But this is different from conditioning
+# "| sum(x) = 1" .
 # Args:
 #   x - gamma parameters of x (as natural parameters)
 # Returns: natural parameters of x | sum(x) = 1

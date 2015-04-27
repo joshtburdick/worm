@@ -7,7 +7,7 @@ import os
 import subprocess
 
 # Number of bp to use for the window.
-windowSize = 50
+windowSize = 200
 
 # Size of each chromosome.
 chromSizesFile = '/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.fa.sizes'

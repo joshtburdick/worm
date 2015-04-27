@@ -100,16 +100,16 @@ IJ.save(comp, "/home/jburdick/merged.tif")
 # fs = FileSaver(comp)
 # fs.saveAsTiffStack("/home/jburdick/merged.tif")
 
-# comp.show() 
+comp.show() 
 
 # IJ.runPlugIn("loci.plugins.LociExporter",
 #   "imageid=" + str(comp.getID()) + " " +
 #   "outfile=/home/jburdick/merged.tif " +
 #   "splitz=false splitc=false splitt=false saveroi=false " +
-#   "compression=None")
+#   "compression=LZW")
 
 # IJ.runPlugIn("Bio-Formats Exporter", "compression=Uncompressed save=blah.ome.tiff");
 
-# print("\nwrote file\n")
+print("\nwrote file\n")
 
 

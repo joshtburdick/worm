@@ -18,17 +18,21 @@ lin3.events = miso.all[ miso.all$chrom=="IV" &
 pdf("git/sort_paper/splicing/MISO/embryo_ts/lin-3_summary.pdf",
   width=7.5, height=10)
 par(mfrow=c(4,1))
-for(e in unique(lin3.events$event_name)) {
+par(mar=c(4,4,4,1)+0.1)
+a = unique(lin3.events[ , c("as.type", "event_name") ])
+
+for(i in 1:nrow(a)) {
+  e = a[ i , "event_name" ]
   r = lin3.events[ lin3.events$event_name == e , ]
   r = r[ order(r$t) , ]
-  plot(r$t, r$miso_posterior_mean, type="b", pch=20,
-    ylim=c(0,1), main=e)
-  par(new=TRUE)
-  plot(r$t, r$ci_low, type="b", pch=20,
-    ylim=c(0,1), main=e, col="red")
-  par(new=TRUE)
-  plot(r$t, r$ci_high, type="b", pch=20,
-    ylim=c(0,1), main=e, col="blue")
+
+  plot(r$t, r$miso_posterior_mean, type="l", pch=20,
+    ylim=c(0,1),
+    xlab="Time (minutes)", ylab="Proportion spliced in",
+    main = a[ i, "as.type" ])
+  mtext(a[ i, "event_name"], line = 0.5, cex=0.7)
+  arrows(r$t, r$ci_low, r$t, r$ci_high, angle=90,
+    length=0.05, code=3, col="#00000080")
 }
 dev.off()
 

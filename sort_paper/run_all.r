@@ -1,6 +1,5 @@
 # R script to re-run, if not all, then at least
 # some of the analysis.
-# FIXME: automate dependency checking?
 
 source("git/unmix/seq/timing/deconvolved_embryo_ts.r")
 source("git/cluster/readRatios.r")
@@ -16,5 +15,12 @@ source("git/data/wormbase/expr.cluster.r")
 source("git/tf/motif/meme.tf.annotate.r")
 
 source("git/sort_paper/enrichment/anatomyEnrichment.r")
+
+
+source("git/sort_paper/enrichment/summary.r")
+
+
+
+
 
 

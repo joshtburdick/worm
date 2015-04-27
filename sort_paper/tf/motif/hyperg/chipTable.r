@@ -50,7 +50,8 @@ most.significant.results.chip = function(name) {
 }
 
 system("mkdir -p git/sort_paper/tf/motif/hyperg/chipTable")
-for (a in c("facs")) {
+# for (a in c("facs_enrichmentVsOpposite", "hier.300.clusters")) {
+for (a in c("facs_enrichmentVsOpposite_1", "facs_enrichmentVsOpposite_2")) {
   r = most.significant.results.chip(a)
   write.tsv(r, gzfile(paste0("git/sort_paper/tf/motif/hyperg/chipTable/", a, ".tsv.gz")))
 }

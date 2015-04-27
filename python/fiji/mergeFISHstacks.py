@@ -15,27 +15,43 @@ from jarray import array
 imgPath = "/media/jburdick/disk2/data/FISH/2015_02_25/"
 
 # directory in which to write output
-outputDir = "/media/jburdick/disk2/data/FISH/merged/2015_02_25/"
+outputDir = "/media/jburdick/disk2/data/FISH/merged/2015_02_25_RGB/"
 
 # number of stacks to include (FIXME: should be autodetected)
-numStacks = 10
+numStacks = 24
 
 # names of the channels to add, in order of colors given in
 # the CompositeImage source code (since I haven't been able
 # to set LUTs "by hand")
 # XXX omitting "trans", as it has a different number of planes
 # channelNames = ["cy", "gfp", "dapi", "trans", "alexa", "tmr"]
-channelNames = ["alexa", "gfp", "dapi", "cy", "tmr"]
+
+# these are the names I have been using
+# channelNames = ["alexa", "gfp", "dapi", "cy", "tmr"]
+
+# trying coloring the RNA channels RGB
+channelNames = ["tmr", "cy", "alexa", "dapi", "gfp"]
 
 # colors of the channels (for now, these are the same as the defaults,
 # but I think they theoretically could be altered)
-colors = [Color.red, Color.green, Color.blue, Color.cyan, Color.yellow]
+# colors = [Color.red, Color.green, Color.blue, Color.cyan, Color.yellow]
+colors = [Color.red, Color.red, Color.green, Color.blue, Color.yellow]
 
 # create directory to hold output
 try:
   os.makedirs(outputDir)
 except OSError:
   print "failure in making directory\n"
+
+# Computes histogram-based min. and max. cutoffs
+# Args:
+#   stats - 
+# Returns: two-element list of (hopefully sensible) min and max cutoffs
+def histCutoffs(stats):
+  h = stats.getHistogram()
+  print(str(slice) + " " + ch + " hist from " +
+    str(stats.histMin) + " to " + str(stats.histMax))
+#  print h
 
 # loop through the stacks
 for s in xrange(1, numStacks+1):
@@ -87,6 +103,8 @@ for s in xrange(1, numStacks+1):
       # get statistics for that ImageProcessor
 #      print(str(slice) + " " + ch + " range = " +
 #        str(ip.getMin()) + " to " + str(ip.getMax()))
+#      cutoffs = histCutoffs(ip.getStatistics())
+
       minMax[ch] = {"min": ip.getMin(), "max": ip.getMax() }
 
       # add to the new stack

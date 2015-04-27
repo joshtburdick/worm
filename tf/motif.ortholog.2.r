@@ -38,27 +38,32 @@ meme.tf.1[ meme.tf$organism=="Hs", "species" ] = "H.sapiens"
 meme.tf.1[ meme.tf$organism=="Mm", "species" ] = "M.musculus"
 meme.tf.1[ meme.tf$organism=="Dm", "species" ] = "D.melanogaster"
 
-# Creates table of Ce genes and motif names.
+# Creates table of Ce genes and motif names. This should include both
+# components of dimer motifs.
 get.ce.motif.names = function() {
-  ce.motif =
-    sort(meme.tf[meme.tf$organism=="Ce","name"])
-  ce.monomer = grep("_", ce.motif, value=TRUE, invert=TRUE)
-  hlh2 = grep("HLH-2_", ce.motif, value=TRUE)
-  hlh2.other = sub("HLH-2_", "", hlh2)
 
-  # table of genes, and possibly-related motifs
-  r = data.frame(
-    gene = c(ce.monomer, hlh2.other,
-      "MDL-1", "MXL-1"),
-    motif = c(ce.monomer, hlh2,
-      "MXL-1_MDL-1", "MXL-1_MDL-1"))
+  # get all annotation for Ce genes
+  r = meme.tf[ meme.tf$organism=="Ce", ]
 
-  # then create table of genes and motifs
-  data.frame(gene = tolower(r$gene), method = "Ce_motif",
-    species = "C.elegans", related.gene = r$gene,
+  # separate into monomers and dimers
+  dimers = c(grep("_", r$name, value=TRUE), "ttx-3::ceh-10", "MXL-1_MDL-1")
+  r1 = r[ !(r$name %in% dimers) , ]
+  r2a = r[ (r$name %in% dimers) , ]
+  r2b = r2a
+  # XXX add each half of dimers
+  r2a[ , "gene" ] = "HLH-2"
+  r2a[ r2a$name == "ttx-3::ceh-10" , "gene" ] = "ttx-3"
+  r2a[ r2a$name == "MXL-1_MDL-1", "gene" ] = "mxl-1"
+  r2b[ , "gene" ] = sub("HLH-2_", "", r2b$gene)
+  r2b[ r2b$name == "ttx-3::ceh-10" , "gene" ] = "ceh-10"
+  r2b[ r2b$name == "MXL-1_MDL-1", "gene" ] = "mdl-1"
+
+  r3 = rbind(r1, r2a, r2b)
+  z = data.frame(gene = tolower(r3$gene), method = "Ce_motif",
+    species = "C.elegans", related.gene = tolower(r3$name),
     gene.score = NA, related.gene.score = NA,
     ortho.cluster = NA, type = "",
-    has.motif = 1, motif = r$motif)
+    has.motif = 1, motif = r3$id)
 }
 
 # Gets info. about whether there are known motifs.
@@ -97,8 +102,8 @@ check.for.motif = function(r) {
 }
 
 motif.ortholog = check.for.motif(ortho)
-# later: add in Ce motifs
-# motif.ortholog = rbind(check.for.motif(ortho), get.ce.motif.names())
+# add in Ce motifs
+motif.ortholog = rbind(check.for.motif(ortho), get.ce.motif.names())
 motif.ortholog.2 = motif.ortholog[ motif.ortholog$has.motif != "" , ]
 motif.ortholog.2 =
   motif.ortholog.2[ order(motif.ortholog.2$gene, motif.ortholog.2$related.gene) , ]

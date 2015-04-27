@@ -323,9 +323,9 @@ print(iter)
     t.m = q - t.c  # was t.m
 
     # update posterior: terms, with the Ax ~ N(-,-) constraint
-    q.new = lcp(t.m)
+#    q.new = lcp(q - t.c)
 # XXX trying new constraint code
-    # q.new = lcg(q - t.c)
+     q.new = lcg(q - t.c)
 
     t.c = t.c + (q.new - q)
 # print(q.new)
@@ -351,7 +351,7 @@ cat("\n")
     update.stats = update.stats)
 }
 
-if (FALSE) {
+if (TRUE) {
 
 # XXX for practice
 n = 100
@@ -363,7 +363,7 @@ lc = lin.constraint.gamma(A, 1, 0)
 r = approx.region.gamma.3(A, c(1), c(0))
 }
 
-if (FALSE) {
+if (TRUE) {
 A1 = matrix(c(1,0.1,0.1,1,1,1), nrow=2)
 r1 = approx.region.gamma.3(A1, c(1,3), c(0,0))
 
