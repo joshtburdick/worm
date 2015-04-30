@@ -4,6 +4,7 @@
 
 import math
 import os
+import re
 import subprocess
 
 # Number of bp to use for the window.
@@ -41,8 +42,6 @@ def getCounts(bigWigFile, chrom):
   s = s.replace('n/a', '0')
   s = s.replace('\n', '')
   return([ math.floor(float(a)) for a in s.split('\t') ])
-
-
 
 # Writes counts in a set of bigWig files.
 # Args:
@@ -85,6 +84,20 @@ def writeSignalFiles(experimentNames, outBase, cell):
     writeCounts(f, [bwDir + x + '_rep1_input.bw' for x in experimentNames], chrom)
     f.close()
 
+# Gets paired ChIP and input experiment names from a
+# list of filenames.
+#   Args: files - a list of filenames
+def getChIPAndInputNames(files):
+
+  # get the chip files, and corresponding input file
+  chipFiles = [a for a in files if 'ChIP' in a]
+  filePairs = [{'ChIP': a, 'input': a.replace('ChIP', 'input')}
+    for a in chipFiles]
+  filePairs = [f for f in filePairs
+    if f["ChIP"] in files
+    and f["input"] in files]
+  return(filePairs)
+
 # Gets experiment names.
 def getExperimentNames(dir):
   a = os.listdir(dir)
@@ -95,6 +108,16 @@ def getExperimentNames(dir):
   return(r)
 
 # quick tests
-experimentNames = getExperimentNames(bwDir)
-writeSignalFiles(experimentNames, 'Larvae-L3-stage', 'Larvae-L3-stage')
+# experimentNames = getExperimentNames(bwDir)
+# writeSignalFiles(experimentNames, 'Larvae-L3-stage', 'Larvae-L3-stage')
+
+a = os.listdir("/media/jburdick/disk2/histone_chip_seq_bw_new/Early-Embryos/")
+
+# print(a)
+pairs = getChIPAndInputNames(a)
+for p in pairs:
+  print(p["ChIP"])
+
+
+
 
