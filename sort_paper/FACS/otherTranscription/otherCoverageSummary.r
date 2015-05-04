@@ -4,6 +4,9 @@ source("git/utils.r")
 
 result.base = "git/sort_paper/FACS/otherTranscription/otherCoverage/"
 
+experiment.names = read.tsv("git/unmix/seq/quant/experimentNames.tsv")
+experiment.names$gene = sub(" \\d+/\\d+", "", experiment.names$name)
+
 # Histogram data by log10 buckets.
 # Args:
 #   x - the data to histogram
@@ -47,16 +50,16 @@ r = NULL
 files1 = list.files(paste0(result.base, "/outside_exons/"))
 files2 = grep("^(HS|N2|ges1|lit1|pop1)", files1, value=TRUE, invert=TRUE)
 
-
 for (f in files2) {
   a = sub(".bed", "", f)
   write.status(a)
+  gene = experiment.names[a, "gene"]
   exons = coverage.histogram(paste0(result.base, "/outside_exons/", f))
   genes = coverage.histogram(paste0(result.base, "/outside_genes/", f))
-  r = rbind(r, c(sample = a, stat = "read count outside exons", exons$reads))
-  r = rbind(r, c(sample = a, stat = "read count outside genes", genes$reads))
-  r = rbind(r, c(sample = a, stat = "group size outside exons", exons$size))
-  r = rbind(r, c(sample = a, stat = "group size outside genes", genes$size))
+  r = rbind(r, c(sample=a, gene=gene, stat = "read count outside exons", exons$reads))
+  r = rbind(r, c(sample=a, gene=gene, stat = "read count outside genes", genes$reads))
+  r = rbind(r, c(sample=a, gene=gene, stat = "group size outside exons", exons$size))
+  r = rbind(r, c(sample=a, gene=gene, stat = "group size outside genes", genes$size))
 }
 
 write.tsv(r, "git/sort_paper/FACS/otherTranscription/otherCoverageSummary.tsv")
