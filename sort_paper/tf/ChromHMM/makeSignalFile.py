@@ -8,13 +8,14 @@ import re
 import subprocess
 
 # Number of bp to use for the window.
-windowSize = 200
+windowSize = 50
 
 # Size of each chromosome.
 chromSizesFile = '/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.fa.sizes'
 
 # Directory containing the bigWig files to include.
-bwDir = '/media/jburdick/disk2/histone_chip_seq_bw/Larvae-L3-stage/'
+bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_new/Early-Embryos/"
+# '/media/jburdick/disk2/histone_chip_seq_bw/Larvae-L3-stage/'
 
 # Directory in which to write output
 outputDir = "signalFiles/"
@@ -63,35 +64,39 @@ def writeCounts(f, bwFiles, chrom):
 
 # Writes out one 'signal file' of counts.
 # Args:
-#   experimentNames - list of experiment names
+#   experimentNames - (hopefully readable) names of the experiments
+#   chipInputPairs - list of pairs of files
 #   outBase - base name of files to write out
 #   cell - name of the cell
-# Side effects: writes that file.
-def writeSignalFiles(experimentNames, outBase, cell):
+# Side effects: writes the file.
+def writeSignalFiles(experimentNames, chipInputPairs, outBase, cell):
   for chrom in ['I', 'II', 'III', 'IV', 'V', 'X']:
 
     # first, the signal
     f = open(outputDir + '/' + outBase + "_" + chrom + '_signal', 'w')
     f.write(cell + '\t' + chrom + '\n')
     f.write('\t'.join(experimentNames) + '\n')
-    writeCounts(f, [bwDir + x + '_rep1_ChIP.bw' for x in experimentNames], chrom)
+    writeCounts(f, [bwDir + x["ChIP"] for x in chipInputPairs], chrom)
     f.close()
 
     # then, the control
     f = open(outputDir + '/' + outBase + '_' + chrom + '_controlsignal', 'w')
     f.write(cell + '\t' + chrom + '\n')
     f.write('\t'.join(experimentNames) + '\n')
-    writeCounts(f, [bwDir + x + '_rep1_input.bw' for x in experimentNames], chrom)
+    writeCounts(f, [bwDir + x["input"] for x in chipInputPairs], chrom)
     f.close()
 
 # Gets paired ChIP and input experiment names from a
 # list of filenames.
-#   Args: files - a list of filenames
+# Args:
+#   files - a list of filenames
+# Returns: a list of records with fields "ChIP" and "input".
 def getChIPAndInputNames(files):
 
   # get the chip files, and corresponding input file
   chipFiles = [a for a in files if 'ChIP' in a]
-  filePairs = [{'ChIP': a, 'input': a.replace('ChIP', 'input')}
+  filePairs = [{'ChIP': a,
+    'input': a.replace('ChIP', 'input')}
     for a in chipFiles]
   filePairs = [f for f in filePairs
     if f["ChIP"] in files
@@ -107,17 +112,12 @@ def getExperimentNames(dir):
   r.sort()
   return(r)
 
-# quick tests
-# experimentNames = getExperimentNames(bwDir)
-# writeSignalFiles(experimentNames, 'Larvae-L3-stage', 'Larvae-L3-stage')
 
-a = os.listdir("/media/jburdick/disk2/histone_chip_seq_bw_new/Early-Embryos/")
+# for now, just using the early embryo experiments
+a = os.listdir(bwDir)
+chipInputPairs = getChIPAndInputNames(os.listdir(bwDir))
+experimentNames = [a["ChIP"].replace(".bw", "") for a in chipInputPairs]
 
-# print(a)
-pairs = getChIPAndInputNames(a)
-for p in pairs:
-  print(p["ChIP"])
-
-
+writeSignalFiles(experimentNames, chipInputPairs, "EarlyEmbryo_50bp", "EarlyEmbryo")
 
 
