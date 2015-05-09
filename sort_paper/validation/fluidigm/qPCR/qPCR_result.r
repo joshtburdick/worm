@@ -54,8 +54,15 @@ matched.control = function(s, control.name ) {
   s.control[ paste(s$sample, s$rep) , "ct" ]
 }
 
-# Compares
+# Utility to compute standard error.
+se = function(x) {
+  x = na.omit(x)
+# XXX using sd() instead of sqrt(mean of squared diff)
+#  s2 = mean( (x-mean(x)) ^ 2)
+  sd(x) / sqrt(length(x))
+}
 
+# Compares one set of samples with N2 controls.
 # Args:
 #   s - a data.table of qPCR results
 #   sample, target - the sample and target to get numbers for
@@ -64,14 +71,16 @@ rt.compare.1 = function(s, sample, target, dct.column) {
   dct.sample = s[ s$sample==sample & s$target==target , dct.column ]
   dct.N2 = s[ s$sample=="N2" & s$target==target , dct.column ]
   ddct = mean(dct.sample, na.rm=TRUE) - mean(dct.N2, na.rm=TRUE)
+  ddct.se = se(dct.sample) + se(dct.N2)
+
   r = t.test(dct.sample, dct.N2, alternative="two.sided", var.equal=FALSE)
-  data.frame(sample = sample, target = target, ddct = ddct,
+  data.frame(sample = sample, target = target,
+    ddct = ddct, ddct.se = ddct.se,
     t = r$statistic, p = r$p.value,
     n.sample=length(dct.sample), n.N2=length(dct.N2), stringsAsFactors=FALSE)
 }
 
-
-
+# Compares all samples with N2 controls.
 rt.compare = function(s, dct.column) {
   r = NULL
 
@@ -86,29 +95,48 @@ rt.compare = function(s, dct.column) {
   r
 }
 
+# Plots one set of statistics.
+plot.stats = function(r, main) {
+  ylim = range(c(r$ddct - r$ddct.se, r$ddct + r$ddct.se))
+  par(mar=c(8,6,5,1) + 0.1)
+  m = barplot(r$ddct, ylim=ylim, names.arg = paste(r$sample, r$target),
+    col="grey", space=1, las=2, yaxt="n", main=main)
 
+  arrows(m, r$ddct - r$ddct.se, m, r$ddct + r$ddct.se,
+    length=0.06, angle=90, code=3, col="black", lwd=2)
+  y = trunc(ylim)[1] : trunc(ylim)[2]
+  axis(2, at=y, labels = 2^y, las=1)
+
+  text(m, 2, signif(r$p, 2), srt=90, col="#0000ff80")
+}
+
+# summarize the technical replicates
 s1 = rt.summarize(r1)$small
-
 # remove an outlier (even though it nominally worked)
 s1 = s1[ !(s1$sample=="N2" & s1$rep=="022415c" & s1$target=="ama1") , ]
 s2 = rt.summarize(r2)$small
 # slight name adjustment
 s2$rep = sub("022414c", "022415c", s2$rep)
-
 s = rbind(s1, s2)
 
-if (TRUE) {
+write.tsv(s, "git/sort_paper/validation/fluidigm/qPCR/qPCR_averages.tsv")
+
+# compute dcts
 s$ct.ama1 = matched.control(s, "ama1")
 s$ct.arf3 = matched.control(s, "arf3")
 s$dct.ama1 = s$ct.ama1 - s$ct
 s$dct.ama1arf3 = (s$ct.ama1 + s$ct.arf3) / 2 - s$ct
 
+# compute ddcts, and stats
+rt.stats.1 = rt.compare(s, "dct.ama1")
+print(rt.stats.1)
+rt.stats = rt.compare(s, "dct.ama1arf3")
+print(rt.stats)
+write.tsv(rt.stats, "git/sort_paper/validation/fluidigm/qPCR/qPCR_result.tsv")
 
-write.tsv(s, "git/sort_paper/validation/fluidigm/qPCR/qPCR_result.tsv")
-
-print(rt.compare(s, "dct.ama1"))
-print(rt.compare(s, "dct.ama1arf3"))
-
-}
-
+# plot graph(s)
+pdf("git/sort_paper/validation/fluidigm/qPCR/qPCR_result.pdf")
+# plot.stats(rt.stats.1, "with ama-1 as control")
+plot.stats(rt.stats, "with ama-1 + arf-3 as controls")
+dev.off()
 
