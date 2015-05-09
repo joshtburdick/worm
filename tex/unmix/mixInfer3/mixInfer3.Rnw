@@ -1,0 +1,83 @@
+\documentclass{article}
+
+\usepackage{bm}
+\usepackage{hyperref}
+
+\newcommand{\funname}[1]{\texttt{#1}}
+
+\title{Unmixing with the gamma distribution}
+\author{Josh Burdick}
+
+\begin{document}
+
+\maketitle
+
+<<intro,echo=FALSE>>=
+library("MASS")
+wd = getwd()
+setwd("../../../..")
+source("git/unmix/ept/gamma.r")
+setwd(wd)
+setwd("../../../..")
+setwd("git/unmix/unmix_comp/src/")
+# print(getwd())
+source("sampling/cdaCpp.r")
+setwd(wd)
+
+@
+
+
+Once again, we attempt unmixing using something like a gamma distribution.
+
+
+\section{A slightly generalized Dirichlet distribution}
+
+First, we define a slight generalization of the Dirichlet distribution.
+I haven't found a definition of this in the literature. (It isn't the
+same as what's generally called the ``generalized Dirichlet distribution.'')
+It seems like it may be convenient to use, as it allows different parts to
+have different uncertainty, slightly more flexibly than a Dirichlet distribution.
+
+A Dirichlet distribution $\mathrm{Dirichlet}(\alpha_1, \alpha_2, ..., \alpha_n)$
+can be considered as sampling from...
+
+
+
+For purposes of a writeup, I will call this a ``Scaled Dirichlet'' distribution,
+or ``SD'' for short. Sampling from $SD(\bm{\alpha}, \bm{\beta})$.
+
+
+
+\subsection{Conditioning on these}
+
+
+As a toy example, consider a $\mathrm{Dirichlet}(1,1,1,1,1)$ variable, conditional
+on the first two variables adding up to 0.2:
+
+<<margin1,echo=TRUE>>=
+A = rbind(c(1,1,0,0,0), c(0,0,1,1,1))
+A
+b = c(0.2, 0.8)
+x.sample = sample.cda(A, b, c(0.1, 0.1, 0.5, 0.2, 0.1), 1e5, 1)
+par(mfrow=c(2,3))
+for(i in 1:5)
+  hist(x.sample[,i], xlim=c(0,1), col="grey")
+print(apply(x.sample, 2, mean))
+print(apply(x.sample, 2, var))
+@
+
+
+
+
+\subsection{Multiplying these}
+
+In order to model the sort matrix as well, we need to multiply proportions.
+To do this, we use moment matching.
+
+
+\section{Summary}
+
+
+
+\end{document}
+
