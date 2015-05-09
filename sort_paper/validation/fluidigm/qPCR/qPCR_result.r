@@ -7,6 +7,18 @@ data.dir = "data/expression/qPCR/20150428 daf-19 hlh-6/"
 r1 = read.tsv(paste0(data.dir, "results1.tsv"))
 r2 = read.tsv(paste0(data.dir, "results2.tsv"))
 
+# utility to improve gene names
+add.hyphen = function(s) {
+  pattern = "^([a-z]+)([0-9]+)$"
+  f = function(x) {
+    a = regmatches(x, regexec(pattern, x))[[1]]
+    if (length(a) > 0)
+      x = paste0(a[2], "-", a[3])
+    x
+  }
+  sapply(s, f)
+}
+
 # Summarizes a table of RT results.
 # Args:
 #   r - a table of RT results
@@ -97,17 +109,21 @@ rt.compare = function(s, dct.column) {
 
 # Plots one set of statistics.
 plot.stats = function(r, main) {
-  ylim = range(c(r$ddct - r$ddct.se, r$ddct + r$ddct.se))
-  par(mar=c(8,6,5,1) + 0.1)
-  m = barplot(r$ddct, ylim=ylim, names.arg = paste(r$sample, r$target),
-    col="grey", space=1, las=2, yaxt="n", main=main)
+  ylim = range(c(2, r$ddct - r$ddct.se, r$ddct + r$ddct.se))
+  par(mar=c(8,6,2,0) + 0.1)
+  m = barplot(r$ddct, ylim=ylim, names.arg = r$target,
+    col=c(rep("#ff0000a0", 3), rep("#0000ffa0", 3)),
+    space=1, las=2, yaxt="n", main=main)
+  mtext("          Relative expression", side=2, line=4.5) # XXX
+  mtext("   daf-19 RNAi", side = 1, line=6, adj=0, col="#ff0000c0")
+  mtext("hlh-6 RNAi   ", side = 1, line=6, adj=1, col="#0000ffc0")
 
   arrows(m, r$ddct - r$ddct.se, m, r$ddct + r$ddct.se,
     length=0.06, angle=90, code=3, col="black", lwd=2)
   y = trunc(ylim)[1] : trunc(ylim)[2]
   axis(2, at=y, labels = 2^y, las=1)
 
-  text(m, 2, signif(r$p, 2), srt=90, col="#0000ff80")
+  text(m, 1.1, signif(r$p, 2), srt=90, cex=0.8)
 }
 
 # summarize the technical replicates
@@ -131,12 +147,20 @@ s$dct.ama1arf3 = (s$ct.ama1 + s$ct.arf3) / 2 - s$ct
 rt.stats.1 = rt.compare(s, "dct.ama1")
 print(rt.stats.1)
 rt.stats = rt.compare(s, "dct.ama1arf3")
+rt.stats$sample = add.hyphen(rt.stats$sample)
+rt.stats$target = add.hyphen(rt.stats$target)
 print(rt.stats)
 write.tsv(rt.stats, "git/sort_paper/validation/fluidigm/qPCR/qPCR_result.tsv")
 
+# subset this a bit
+rt = rt.stats[ match(c("che-13", "C05D10.2", "ZK813.5",
+  "phat-5", "F41G3.21", "T05B4.8"),
+  rt.stats$target) , ]
+
 # plot graph(s)
-pdf("git/sort_paper/validation/fluidigm/qPCR/qPCR_result.pdf")
+pdf("git/sort_paper/validation/fluidigm/qPCR/qPCR_result.pdf",
+  width=3.5, height=6)
 # plot.stats(rt.stats.1, "with ama-1 as control")
-plot.stats(rt.stats, "with ama-1 + arf-3 as controls")
+plot.stats(rt, "")
 dev.off()
 
