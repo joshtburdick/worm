@@ -14,7 +14,7 @@ orig.motif.list = {
 #   name - name to use for the output file
 # Side effects: saves motif enrichments to that file.
 enrich.test.one.clustering = function(cl, name) {
-  output.dir = "git/sort_paper/tf/motif/hyperg/allResults/"
+  output.dir = "git/sort_paper/tf/motif/hyperg/allResults_check/"
 
 if (TRUE) {
   system(paste0("mkdir -p ", output.dir, "chip/"))
@@ -23,7 +23,7 @@ if (TRUE) {
   save(enrich, file=
     paste0(output.dir, "chip/", name, ".Rdata"))
 }
-if (FALSE) {
+if (TRUE) {
   system(paste0("mkdir -p ", output.dir, "5kb/"))
   enrich = enrich.test.many.motifs(
     "git/tf/motif/count/upstreamMotifCount/5kb/", cl, orig.motif.list)
