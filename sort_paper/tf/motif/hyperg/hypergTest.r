@@ -47,11 +47,16 @@ if (FALSE) {
 }
 
 if (TRUE) {
-  cl = as.matrix(read.tsv(
-    "git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))[,2]
-  cl = gsub(" ", "", cl)
+  # go through the directory of clusterings
+  for(clustering.name in list.files("git/cluster/hierarchical")) {
+    write.status(clustering.name)
 
-  enrich.test.one.clustering(cl, "hier.300.clusters")
+    cl = as.matrix(read.tsv(
+      paste0("git/cluster/hierarchical/", clustering.name, "/clusters.tsv")))[,2]
+    cl = gsub(" ", "", cl)
+
+    enrich.test.one.clustering(cl, clustering.name)
+  }
 
 #  enrich = enrich.test.many.motifs(
 #    "git/tf/motif/count/upstreamMotifCount/hughes_20141202/", cl)

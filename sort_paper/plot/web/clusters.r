@@ -417,10 +417,11 @@ write.cluster = function(x, cl) {
 #    "<h3>Hughes motifs enriched</h3>",
 #    hughes.motif.table(hughes.motif.enriched[hughes.motif.enriched$group == cl,]),
 
-    "<h3>Motifs enriched</h3>",
-    motif.table(motif.enriched.1),
+#    "<h3>Motifs enriched</h3>",
+#    motif.table(motif.enriched.1),
 
-    "<h3>Motifs enriched (using hypergeometric test)</h3>",
+    # just using the hypergeometric flavor of this
+    "<h3>Motifs enriched</h3>",
     (if (nrow(hyperg.motif.enriched.1) >= 1)
       motif.table(hyperg.motif.enriched.1)
     else
@@ -429,10 +430,11 @@ write.cluster = function(x, cl) {
     "<h3>Correlated (and anti-correlated) transcription factors</h3>",
     correlated.tf.html(cl),
 
-    "<h3>ChIP peaks enriched</h3>",
-    chip.table(chip.enriched[chip.enriched$group == cl,]),
+#    "<h3>ChIP peaks enriched</h3>",
+#    chip.table(chip.enriched[chip.enriched$group == cl,]),
 
-    "<h3>ChIP peaks enriched (using hypergeometric test)</h3>",
+    # again, just using the hypergeometric
+    "<h3>ChIP peaks enriched</h3>",
     chip.table(hyperg.chip[hyperg.chip$group == cl,])
   )
 

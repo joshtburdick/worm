@@ -10,10 +10,15 @@ use Bio::DB::BigFile;
 use Bio::DB::BigFile::Constants;
 use Bio::DB::Fasta;
 
-# configuration
+# command line args
 
-# conservation cutoffs to use
-my $cutoff = 0.50;
+# the file of regions to search
+my $region_file = $ARGV[0];
+
+# conservation cutoffs to use (between 0 and 1)
+my $cutoff = $ARGV[1];       #  0.50;
+
+# configuration
 
 # set this to wherever the .fa files are
 my $fasta = Bio::DB::Fasta->new(
@@ -25,7 +30,8 @@ my $wig = Bio::DB::BigFile->bigWigFileOpen(
 
 ### end configuration
 
-while (<>) {
+open IN, "<$region_file" || die;
+while (<IN>) {
   chomp;
   my($chr, $a, $b, $name, $score, $strand) = split /\t/;
 
@@ -34,6 +40,7 @@ while (<>) {
   write_conservation_masked_fasta("$name upstream region",
     $chr, $a, $b, $strand);
 }
+close IN;
 
 # Prints FASTA-formatted DNA at a region, masked at some
 # amount of conservation.
@@ -54,11 +61,15 @@ sub write_conservation_masked_fasta {
   # (this should be per-base, so we just use max)
   my $r = $wig->bigWigSummaryArray("chr$chr",$a=>$b,bbiSumMax,$n);
 
-  # if there were no results, return
-  # ??? and print a bunch of "N"s?
+  # if there were no results, only print sequence if
+  # conservation cutoff was 0 (and then return)
   if (not defined $r) {
 #    print "N" x $n;
 #    print "\n";
+    if ($cutoff == 0) {
+      print ">$name, $chr:$a-$b ($strand), phastCons7way >= $cutoff\n";
+      print "$dna\n";
+    }
     return;
   }
 
@@ -72,7 +83,10 @@ sub write_conservation_masked_fasta {
   my $num_conserved = 0;
   for (my $i=0;$i<$n;$i++) {
     my $c = $conservation[$i];
-    if (defined $c && $c >= $cutoff) {
+
+    # print this base if either the cutoff is 0, or the cutoff
+    # is nonzero, and this is at least that much conserved
+    if (($cutoff == 0) || (defined $c && $c >= $cutoff)) {
       $s = $s . substr($dna,$i,1);
       $num_conserved++;
     }

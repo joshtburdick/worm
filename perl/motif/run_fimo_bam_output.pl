@@ -7,14 +7,26 @@ use POSIX qw/log10 floor/;
 
 use Bio::Seq;
 
+# command-line args
+
+my $meme_file = $ARGV[0];
+my $output_base = $ARGV[1];
+
+die if not defined $meme_file;
+die if not defined $output_base;
+
+# configuration
+
 my $meme_bin = "~jburdick/meme/bin/";
 my $fasta = "/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.fa";
 
 # sizes of chromosomes, for SAM->BAM conversion
 my $fasta_sizes = $fasta . ".sizes";
 
+##### all of these hardwired things are deprecated
+
 # my $meme_matrix_path = "/home/jburdick/gcb/data/tf/meme/motif_databases/";
-my $meme_matrix_path = "";  # XXX temporary hack
+# my $meme_matrix_path = "";  # XXX temporary hack
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/meme_file/";
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/";
 # my $meme_matrix_path = "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/";
@@ -58,9 +70,14 @@ foreach my $f (@meme_files) {
 # fimo_to_bedGraph(
 #   "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/jolma2013_shuffled.meme",
 #   "/home/jburdick/tmp/fimo/jolma2013_shuffled/");
-fimo_to_bedGraph(
-  "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/hughes_motif_20141202_shuffled.meme",
-  "/home/jburdick/tmp/fimo/hughes_motif_20141202_shuffled/");
+
+# fimo_to_bedGraph(
+#   "/home/jburdick/gcb/git/tf/motif/shuffle/meme_files/hughes_motif_20141202_shuffled.meme",
+#   "/home/jburdick/tmp/fimo/hughes_motif_20141202_shuffled/");
+
+# end massive deprecated chunk
+
+fimo_to_bedGraph($meme_file, $output_base);
 
 # Utility to convert from .sam to .bam .
 # Also erases the .sam file, and indexes the .bam file.
@@ -79,18 +96,19 @@ sub sam_to_bam {
 
 # Runs FIMO, converting its output to bedGraph files (which nonetheless
 # end in .wig, which seems to be what igvtools expects.)
+# XXX ummm, actually this writes out a .bam file.
 sub fimo_to_bedGraph {
   my($meme_file, $output_path) = @_;
 
-print("$meme_matrix_path/$meme_file\n");
+# print("$meme_matrix_path/$meme_file\n");
   # if the database isn't there, skip it
-  return if not -e "$meme_matrix_path/$meme_file";
+#  return if not -e "$meme_matrix_path/$meme_file";
 
   print STDERR "[running FIMO on $meme_file]\n";
   system("mkdir -p $output_path");
 
 # cat("$meme_bin/fimo --text $meme_matrix_path/$meme_file $fasta\n");
-  open IN, "$meme_bin/fimo --thresh 1e-3 --text $meme_matrix_path/$meme_file $fasta |" || die;
+  open IN, "$meme_bin/fimo --thresh 1e-3 --text $meme_file $fasta |" || die;
 
   $_ = <IN>;
   die if not /#pattern.*name.*sequence.*name.*start.*stop.*strand.*score.*p-value.*q-value.*matched sequence/;

@@ -19,6 +19,9 @@ motif.info = by(motif.ortholog$gene, motif.ortholog$motif.id,
   function(g) {
     g = unique(as.character(g))
 
+    # slight optional reordering
+    g = g[ order( !(g %in% c("pha-4"))) ]
+
     # summarize NHRs
     nhrs = grep("nhr", g)
     if (length(g) >= 5 && length(nhrs) >= 5) {

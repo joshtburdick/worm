@@ -56,11 +56,12 @@ def writeWiggle1(signalFileBase, signalColumn, outputDir):
 
 # binarize the data
 # subprocess.call(['java', '-jar', jar, 'BinarizeSignal', '-c', 'signalFiles',
-#  'signalFiles', 'binarized']) 
-
-os.makedirs("binarizedBigWig", exist_ok=True)
+#   '-p', '0.001', 'signalFiles', 'binarized_0.001']) 
 
 # as a check, write out wiggle files of the binarized signals
-writeWiggle1("binarized/EarlyEmbryo", 0, "binarizedBigWig")
+os.makedirs("binarizedBigWig_0.0001", exist_ok=True)
+# XXX column count shouldn't be hardwired
+for i in range(0, 43):
+  writeWiggle1("binarized_0.0001/Embryo", i, "binarizedBigWig_0.0001")
 
 

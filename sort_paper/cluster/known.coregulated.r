@@ -37,6 +37,7 @@ print(table(cl[cilia.genes]))
 r = hyperg.test.enrichment(names(cl)[cl==286],
   cilia.genes, num.expressed)
 cat("hypergeometric p =", r$p, "\n")
+cat("total genes in cluster 286 = ", sum(cl==286), "\n")
 
 cat("\nclusters of", length(dope.target.genes), "dopaminergic target genes:\n")
 print(table(cl[dope.target.genes]))
@@ -49,4 +50,5 @@ print(table(cl[pha.gland.genes]))
 r = hyperg.test.enrichment(names(cl)[cl==52],
   pha.gland.genes, num.expressed)
 cat("hypergeometric p =", r$p, "\n")
+cat("total genes in cluster 52 = ", sum(cl==52), "\n")
 

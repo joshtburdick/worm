@@ -7,6 +7,8 @@ import os
 import re
 import subprocess
 
+import pdb
+
 # Number of bp to use for the window.
 windowSize = 50
 
@@ -14,8 +16,8 @@ windowSize = 50
 chromSizesFile = '/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.fa.sizes'
 
 # Directory containing the bigWig files to include.
-bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_new/Early-Embryos/"
-# '/media/jburdick/disk2/histone_chip_seq_bw/Larvae-L3-stage/'
+# bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_new/Early-Embryos/"
+bwDir = '/murrlab/seq/igv/histone.ChIP.seq/'
 
 # Directory in which to write output
 outputDir = "signalFiles/"
@@ -94,9 +96,9 @@ def writeSignalFiles(experimentNames, chipInputPairs, outBase, cell):
 def getChIPAndInputNames(files):
 
   # get the chip files, and corresponding input file
-  chipFiles = [a for a in files if 'ChIP' in a]
+  chipFiles = [a for a in files if ' ChIP ' in a]
   filePairs = [{'ChIP': a,
-    'input': a.replace('ChIP', 'input')}
+    'input': a.replace(' ChIP ', ' input ')}
     for a in chipFiles]
   filePairs = [f for f in filePairs
     if f["ChIP"] in files
@@ -104,20 +106,22 @@ def getChIPAndInputNames(files):
   return(filePairs)
 
 # Gets experiment names.
-def getExperimentNames(dir):
-  a = os.listdir(dir)
+# Args:
+#   a - a list of files
+# Returns: 
+def getExperimentNames(a):
   chipExperiments = [ f.replace('_rep1_ChIP.bw', '') for f in a if '_rep1_ChIP.bw' in f ]
   inputExperiments = [ f.replace('_rep1_input.bw', '') for f in a if '_rep1_input.bw' in f ]
   r = [ e for e in chipExperiments if e in inputExperiments ]
   r.sort()
   return(r)
 
+# XXX hack to include two directories' worth of files
+a = (["Early-Embryos/" + x for x in os.listdir(bwDir + "/Early-Embryos")] +
+  ["Embryos-mixed-stages/" + x for x in os.listdir(bwDir + "/Embryos-mixed-stages")])
+chipInputPairs = getChIPAndInputNames(a)
+experimentNames = [a["ChIP"].replace(".bw", "").replace("Early-Embryos/", "EE ").replace("Embryos-mixed-stages/", "Emixed ") for a in chipInputPairs]
 
-# for now, just using the early embryo experiments
-a = os.listdir(bwDir)
-chipInputPairs = getChIPAndInputNames(os.listdir(bwDir))
-experimentNames = [a["ChIP"].replace(".bw", "") for a in chipInputPairs]
-
-writeSignalFiles(experimentNames, chipInputPairs, "EarlyEmbryo_50bp", "EarlyEmbryo")
+writeSignalFiles(experimentNames, chipInputPairs, "Embryo_50bp", "Embryo")
 
 

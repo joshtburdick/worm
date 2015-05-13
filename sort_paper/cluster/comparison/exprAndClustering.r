@@ -62,11 +62,11 @@ cor.and.clustering = function(cl, r, main) {
   hist(r.different, breaks=50, col="#c0c0c0",
     xlim=c(-1,1), main=main,
     xlab="Correlation of genes in different clusters")
-  hist(r.same, breaks=50, col="#808080",
+  hist(r.same, breaks=40, col="#808080",
     xlim=c(-1,1), main=main,
     xlab="Correlation of genes in the same cluster")
-  mtext(paste0("uncorrected Wilcox p = ",
-    signif(wilcox$p.value, 2)), side=3, cex=0.7)
+  mtext(paste0("Wilcoxon p = ",
+    signif(2 * wilcox$p.value, 2)), side=3, cex=0.8)
 
   list(g = g, r.same = r.same, r.different = r.different,
     wilcox = wilcox)
@@ -91,30 +91,20 @@ plot.it = function(clustering.file, r, main) {
 cluster.sizes = c(300)
 
 pdf("git/sort_paper/cluster/comparison/exprAndClustering.pdf",
-  width=7.5, height=10)
+  width=7.5, height=6)
 
-par(mfrow=c(4,2))
+par(mfrow=c(2,2))
 
 for(s in cluster.sizes) {
   plot.it(
     paste0("git/cluster/hierarchical/hier.", s, ".clusters/clusters.tsv"),
-    emb.r, paste0(s, " clusters,\nembryonic expression"))
-}
-for(s in cluster.sizes) {
-  plot.it(
-    paste0("git/cluster/hierarchical/hier.ts.", s, ".clusters/clusters.tsv"),
-    emb.r, paste0(s, " clusters (including time),\nembryonic expression"))
+    emb.r, "Embryonic expression")
 }
 
 for(s in cluster.sizes) {
   plot.it(
     paste0("git/cluster/hierarchical/hier.", s, ".clusters/clusters.tsv"),
-    larval.r, paste0(s, " clusters,\nlarval expression"))
-}
-for(s in cluster.sizes) {
-  plot.it(
-    paste0("git/cluster/hierarchical/hier.ts.", s, ".clusters/clusters.tsv"),
-    larval.r, paste0(s, " clusters (including time),\nlarval expression"))
+    larval.r, "Larval expression")
 }
 
 dev.off()

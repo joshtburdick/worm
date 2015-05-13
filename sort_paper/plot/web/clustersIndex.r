@@ -70,16 +70,16 @@ index.table = function() {
   # omit "Tissue"
   ao.enriched = ao.enriched[ ao.enriched$group.name != "Tissue" , ]
 
-  colnames(motif.enriched)[2] = "cluster"  # need to rename this
-  motif.html = most.enriched(motif.enriched, rownames(a),
+  colnames(hyperg.motif)[3] = "cluster"  # need to rename this
+  motif.html = most.enriched(hyperg.motif, rownames(a),
     column.name = "motif", pretty.print = motif.name.format)
 
 #  motif.html = sapply(motifs,
 #    function(m) paste0("<img src=\"motifSvg/", m, ".svg\" ",
 #      "title=\"Logo for motif ", m, "\" width=\"107px\" height=\"24px\">"))
 
-  colnames(chip.enriched)[2] = "cluster"   # again, renaming this
-  chip = most.enriched(chip.enriched, rownames(a), column.name="experiment")
+  colnames(hyperg.chip)[2] = "cluster"   # again, renaming this
+  chip = most.enriched(hyperg.chip, rownames(a), column.name="experiment")
   chip = sub("-post-early-Embryos", "", chip)   # XXX
 
   # tack on annotation

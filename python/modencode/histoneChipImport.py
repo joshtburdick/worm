@@ -8,8 +8,12 @@ import re
 import subprocess
 
 # FIXME: should these be command-line args?
-wigGzDir = "/media/jburdick/disk2/data/ftp/data.modencode.org/C.elegans/Histone-Modification/ChIP-seq/coverage-graph_wiggle/"
-bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_new/"
+# wigGzDir = "/media/jburdick/disk2/data/ftp/data.modencode.org/C.elegans/Histone-Modification/ChIP-seq/coverage-graph_wiggle/"
+# bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_new/"
+
+# XXX trying this with a few files
+wigGzDir = "/home/jburdick/Downloads/modEncode_5048/signal_data_files/"
+bwDir = "/media/jburdick/disk2/histone_chip_seq_bw_test/"
 
 sizesFile = "/murrlab/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.sizes"
 

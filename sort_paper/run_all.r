@@ -6,6 +6,8 @@ source("git/cluster/readRatios.r")
 
 source("git/cluster/hierarchical.r")
 
+
+
 source("git/data/wormbase/anatomy.ontology.group.r")
 source("git/data/wormbase/expr.cluster.r")
 
@@ -18,6 +20,10 @@ source("git/sort_paper/enrichment/anatomyEnrichment.r")
 
 
 source("git/sort_paper/enrichment/summary.r")
+
+
+source("git/sort_paper/enrichment/clustersWithAnatomyAnnotation.r")
+
 
 
 
