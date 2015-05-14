@@ -450,8 +450,8 @@ write.cluster = function(x, cl) {
 
 if (TRUE) {
 # for(cl in c(1,30,52,245,286)) {
-for(cl in c(1,2,3,30,35,52,245,286)) {
-# for(cl in sort(unique(x$Cluster))) {
+# for(cl in c(1,2,3,30,35,52,245,286)) {
+for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
 cat("\n")
