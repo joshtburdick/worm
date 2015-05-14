@@ -33,6 +33,7 @@ scale.free.regress = function(x, main) {
 
 pdf("git/sort_paper/network/scaleFree.pdf", width=10, height=5)
 par(mfcol=c(2,4))
+if (FALSE) {        # skipping these for now
 for (min.p in 10^c(-1:-7)) {
 # cutoffs were 1e-3, 1e-3, 1e-4, and 1e-2, respectively
   scale.free.regress(motif.min.p <= min.p, "Motifs")
@@ -40,10 +41,10 @@ for (min.p in 10^c(-1:-7)) {
   scale.free.regress(chip.min.p <= min.p, "ChIP signals")
   scale.free.regress(t(chip.min.p <= min.p), "Clusters (ChIP signals)")
 }
-
+}
 # plot just the most significant
-scale.free.regress(motif.min.p <= 1e-7, "Motifs")
-scale.free.regress(t(motif.min.p <= 1e-2), "Clusters (motifs)")
+scale.free.regress(motif.min.p <= 1e-4, "Motifs")
+scale.free.regress(t(motif.min.p <= 1e-4), "Clusters (motifs)")
 scale.free.regress(chip.min.p <= 1e-7, "ChIP signals")
 scale.free.regress(t(chip.min.p <= 1e-7), "Clusters (ChIP signals)")
 
