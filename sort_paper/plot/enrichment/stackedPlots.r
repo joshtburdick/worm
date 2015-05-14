@@ -9,7 +9,7 @@ source("git/data/wormbase/wb.cluster.name.r")
 
 # Reads anatomy info (or WB cluster info).
 anatomy.info.matrix = function(f, ao.or.wbcluster) {
-  max.color.p = 6
+  max.color.p = 9
 
   r = read.table(file=paste0("git/sort_paper/enrichment/summary/",
     ao.or.wbcluster, "/", f, ".tsv"),
@@ -32,7 +32,7 @@ anatomy.info.matrix = function(f, ao.or.wbcluster) {
 
 gene.ontology.matrix = function(f) {
   p.cutoff = 1
-  max.color.p = 6
+  max.color.p = 8
 
   r = read.table(file=paste0("git/sort_paper/enrichment/geneOntology/", f, ".tsv"),
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
@@ -80,12 +80,12 @@ plot.stacked = function(f, cluster.subset = NULL) {
   # XXX filenames not yet changed over
   f.cm = f
   if (f == "facs")
-    f.cm = "facs_enrichedVsOpposite"
+    f.cm = "facs_enrichmentVsOpposite_2"
 
-  motif.m = motif.chip.matrix(paste0("table/", f),
-    p.cutoff=0, max.color.p = 20, num.to.include=1)
-  chip.m = motif.chip.matrix(paste0("chipTable/", f),
-    p.cutoff=0, max.color.p = 4, num.to.include=1)
+  motif.m = motif.chip.matrix(paste0("table/", f.cm),
+    p.cutoff=0, max.color.p = 10, num.to.include=1)
+  chip.m = motif.chip.matrix(paste0("chipTable/", f.cm),
+    p.cutoff=0, max.color.p = 5, num.to.include=1)
 
   # possibly subset these
   if (!is.null(cluster.subset)) {
@@ -241,7 +241,7 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.8, height=9.5)
+  width=4.8, height=8.5)
 par(mar=c(5,10,0.1,0.1))
 plot.stacked("facs")
 dev.off()

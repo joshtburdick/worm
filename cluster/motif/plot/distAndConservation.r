@@ -89,6 +89,11 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
   cl = as.character(a$group)
   enrich.p = a$p.corr
 
+  # XXX hack
+  if (m == "RFX2_DBD") {
+    enrich.p = 1e-46
+  }
+
   system(paste("mkdir -p", output.dir))
 
   r = read.table(paste(motif.gene.dir, m, "_upstreamMotifCons.tsv.gz", sep=""),
@@ -205,9 +210,9 @@ plot.some = function() {
   plot.one("M0665_1.00", "30")
   plot.one("M1936_1.00", "30", motif.score.cutoff=30)
 
-  for(i in 1:50) {
-    plot.motif.loc.dist(dist.cons.wilcoxon[i,], motif.score.cutoff=40)
-  }
+#  for(i in 1:50) {
+#    plot.motif.loc.dist(dist.cons.wilcoxon[i,], motif.score.cutoff=40)
+#  }
 }
 
 if (TRUE) {

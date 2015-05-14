@@ -14,7 +14,7 @@ import sys
 # outputDir = "distAndConservation/5kb_hughes/"
 # outputDir = "distAndConservation/5kb_TCF_LEF/"
 # outputDir = "/home/jburdick/tmp/distAndConservation/5kb_hughes_20141202/"
-outputDir = "/home/jburdick/tmp/distAndConservation/jolma2013_shuffled/"
+# outputDir = "/home/jburdick/tmp/distAndConservation/jolma2013_shuffled/"
 
 # where .bam files of motif locations are
 # motifBamPath = "/murrlab/seq/igv/motif/known/"
@@ -22,7 +22,10 @@ outputDir = "/home/jburdick/tmp/distAndConservation/jolma2013_shuffled/"
 # motifBamPath = "/home/jburdick/tmp/fimo_hughes/"
 # motifBamPath = "/murrlab/seq/igv/motif/TCF_LEF/"
 # motifBamPath = "/home/jburdick/tmp/fimo_hughes_20141202/"
-motifBamPath = "/home/jburdick/tmp/fimo/jolma2013_shuffled/"
+# motifBamPath = "/home/jburdick/tmp/fimo/jolma2013_shuffled/"
+
+motifBamPath = "/home/jburdick/tmp/fimo/meme_1kb_cons0/"
+outputDir = "/media/jburdick/disk2/jburdick/distAndConservation/meme_1kb_cons0/"
 
 # bigWig file of conservation
 # XXX probably should rename chromosomes in this
