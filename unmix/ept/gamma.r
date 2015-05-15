@@ -85,6 +85,8 @@ print(round(p, 3))
 # Args:
 #   x - gamma distributions (as natural parameters)
 # Returns: same, conditional on them summing to 1
+# XXX if the scales are different, then the result of
+# this may not sum to 1, which seems incorrect
 gamma.conditional.approx.1.beta = function(x) {
 
   xa = gamma.n2s(x)
@@ -150,7 +152,7 @@ gamma.conditional.approx = function(x, A, b) {
   # zero out cases in which A = 0
   xs["e1",,][ t(A==0) ] = 0
   xs["e2",,][ t(A==0) ] = -Inf
-
+rull
 # print(xs["e2",,])
 # print(gamma.n2mv(xs))
 
@@ -187,7 +189,7 @@ gamma.conditional.density = function(p) function(x) {
 # on all of them summing to 1.
 gamma.conditional.numerical.1 = function(p) {
   f = gamma.conditional.density(p)
-
+rull
   # compute the moments
   # XXX assuming successful integration
   x0 = integrate(f, 0, 1)$value
