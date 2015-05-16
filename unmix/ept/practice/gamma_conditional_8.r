@@ -53,7 +53,7 @@ approx.region.gamma.1 = function(A, b) {
   # the posterior
   q = q0
 
-  for(iter in 1:30) {
+  for(iter in 1:100) {
 
     # loop through the factors
     for(i in 1:nrow(A)) {
@@ -74,18 +74,23 @@ approx.region.gamma.1 = function(A, b) {
 
 
 print(iter)
-print(gamma.n2mv(q)[,1:3])  # XXX for debugging
+print(gamma.n2mv(q))  # XXX for debugging
   }
 
   q
 }
 
-
+set.seed(1)
 A1 = rbind(1:10 >= 7, 1:10 %% 3 != 0)
 b1 = c(0.5, 0.5)
 r1 = approx.region.gamma.1(A1, b1)
 
-if (TRUE) {
+cat("\n\n")
+
+# this runs, and ends up with mean exactly equal to s.d.,
+# which seems incorrect in general
+
+if (FALSE) {
 set.seed(42)
 A2 = matrix(runif(100) >= 0.5, ncol=20)
 x2 = runif(20)
@@ -93,5 +98,6 @@ x2 = x2 / sum(x2)
 b2 = A2 %*% x2
 
 r2 = approx.region.gamma.1(A2, b2)
+# this doesn't converge
 }
 

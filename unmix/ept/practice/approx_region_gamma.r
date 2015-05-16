@@ -23,7 +23,7 @@ gca = function(x, A, b) {
 #   term - the term approximations
 #   FIXME update stats?
 # XXX not working
-approx.region.gamma = function(A, b, num.iters=40) {
+approx.region.gamma = function(A, b, num.iters=3) {
 
   # approximating terms
   term = array(1, dim=c(2, ncol(A), nrow(A)))

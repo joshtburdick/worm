@@ -42,39 +42,51 @@ gamma.s2mv = array.apply(function(a) {
 gamma.mv2n = function(a) gamma.s2n(gamma.mv2s(a))
 gamma.n2mv = function(a) gamma.s2mv(gamma.n2s(a))
 
-# Finds the marginal distributions of independant gamma
-# variables, conditional on their sum adding up to one.
-# (Analogous to lin.constraint() in the EP code.)
-# ??? is this correct? (ETA: it appears not...)
+# Marginal mean and variance of a Dirichlet.
+dirichlet.s2mv = function(a) {
+  a0 = sum(a)
+  beta.s2mv(rbind(a = a, b = a0 - a))
+}
+
+# Marginal mean and variance of independent gamma variates,
+# conditional on them summing to 1.
+# (Not sure this is right.)
 # Args:
-#   x - natural parameters of gamma distributions
-# Returns: x, conditional on the x's summing to 1
-gamma.conditional.approx.old = function(x) {
+#   x - gamma distribution (natural parameters)
+# Returns: natural parameters of gamma, conditional on that.
+gamma.cond.1 = function(x) {
 
-  # first, moment-match these as beta distributions
-  xb = beta.mv2n(gamma.n2mv(x))
-print(round(xb,3))
+  # convert to standard parameters
+  xs = gamma.n2s(x)
 
-  # then, compute one minus each of these
-  # (this is the same as switching the a and b parameters)
-  xb1 = rbind(e1 = xb["e2",], e2 = xb["e1",])
-print(round(xb1,3))
+  # compute Dirichlet moments
+  a = dirichlet.s2mv(xs["a",])
 
-  # compute average of all but one of these
-print(ncol(x))
-  r = (apply(xb1, 1, sum) - xb1) # / (ncol(x)-1)
-print(round(r, 3))
+  # scale by the rate parameter of the Dirichlets
+  r = 1 / xs["b",]
+  a1 = rbind(m = r * a["m",], v = r * r * a["v",])
 
-  # re-swap
-#  r1 = rbind(e1 = r["e2",], e2 = r["e1",])
-#print(round(r1, 3))
+  # normalize
+  s = 1 / sum(a1["m",])
+  gamma.mv2n(rbind(m = s * a1["m",], v = s * s * a1["v",]))
+}
 
-  # average this with original marginal
-  p = (r + xb)   # / 2
-print(round(p, 3))
+# Marginal mean and variance of independent gamma variates,
+# conditional on a linear constraint.
+# Args:
+#   x - gamma distribution (natural parameters)
+#   a, b - these give the constraint that ax = b
+#     (we assume a, b > 0)
+# Returns: natural parameters of gamma, conditional on that.
+gamma.cond = function(x, a, b) {
 
-  # return that, moment-matched as gamma, and rescaled
-  gamma.mv2n(beta.n2mv(p))
+  xs = gamma.n2s(x)
+  xs["b",] = xs["b",] * a
+
+  y = gamma.n2s(gamma.cond.1(gamma.s2n(xs)))
+
+  y["b",] = y["b",] / b
+  gamma.s2n(y)
 }
 
 #   Estimates marginals of independent gamma variates,
@@ -138,7 +150,8 @@ gamma.conditional.approx.1.rescale = function(x) {
 #   x - natural parameters of gamma distributions
 #   A, b - these give the constraints that A * x = b
 # Returns: x, but conditional on the constraint
-gamma.conditional.approx = function(x, A, b) {
+# Deprecated; I don't think this is correct.
+gamma.conditional.approx.array = function(x, A, b) {
 
   # determine how much to scale each
   s1 = b / A
@@ -152,7 +165,7 @@ gamma.conditional.approx = function(x, A, b) {
   # zero out cases in which A = 0
   xs["e1",,][ t(A==0) ] = 0
   xs["e2",,][ t(A==0) ] = -Inf
-rull
+
 # print(xs["e2",,])
 # print(gamma.n2mv(xs))
 
@@ -172,6 +185,7 @@ rull
 
   xc
 }
+
 
 # The density function for the gamma, conditional on vars summing to 1.
 # XXX not sure this is right.
