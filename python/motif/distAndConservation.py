@@ -10,8 +10,8 @@ import re
 import subprocess
 import sys
 
-motifBamPath = "/home/jburdick/tmp/fimo/meme_1kb_cons0/"
-outputDir = "/media/jburdick/disk2/jburdick/distAndConservation/meme_1kb_cons0/"
+motifBamPath = sys.argv[1]
+outputDir = sys.argv[2]
 
 # bigWig file of conservation
 # XXX probably should rename chromosomes in this
@@ -41,19 +41,6 @@ def nameMotifs(inputBedFile, outputBedFile):
   inFile.close()
   outFile.close()
 
-# Undoes the previous chromosome renaming.
-def renameChromosomes(inputBedFile, outputBedFile):
-  inFile = open(inputBedFile, "r")
-  outFile = open(outputBedFile, "w")
-  for line in inFile:
-    s = line.split("\t")
-    s[0] = s[0][3:100]
-    if (s[0] == "M"):
-      s[0] = "MtDNA"
-    outFile.write("\t".join(s))
-  inFile.close()
-  outFile.close()
-
 # Computes motif distances and conservation for one motif.
 # Args:
 #   motif - name of motif to compute results for
@@ -74,17 +61,14 @@ def computeMotifDistAndConservation(name):
     "tmpMotifCons1.tsv",  # the TSV file isn't actually generated, AFAIK
     "-bedOut=tmpMotifCons1.bed"])
 
-  # XXX change chromosome names back
-  renameChromosomes("tmpMotifCons1.bed", "tmpMotifCons2.bed")
-
   # compute overlaps of those with upstream intergenic regions
   subprocess.call([bedtoolsPath + "/bedSort",
-    "tmpMotifCons2.bed", "tmpMotifCons2.bed"])
+    "tmpMotifCons1.bed", "tmpMotifCons1.bed"])
   subprocess.call([bedtoolsPath + "/bedtools",
     "intersect",
     "-wa", "-wb",
     "-a", upstreamBed,
-    "-b", "tmpMotifCons2.bed"],
+    "-b", "tmpMotifCons1.bed"],
     stdout=open(outputDir + "/" + name + "_upstreamMotifCons.tsv", "w"))
 
   # compress output
@@ -96,17 +80,6 @@ def computeMotifDistAndConservation(name):
     "tmpMotifCons1.tsv", "tmpMotifCons1.bed", "tmpMotifCons2.bed"])
 
 subprocess.call(["mkdir", "-p", outputDir])
-
-# computeMotifDistAndConservation("FOXB1_DBD_3")
-
-# get list of motifs to include
-# motifs = subprocess.check_output("cut -f1 /home/jburdick/gcb/git/cluster/hierarchical/hier.200.clusters/uniqueKnownMotifEnrichment_5kb_0.5cons.tsv | tail --lines=+2 | sort | uniq",
-#   shell=True).split("\n")
-
-# nope, running it on everything
-#motifs = [ f.replace(".bam", "")
-
-# computeMotifDistAndConservation("bp.5kb.cons.hier.200clusters_186_5")
 
 if True:
   for f in os.listdir(motifBamPath):
