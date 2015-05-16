@@ -2,9 +2,9 @@
 # Imports motifs from the Hughes lab into MEME format.
 # For now, just using the filenames as motif names.
 
-my $input_dir = "~/gcb/data/tf/hughes/Ce_1.01/pwms_all_motifs/";
+my $input_dir = "~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/";
 
-my $output_file = "hughes_Ce_1.01.meme";
+my $output_file = "hughes_Ce_1.02.meme";
 
 # Translates one file to the format MEME expects.
 sub as_meme {

@@ -53,7 +53,7 @@ approx.region.gamma.1 = function(A, b) {
   # the posterior
   q = q0
 
-  for(iter in 1:100) {
+  for(iter in 1:50) {
 
     # loop through the factors
     for(i in 1:nrow(A)) {
@@ -65,7 +65,7 @@ approx.region.gamma.1 = function(A, b) {
       p2 = gamma.cond.scale.1(p1, A[i,], b[i])
       
       # update this term
-      p[,,i] = p1 + 0.1 * (p2 - p1)
+      p[,,i] = p1 + 0.01 * (p2 - q)
 
       # update posterior
       q = apply(p, c(1,2), sum)
@@ -80,17 +80,22 @@ print(gamma.n2mv(q))  # XXX for debugging
   q
 }
 
+A0 = rbind(c(T,T,T,F,F), c(F,F,T,T,T))
+b0 = c(0.3, 0.8)
+r0 = approx.region.gamma.1(A0, b0)
+
+if (FALSE) {
 set.seed(1)
 A1 = rbind(1:10 >= 7, 1:10 %% 3 != 0)
 b1 = c(0.5, 0.5)
 r1 = approx.region.gamma.1(A1, b1)
 
 cat("\n\n")
-
+}
 # this runs, and ends up with mean exactly equal to s.d.,
 # which seems incorrect in general
 
-if (TRUE) {
+if (FALSE) {
 set.seed(42)
 A2 = matrix(runif(100) >= 0.5, ncol=20)
 x2 = runif(20)
@@ -100,4 +105,11 @@ b2 = A2 %*% x2
 r2 = approx.region.gamma.1(A2, b2)
 # this doesn't converge
 }
+
+# trying to create an example which has sd != sqrt(mean)
+A3 = rbind(c(T,T,T,T,T, T,T,T,F,F), c(T,T,T,T,T, F,F,F,F,F), c(T,T,F,F,F, F,F,F,F,F))
+x3 = c(9,8,1,1,1, 1,1,1,1,1)
+x3 = x3 / sum(x3)
+b3 = A3 %*% x3
+r3 = approx.region.gamma.1(A3, b3)
 
