@@ -65,7 +65,7 @@ approx.region.gamma.1 = function(A, b) {
       p2 = gamma.cond.scale.1(p1, A[i,], b[i])
       
       # update this term
-      p[,,i] = p1 + 0.1 * (p2 - q)
+      p[,,i] = p1 + 0.1 * (p2 - p1)
 
       # update posterior
       q = apply(p, c(1,2), sum)
@@ -90,7 +90,7 @@ cat("\n\n")
 # this runs, and ends up with mean exactly equal to s.d.,
 # which seems incorrect in general
 
-if (FALSE) {
+if (TRUE) {
 set.seed(42)
 A2 = matrix(runif(100) >= 0.5, ncol=20)
 x2 = runif(20)
