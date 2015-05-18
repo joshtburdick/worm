@@ -2,9 +2,6 @@
 # Imports motifs from the Hughes lab into MEME format.
 # For now, just using the filenames as motif names.
 
-my $input_dir = "~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/";
-
-my $output_file = "hughes_Ce_1.02.meme";
 
 # Translates one file to the format MEME expects.
 sub as_meme {
@@ -39,27 +36,36 @@ sub as_meme {
   return $s . (join "\n", @r) . "\n\n";
 }
 
+# Translates all the files in a directory.
+sub translate_dir {
+  my($input_dir, $output_file) = @_;
 
-open OUT, ">$output_file" || die;
-print OUT <<END;
-MEME version 4.4
 
-ALPHABET= ACGT
+  open OUT, ">$output_file" || die;
+  print OUT <<END;
+  MEME version 4.4
 
-strands: + -
+  ALPHABET= ACGT
 
-Background letter frequencies (from /home/jburdick/gcb/git/tf/motif/Ce_WS220.order2markov.txt):
-A 0.32700 C 0.17300 G 0.17300 T 0.32700
+  strands: + -
+
+  Background letter frequencies (from /home/jburdick/gcb/git/tf/motif/Ce_WS220.order2markov.txt):
+  A 0.32700 C 0.17300 G 0.17300 T 0.32700
 
 END
   ;
 
-foreach my $f (<"$input_dir"/*.txt>) {
-  die if not ($f =~ /\/([^\/]+)\.txt$/);
-  my $name = $1;
+  foreach my $f (<"$input_dir"/*.txt>) {
+    die if not ($f =~ /\/([^\/]+)\.txt$/);
+    my $name = $1;
 
-  print OUT as_meme($f, $name);
+    print OUT as_meme($f, $name);
+  }
+
+  close OUT;
 }
 
-close OUT;
+# translate_dir("~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/", "hughes_Ce_1.02.meme");
+
+
 

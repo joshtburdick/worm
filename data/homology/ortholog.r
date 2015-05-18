@@ -22,6 +22,7 @@ r.e = data.frame(gene = ens.ortholog$gene,
   related.gene.score = ens.ortholog$id.rel.to.ortholog / 100,
   ortho.cluster = NA,
   type = ens.ortholog$type)
+cat("[Ensembl]\n")
 
 # Gets HomoloGene orthologs.
 source("git/data/homology/homologene.r")
@@ -44,6 +45,7 @@ r.h = rbind(
   get.homologene.ortho("Mus musculus", "M.musculus"),
   get.homologene.ortho("Drosophila melanogaster", "D.melanogaster"))
 r.h = r.h[ !is.na(r.h$related.gene) , ]
+cat("[HomoloGene]\n")
 
 # Gets InParanoid orthologs for one organism.
 # First, read table, and rename genes.
@@ -79,7 +81,7 @@ r.i = rbind(
   get.in.paranoid.ortho("InParanoid.C.elegans-H.sapiens.xml", "H.sapiens"),
   get.in.paranoid.ortho("InParanoid.C.elegans-M.musculus.xml", "M.musculus"),
   get.in.paranoid.ortho("InParanoid.C.elegans-D.melanogaster.xml", "D.melanogaster"))
-
+cat("[InParanoid]\n")
 
 # Get OrthoMCL orthologs.
 ortho.mcl = read.table(gzfile("git/data/homology/ortho.mcl.tsv.gz"),
@@ -105,6 +107,8 @@ r.o = rbind(r.o, data.frame(gene=ortho.mcl[i,"ce.gene"],
   related.gene=ortho.mcl[i,"dm.gene"],
   gene.score=NA, related.gene.score=NA, ortho.cluster=NA, type=NA))
 
+cat("[OrthoMCL]\n")
+
 # Gets data from previous WormBase query.
 wb = read.table("git/data/homology/wormbase.tf.ortholog.tsv",
   sep="\t", header=TRUE)
@@ -112,6 +116,7 @@ r.w = data.frame(gene = wb$public_name, method = "WormBase",
   species = wb$homolog_species, related.gene = wb$homolog_gene,
   gene.score = NA, related.gene.score = -log10(wb$homolog_blastp_evalue),
   ortho.cluster = NA, type = NA)
+cat("[WormBase]\n")
 
 ortho.five.methods = rbind(r.e, r.h, r.i, r.o, r.w)
 
