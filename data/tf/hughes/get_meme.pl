@@ -43,14 +43,14 @@ sub translate_dir {
 
   open OUT, ">$output_file" || die;
   print OUT <<END;
-  MEME version 4.4
+MEME version 4.4
 
-  ALPHABET= ACGT
+ALPHABET= ACGT
 
-  strands: + -
+strands: + -
 
-  Background letter frequencies (from /home/jburdick/gcb/git/tf/motif/Ce_WS220.order2markov.txt):
-  A 0.32700 C 0.17300 G 0.17300 T 0.32700
+Background letter frequencies (from /home/jburdick/gcb/git/tf/motif/Ce_WS220.order2markov.txt):
+A 0.32700 C 0.17300 G 0.17300 T 0.32700
 
 END
   ;
@@ -65,7 +65,8 @@ END
   close OUT;
 }
 
-# translate_dir("~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/", "hughes_Ce_1.02.meme");
-
-
+# translate_dir("~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/", "Ce_1.02.meme");
+translate_dir("~/gcb/data/tf/hughes/Dm_1.02/pwms_all_motifs/", "Dm_1.02.meme");
+translate_dir("~/gcb/data/tf/hughes/Hs_1.02/pwms_all_motifs/", "Hs_1.02.meme");
+translate_dir("~/gcb/data/tf/hughes/Mm_1.02/pwms_all_motifs/", "Mm_1.02.meme");
 
