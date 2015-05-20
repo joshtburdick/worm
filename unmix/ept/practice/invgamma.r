@@ -56,7 +56,7 @@ gamma.ratio.moments.test = function(xa, xb, ya, yb) {
   n = 1e7
   x = rgamma(n, shape=xa, rate=xb)
   y = rgamma(n, shape=ya, rate=yb)
-browser()
+# browser()
   mean.and.var = function(a) {
     paste("mean =", round(mean(a),4), "  var =", round(var(a),4))
   }
