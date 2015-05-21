@@ -81,9 +81,9 @@ count.motifs.at.cutoffs =
     }
 }
 
+if (FALSE) {
 motifs = sub("_upstreamMotifCons.tsv.gz", "", list.files(motif.gene.dir))
 
-if (TRUE) {
 r = count.motifs.at.cutoffs(motifs,
   gene.names,
   list(upstream.dist = c(1, 2, 3),

@@ -124,9 +124,11 @@ unmix.ml.crossval = function(rpm, m, f, plot=FALSE) {
     c(double.sorted.fractions, f.plus, f.minus))
 print(s)
 #  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
-#  x = 1e6 * t( unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]))$x )
-  r = unmix.nmf(m[s,], rpm[,s] / 1e6, max.iters=100)
-  x = 1e6 * r$x
+  x = 1e6 * t( unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]))$x )
+
+# trying using NMF method
+#  r = unmix.nmf(m[s,], rpm[,s] / 1e6, max.iters=10)
+#  x = 1e6 * r$x
 
   # name of the fraction to use for sim. sorting
   sim.f = f

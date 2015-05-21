@@ -4,6 +4,19 @@
 source("git/utils.r")
 source("git/unmix/ml/pos_linear_solve.r")
 
+# Does one step of "updating" 
+# Args:
+#   A, B - these give the linear constraint
+#   X - this gives the current solution
+# Returns: an updated X, which is closer to a solution of
+#   AX = B, with X >= 0, and each row of X summing to 1.
+pos.linear.solve.1 = function(A, B, X) {
+  X1 = lin.constraint(A, B)(X)
+  X = move.pos(X, X1) + 1e-20
+  X = X / apply(X, 1, sum)
+  X
+}
+
 # Estimates expression, and the sort matrix.
 # Args:
 #   m - sort matrix estimate (each row should sum to 1)
@@ -13,16 +26,22 @@ source("git/unmix/ml/pos_linear_solve.r")
 #   m - modified sort matrix
 #   x - mean of unmixed expression
 #   update.stats - how much m and x changed
-unmix.expr.and.sort.matrix.1 = function(m, r, max.iters=20) {
+unmix.expr.and.sort.matrix.1 = function(m, r, max.iters=5) {
   update.stats = NULL
 #  x = pos.linear.solve(m, r, max.iters=5, normalize="rows")$X
-  x = 0
+#  x = 0
+  x0 = matrix(1, nrow=ncol(m), ncol=ncol(r))
+  x = pos.linear.solve.1(m, r, x0)  
 
   for(iter in 1:max.iters) {
 cat(paste0("\niter = ", iter, "\n"))
-    x1 = pos.linear.solve(m, r, max.iters=5, eps=1e-10, normalize="rows")$X
-# browser()
-    m1 = t( pos.linear.solve(t(x1), t(r), max.iters=5, eps=1e-10, normalize="columns")$X )
+#    x1 = pos.linear.solve(m, r, max.iters=5, eps=1e-10, normalize="rows")$X
+#    m1 = t( pos.linear.solve(t(x1), t(r), max.iters=5, eps=1e-10, normalize="columns")$X )
+# ??? why was I normalizing columns? that seems incorrect
+
+    # XXX trying strictly alternating between optimizing these
+    x1 = pos.linear.solve.1(m, r, x)
+    m1 = t(pos.linear.solve.1(t(x1), t(r), t(m)))
 
     update.stats.1 = c(x = max(abs(x1-x)), m = max(abs(m1-m)))
 write.status(paste(update.stats.1, collapse=" "))

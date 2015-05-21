@@ -64,7 +64,7 @@ pos.linear.solve = function(A, B, X=NULL, normalize="none",
   }
 
   for(iter in 1:max.iters) {
-
+write.status(iter)
     # move toward the closest point satisfying the constraints
     X1 = move.pos(X, lc(X))
 

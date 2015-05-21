@@ -28,7 +28,7 @@ lsei.test.1 = function(A, B) {
     X.lsei[,j] = r$X
   }
   cat("\n")
-  c(err = max(abs(A %*% X - B)), min=min(X),
+  c(err = max(abs(A %*% X - B)), min=min(X), mean=mean(X), max=max(X),
     ldei.diff = max(abs(X - X.lsei)))
 }
 
@@ -38,13 +38,13 @@ B1 = A1 %*% X1
 lsei.test.1(A1, B1)
 
 A2 = matrix(rgamma(400, shape=1, rate=1), nrow=4)
-X2 = matrix(rgamma(300, shape=1, rate=100), nrow=100)
+X2 = matrix(rgamma(300, shape=1, rate=10), nrow=100)
 B2 = A2 %*% X2
 print(lsei.test.1(A2, B2))
 
 for(iter in 1:3) {
-  A3 = matrix(rgamma(20000, shape=1, rate=1), nrow=20)
-  X3 = matrix(rgamma(30000, shape=1, rate=100), nrow=1000)
+  A3 = matrix(rgamma(20000, shape=0.5, rate=1), nrow=20)
+  X3 = matrix(rgamma(30000, shape=0.5, rate=1), nrow=1000)
   B3 = A3 %*% X3
   print(lsei.test.1(A3, B3))
 }

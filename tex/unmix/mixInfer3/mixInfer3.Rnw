@@ -1,5 +1,4 @@
 \documentclass{article}
-
 \usepackage{bm}
 \usepackage{hyperref}
 
@@ -39,12 +38,19 @@ It seems like it may be convenient to use, as it allows different parts to
 have different uncertainty, slightly more flexibly than a Dirichlet distribution.
 
 A Dirichlet distribution $\mathrm{Dirichlet}(\alpha_1, \alpha_2, ..., \alpha_n)$
-can be considered as sampling from...
+can be considered as sampling from $n$ Gamma-distributed variables, and then normalizing
+the result to sum up to 1.
 
 
 
 For purposes of a writeup, I will call this a ``Scaled Dirichlet'' distribution,
 or ``SD'' for short. Sampling from $SD(\bm{\alpha}, \bm{\beta})$.
+
+
+\subsection{Marginals}
+
+
+
 
 
 

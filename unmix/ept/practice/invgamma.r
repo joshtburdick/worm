@@ -82,10 +82,35 @@ ig.test1 = function() {
   x1 = 1 / rgamma(1e6, shape=5, rate=1)
   print(mean(x1))
   print(var(x1))
+  # these look reasonable
 }
 
-gamma.ratio.moments.test(3,1,4,1)
+# Another estimate of moments of normalized gamma-distributed vars.
+# Args:
+#   a - shape and rate parameters of gamma-distributed vars
+# Returns: mean and variance of these, divided by their sum
+gamma.cond.ig.s2mv = function(a) {
+  # convert to mean and variance, and find moments of all
+  # of these, summed
+  a.mv = gamma.s2mv(a)
+  s = apply(a.mv, 1, sum)
+# browser()
+  # this purports to be the parameters of their sum
+  # XXX I don't know why adding the original is necessary,
+  # but it seems to make this work, at least for Dirichlets
+  b = gamma.mv2s(0 * a.mv + s)
 
+  # convert to moments, and divide
+  r = mv2moment(a.mv) * mv2moment(ig.s2mv(b))
 
+  moment2mv(r)
+  # nope, not working
+}
+
+# ig.test1()
+# gamma.ratio.moments.test(3,1,4,1)
+
+# toy example
+r = gamma.cond.ig.s2mv(rbind(a=c(1,1,1), b=c(1,1,1)))
 
 

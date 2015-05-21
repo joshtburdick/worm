@@ -33,7 +33,7 @@ def nameMotifs(inputBedFile, outputBedFile):
     a = int(s[1])
     b = int(s[2])
     if int(s[1]) > 0:
-      outFile.write(chr + "\t" + str(a) + "\t" + str(b) +
+      outFile.write(s[0] + "\t" + str(a) + "\t" + str(b) +
         "\t" + str(i) + "\t" + s[4] + "\t" + s[5] + "\n")
   #"\t0\t+\t" +
   #      str(a) + "\t" + str(b) + "\t0\t1\t1\t0\n")
@@ -48,7 +48,7 @@ def nameMotifs(inputBedFile, outputBedFile):
 def computeMotifDistAndConservation(name):
 
   # first, unpack motif .bam to a bigBed file
-  subprocess.call([bedtoolsPath + "/bedtools", "bamtobed",
+  subprocess.call(["bedtools", "bamtobed",
     "-i", motifBamPath + "/" + name + ".bam"],
     stdout=open("tmpMotif1.bed", "w"))
 
@@ -56,15 +56,15 @@ def computeMotifDistAndConservation(name):
   nameMotifs("tmpMotif1.bed", "tmpMotif2.bed")
 
   # then, compute conservation at those locations
-  subprocess.call([kentToolsPath + "/bigWigAverageOverBed",
+  subprocess.call(["bigWigAverageOverBed",
     conservationBigWig, "tmpMotif2.bed",
     "tmpMotifCons1.tsv",  # the TSV file isn't actually generated, AFAIK
     "-bedOut=tmpMotifCons1.bed"])
 
   # compute overlaps of those with upstream intergenic regions
-  subprocess.call([bedtoolsPath + "/bedSort",
+  subprocess.call(["bedSort",
     "tmpMotifCons1.bed", "tmpMotifCons1.bed"])
-  subprocess.call([bedtoolsPath + "/bedtools",
+  subprocess.call(["bedtools",
     "intersect",
     "-wa", "-wb",
     "-a", upstreamBed,
@@ -77,7 +77,7 @@ def computeMotifDistAndConservation(name):
 
   # clean up
   subprocess.call(["rm", "tmpMotif1.bed", "tmpMotif2.bed",
-    "tmpMotifCons1.tsv", "tmpMotifCons1.bed", "tmpMotifCons2.bed"])
+    "tmpMotifCons1.tsv", "tmpMotifCons1.bed"])
 
 subprocess.call(["mkdir", "-p", outputDir])
 
