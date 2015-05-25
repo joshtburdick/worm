@@ -11,12 +11,22 @@ filter.motifs = function(h) {
   a[ !duplicated(a) ]
 }
 
+# Writes out a set of (hopefully) non-redundant motifs.
+# Args:
+#   org - the organism in question
+# Side effects: writes a file ending in "_motif_nr.txt", of
+# motifs to search for.
+write.nr.motifs = function(org) {
+  motif.set = filter.motifs(hughes.motif.cluster[[org]])
+  write.table(names(motif.set),
+    file=paste0("git/sort_paper/tf/motif/hughes/", org, "_motif_nr.txt"),
+    sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
+}
+# mm.motif.set = filter.motifs(hughes.motif.cluster[["Mm"]])
+# write.table(names(mm.motif.set), file="git/sort_paper/tf/motif/hughes/Mm_motif_nr.txt",
+#   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-hs.motif.set = filter.motifs(hughes.motif.cluster[["Hs"]])
-write.table(names(hs.motif.set), file="git/sort_paper/tf/motif/hughes/Hs_motif_nr.txt",
-  sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
-
-mm.motif.set = filter.motifs(hughes.motif.cluster[["Mm"]])
-write.table(names(mm.motif.set), file="git/sort_paper/tf/motif/hughes/Mm_motif_nr.txt",
-  sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.nr.motifs("Dm")
+write.nr.motifs("Hs")
+write.nr.motifs("Mm")
 

@@ -4,7 +4,7 @@
 
 \newcommand{\funname}[1]{\texttt{#1}}
 
-\title{Unmixing with the gamma distribution}
+\title{Unmixing with a modified Dirichlet distribution}
 \author{Josh Burdick}
 
 \begin{document}
@@ -16,18 +16,14 @@ library("MASS")
 wd = getwd()
 setwd("../../../..")
 source("git/unmix/ept/gamma.r")
+source("git/unmix/ept/moment.r")
 setwd(wd)
 setwd("../../../..")
 setwd("git/unmix/unmix_comp/src/")
 # print(getwd())
 source("sampling/cdaCpp.r")
 setwd(wd)
-
 @
-
-
-Once again, we attempt unmixing using something like a gamma distribution.
-
 
 \section{A slightly generalized Dirichlet distribution}
 
@@ -38,20 +34,101 @@ It seems like it may be convenient to use, as it allows different parts to
 have different uncertainty, slightly more flexibly than a Dirichlet distribution.
 
 A Dirichlet distribution $\mathrm{Dirichlet}(\alpha_1, \alpha_2, ..., \alpha_n)$
-can be considered as sampling from $n$ Gamma-distributed variables, and then normalizing
-the result to sum up to 1.
+can be considered as sampling from $n$ gamma-distributed variables, all with the
+same scale, and then normalizing the result to sum up to 1. (The scale doesn't
+affect the distribution, so we'll just assume it's 1.)
 
+An intuitive way to generalize this is to allow the gamma distributions to have
+different scales. Many properties of a Dirichlet distribution then carry over
+with little modification.
+
+Suppose the $n$ gamma distributions have shape $\alpha_i$ and rate $\beta_i$.
+To sample from this distribution, we sample from the gamma distribution, and normalize
+as before:
+
+\begin{eqnarray}
+X_i & \sim & \mathrm{Gamma}(\alpha_i, \beta_i) \\
+Y_i & = & \frac{X_i}{\sum_i X_i}
+\end{eqnarray}
 
 
 For purposes of a writeup, I will call this a ``Scaled Dirichlet'' distribution,
-or ``SD'' for short. Sampling from $SD(\bm{\alpha}, \bm{\beta})$.
+or ``SD'' for short, and write
 
+\[
+Y_i \sim \mathrm{SD}(\alpha_i, \beta_i)
+\]
+
+Since the gamma distributions are independent, and in the exponential family,
+the SD distribution is as well. This means we can multiply them easily, which
+is necessary to use them with EP. We can also approximate the distribution in
+which several of them are grouped together by adding the gamma distributions,
+and moment-matching.
 
 \subsection{Marginals}
 
+We will often need to convert from parameters to mean and variance.
+The marginal distributions of each component of a Dirichlet are Beta
+distributions, and so this is fairly easy.
+To find the mean and variance of one component, it suffices to find the
+first and second moments of that component. In other words, for $m = $ 1 or 2,
+we need to find
 
+\[
+E[ (\frac{X_i}{\sum_i X_i})^m]
+\]
 
+If the $X_i$ have the same scale (and so the $Y_i$ have a Dirichlet distribution), then
+this can be computed easily, mostly because adding gamma distributions with the same scale
+yields another gama distribution with the same scale.
 
+However, if the scales vary, then the exact marginal moments of an SD distribution
+involve the Gauss hypergeometric function (FIXME cite Kwan), which besides being
+somewhat expensive to compute, presumably is hard to invert in order
+to match moments.
+
+Therefore, we approximate this ratio:
+
+\begin{eqnarray}
+E[ (\frac{X_i}{\sum_i X_i})^m] & \approx & \frac{E[X_i^m]}{E[(\sum_i X_i)^m]}
+\end{eqnarray}
+
+When the $X_i$ have the same scale, the sum in the denominator will also have a gamma
+distribution, and this turns out to be exact. When the scales differ, though, this will be an approximation.
+
+<<estimate1,echo=TRUE>>=
+sd.s2mv = function(a) {
+  mv = gamma.s2mv(a)
+  moments = mv2moment(mv)
+  s = apply(mv, 1, sum)
+  s.moments = c(mv2moment(cbind(s)))
+  moment2mv( moments / s.moments )
+}
+@
+
+How good is the approximation? Here are some samples from an arbitrarily-chosen SD
+distribution, together with the moment-matched estimate of their marginal distribution.
+
+<<margin1,echo=TRUE>>=
+m = 8
+n = 1e4
+p = rbind(a = c(1,3,2,1,4,1,7,3), b=c(1,5,8,5,2,3,6,1))
+# p = rbind(a = c(1,1,1), b=c(1,1,1))
+sd.p = gamma.mv2s(sd.s2mv(p))
+sd.p
+x = matrix(nrow=n, ncol=m)
+for(j in 1:m)
+  x[,j] = rgamma(n, shape=p["a",j], rate=p["b",j])
+x = x / apply(x, 1, sum)
+par(mfrow=c(4,2))
+x1 = c(0:100) / 100
+for(j in 1:m) {
+  hist(x[,j], xlim=c(0,1), breaks=100, border="grey", col="grey")
+  par(new=TRUE)
+  plot(x1, dgamma(x1, shape=sd.p["a",j], rate=sd.p["b",j]),
+    type="l", col="#0000ff80", lwd=2)
+}
+@
 
 
 \subsection{Conditioning on these}
@@ -60,11 +137,11 @@ or ``SD'' for short. Sampling from $SD(\bm{\alpha}, \bm{\beta})$.
 As a toy example, consider a $\mathrm{Dirichlet}(1,1,1,1,1)$ variable, conditional
 on the first two variables adding up to 0.2:
 
-<<margin1,echo=TRUE>>=
+<<condition1,echo=TRUE>>=
 A = rbind(c(1,1,0,0,0), c(0,0,1,1,1))
 A
 b = c(0.2, 0.8)
-x.sample = sample.cda(A, b, c(0.1, 0.1, 0.5, 0.2, 0.1), 1e5, 1)
+x.sample = sample.cda(A, b, c(0.1, 0.1, 0.5, 0.2, 0.1), 1e3, 1)
 par(mfrow=c(2,3))
 for(i in 1:5)
   hist(x.sample[,i], xlim=c(0,1), col="grey")
