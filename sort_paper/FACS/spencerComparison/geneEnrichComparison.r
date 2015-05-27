@@ -77,7 +77,7 @@ overlap.matrix = function(a, b) {
   r
 }
 
-pdf("git/sort_paper/FACS/spencerComparison/geneEnerichComparison.pdf",
+pdf("git/sort_paper/FACS/spencerComparison/geneEnrichComparison.pdf",
   width=9, height=3.8)
 par(mfrow=c(1,3))
 
