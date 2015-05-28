@@ -11,7 +11,7 @@ orig.motif.list = {
 # Does enrichment tests for one clustering, and one set of motifs.
 hyperg.test.1 = function(cl, motif.set.name, clustering.name) {
   motif.count.base =
-    "/home/jburdick/gcb/git/sort_paper/tf/motif/hughes/upstreamCount/"
+    "/home/jburdick/gcb/git/sort_paper/tf/motif/upstreamCount/"
   output.dir = "git/sort_paper/tf/motif/hyperg/allResults2/"
   motif.count.dir = paste0(motif.count.base, "/", motif.set.name, "/")
 
@@ -28,8 +28,8 @@ hyperg.test.1 = function(cl, motif.set.name, clustering.name) {
 # Side effects: saves motif enrichments to that file.
 enrich.test.one.clustering = function(cl, name) {
 
-#  for(motif.set.name in c("Mm_1.02", "Hs_1.02", "bp_1kb_cons0", "meme_1kb_cons0")) {
-  for(motif.set.name in c("Ce_1.02")) {
+#   for(motif.set.name in c("Ce_1.02", "Dm_1.02", "Mm_1.02", "Hs_1.02", "bp_1kb_cons0", "meme_1kb_cons0")) {
+  for(motif.set.name in c("Dm_1.02", "Mm_1.02", "Hs_1.02")) {
     hyperg.test.1(cl, motif.set.name, name)
   }
 

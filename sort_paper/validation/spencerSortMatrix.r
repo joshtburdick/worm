@@ -61,7 +61,7 @@ spencer.ao.terms = c("BAG",
 spencer.m = t(sapply(spencer.ao.terms, anatomy.term.to.lineage))
 
 # A-class motor neurons (unc-4 also is on elsewhere, esp. later)
-spencer.m = rbind(spencer.m, "A-class motor.neuron" =
+spencer.m = rbind(spencer.m, "A-class motor neuron" =
   anatomy.term.to.lineage("DA neuron") | anatomy.term.to.lineage("VA neuron"))
 
 # Adds in cells, both of whose daughter cells are on.
