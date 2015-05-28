@@ -7,25 +7,21 @@ source("git/plot/heatmap.r")
 
 # which cells are in which sort fraction / Spencer experiment
 source("git/sort_paper/unmix/sortMatrix.r")
+facs.m = m.unnormalized[-15,] > 0
+facs.m = facs.m[ sort(rownames(facs.m)) , ]
 
 spencer.m = as.matrix(read.tsv(
   "git/sort_paper/validation/spencerSortMatrix.tsv"))
 spencer.m = spencer.m[ sort(rownames(spencer.m)) , ]
 
-source("git/sort_paper/FACS/enrichedInFraction.r")
-# using a lower cutoff for "enriched" or "depleted"
-ed1 = get.enriched.and.depleted(r.sort.only.averaged, log2(4))
+# the enrichments
+r = as.matrix(read.tsv("git/cluster/readRatios.tsv"))
 
-# convert to lists of genes (as opposed to boolean vectors)
-facs.1 = sapply(ed1, function(a) names(a)[a])
-facs.1 = facs.1[ grep("enriched", names(facs.1), value=TRUE) ]
-facs.1 = facs.1[ grep("singlets", names(facs.1), invert=TRUE, value=TRUE) ]
-facs.1 = facs.1[ grep("ceh-6 \\(-\\) hlh-16 \\(-\\)",
-  names(facs.1), invert=TRUE, value=TRUE) ]
-names(facs.1) = sub(" enriched", "", names(facs.1))
-facs.1 = facs.1[ sort(names(facs.1)) ]
-
-m.unnormalized = m.unnormalized[ names(facs.1) , ]
+# average the enrichments for cnd-1 and pha-4
+r = cbind(
+  "cnd-1"=apply(r[,c("cnd-1 8/19","cnd-1 12/14","cnd-1 1/4")], 1, mean),
+  "pha-4"=apply(r[,c("pha-4 5/9","pha-4 9/1","pha-4 12/9")], 1, mean),
+  r[ , c(7:38) ])
 
 # information about expression clusters from WormBase
 load("git/data/wormbase/expr.cluster.Rdata")
@@ -58,6 +54,44 @@ bool.matrix.to.list = function(a) {
   r
 }
 
+# Computes average enrichment for various sets of genes.
+# Args:
+#   gene.set - the gene sets, as a list of character vectors
+#   r - expression log ratios
+# Returns: matrix of averages of those (for all genes in r)
+gene.set.avg.enrich = function(gene.set, r) {
+  a = matrix(nrow=length(gene.set), ncol=ncol(r))
+  rownames(a) = names(gene.set)
+  colnames(a) = colnames(r)
+
+  for(s in names(gene.set)) {
+    g = intersect(gene.set[[s]], rownames(r))
+    a[s,] = apply(r[g,], 2, mean)
+  }
+
+  a
+}
+
+# Utility to compute "log-enrichment" of a tissue in
+# a set of cells.
+le = function(x, C=0.1) {
+  log2( (sum(x) + C) / (sum(!x) + C) )
+}
+
+# Computes enrichment of Spencer groups of cells (= "tissues")
+# in each sort fraction.
+tissue.enrich = function(a, b) {
+  r = matrix(nrow=nrow(a), ncol=nrow(b))
+  rownames(r) = rownames(a)
+  colnames(r) = rownames(b)
+
+  for(i in rownames(r))
+    for(j in colnames(r))
+      r[i,j] = le(b[j, a[i,]]) - le(b[j, !a[i,]])
+
+  r
+}
+
 # Jaccard similarity.
 # Args: a, b - vectors
 # Returns: Jaccard similarity of a and b.
@@ -78,22 +112,28 @@ overlap.matrix = function(a, b) {
 }
 
 pdf("git/sort_paper/FACS/spencerComparison/geneEnrichComparison.pdf",
-  width=9, height=3.8)
+  width=11, height=4)
 par(mfrow=c(1,3))
+par(mar=c(9,9.5,3,1)+0.1)
 
-a = overlap.matrix(bool.matrix.to.list(m.unnormalized > 0),
-  bool.matrix.to.list(spencer.m))[,13:1]
-plot.heatmap(a, main="Overlap of cells",
-  cluster=FALSE, z.lim=c(0, max(a)/2))
+# a = overlap.matrix(bool.matrix.to.list(m.unnormalized > 0),
+#   bool.matrix.to.list(spencer.m))[,13:1]
+a = tissue.enrich(facs.m, spencer.m)[,13:1]
+plot.heatmap(a, main="Enrichment of tissues",
+  cluster=FALSE, z.lim=c(-6, 6),
+  col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
 
-b = overlap.matrix(facs.1, spencer.cluster)[,13:1]
-plot.heatmap(b, main="Overlap of enriched genes",
-  cluster=FALSE, z.lim=c(0, max(b)/2))
+b = t(gene.set.avg.enrich(spencer.cluster, r[ , rownames(facs.m) ]))[,13:1]
+plot.heatmap(b, main="Enrichment of tissue-specific genes",
+  cluster=FALSE, z.lim=c(-2, 2),
+  col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
 
+par(mar=c(5,4,4,1)+0.1)
 plot(as.vector(a), as.vector(b),
-  xlab="Overlap of cells (Jaccard index)",
-  ylab="Overlap of enriched genes (Jaccard index)", 
+  main="Comparison of enrichments",
+  xlab="Enrichment of tissue (log2 scale)",
+  ylab="Enrichment of tissue-specific genes (log2 scale)", 
   pch=20, col="#00000080")
-
+mtext(paste("r =", round(cor(as.vector(a), as.vector(b)), 2)), cex=0.6)
 dev.off()
 
