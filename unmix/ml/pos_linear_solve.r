@@ -19,6 +19,21 @@ lin.constraint = function(A, B) {
   }
 }
 
+# Like lin.constraint(), but includes a prior on
+# variance, as well as mean. Transliteration of
+# "With conjugate priors" section of
+# http://en.wikipedia.org/wiki/Bayesian_linear_regression
+# Args:
+#   m0, p0 - the prior precision and mean on b
+#   x, y - the data
+# Returns: posterior mean and precision of b,
+#   where xb = y.
+lin.constraint.with.precision = function(m0, p0, x, y) {
+  p = t(x) %*% x + p0
+  list(m = pseudoinverse(p) %*% (p0 %*% m0 + t(x) %*% y),
+    p = p)
+}
+
 # Goes "as far as possible" from A to B, without
 # any element of a vector going negative.
 # (Each column is treated separately.)
@@ -92,4 +107,27 @@ write.status(paste(iter, update.size, "\n"))
 
   list(X = X, update.stats = update.stats)
 }
+
+
+# Practicing the "estimating sort fraction" part of this.
+estimate.sort.fraction.practice.1 = function() {
+  n.cells = 1341   # 1341
+  n.genes = 2000   # 3000
+
+  # prior for this sort fraction
+  m0 = rgamma(n.cells, 1, 1)  
+  v0 = (m0 * rgamma(n.cells, 1, 1)) ^ 2
+
+  # the "actual" expression
+  x = matrix(rgamma(n.genes*n.cells,1,1), nrow=n.genes, ncol=n.cells)
+
+  # measured expression for these genes
+  y = x %*% m0
+
+  # the posterior
+  p = lin.constraint.with.precision(r$m0, diag(1/r$v0), r$x, r$y)
+
+  list(m0=m0, v0=v0, x=x, y=y, p=p)
+}
+# r = estimate.sort.fraction.practice.1()
 
