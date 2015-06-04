@@ -57,7 +57,10 @@ rpm = 1e6 * t( t(rpm) / apply(rpm, 2, sum) )
 # just using the genes with highest max expression
 # in some sort fraction
 max.expr = sort(apply(rpm, 1, max), decreasing=TRUE)
-rpm = rpm[ names(max.expr)[ 1:15000 ] , ]
+
+# for now, only using 5,000 most highly expressed;
+# this leaves some for cross-validation
+rpm = rpm[ names(max.expr)[ 1:5000 ] , ]
 
 # tack on sum of other genes (in rpm)
 x.other = 1e6 - apply(rpm, 2, sum)
@@ -124,7 +127,8 @@ unmix.ml.crossval = function(rpm, m, f, plot=FALSE) {
     c(double.sorted.fractions, f.plus, f.minus))
 print(s)
 #  x = t(unmix.ml(m[ s , ], rpm[ , s ]))
-  x = 1e6 * t( unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]))$x )
+  r = unmix.expr.and.sort.matrix.1(m[ s , ], t(rpm[ , s ]), save.x.history=TRUE)
+  x = 1e6 * t( r$x )
 
 # trying using NMF method
 #  r = unmix.nmf(m[s,], rpm[,s] / 1e6, max.iters=10)
@@ -136,9 +140,14 @@ print(s)
     sim.f = paste(f, "(+)")
   }
 
+  actual.r = log2.enrich(rpm[ , f.plus ], rpm[ , f.minus ])
+  crossval.cor.history = sapply(r$x.history,
+    function(x) cor(actual.r, sim.sort.ratio(1e6 * x, m, f.plus, f.minus)))
+
   list(x = x,
     sim.r = sim.sort.ratio(x, m, f.plus, f.minus),
-    actual.r = log2.enrich(rpm[ , f.plus ], rpm[ , f.minus ]))
+    actual.r = actual.r,
+    crossval.cor.history = crossval.cor.history)
 }
 
 unmix.ml.all = function() {
@@ -149,7 +158,10 @@ unmix.ml.all = function() {
     a = unmix.ml.crossval(rpm, m1, f)
     r[[f]] = cor(a$sim.r, a$actual.r)
 
+    cat("crossval cor. history =", paste(round(a$crossval.cor.history, 4)), "\n")
+
     lim = range(c(a$sim.r, a$actual.r))
+if (FALSE) {
     plot(a$actual.r, a$sim.r,
       main=f, xlab="Measured enrichment", ylab="Predicted enrichment",
       xlim=lim, ylim=lim,
@@ -158,7 +170,7 @@ unmix.ml.all = function() {
     axis(2)
     abline(0, 1, col="#00000040")
     mtext(paste("r =", round(r[[f]], 3)), line=0.1, cex=0.65)
-
+}
 print(paste("\n", f, "crossval accuracy =", r[[f]], "\n"))
   }
 

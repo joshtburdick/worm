@@ -47,20 +47,66 @@ enrich.diff.on.off = function(x.unmix, x.on.off) {
   as.data.frame(r)
 }
 
-r = enrich.diff.on.off(x.pseudoinverse, x.on.off)
+# Simulates unmixing with a subset of markers, and computes
+# enrichment of genes.
+# Args:
+#   x.on.off - expression from imaging
+#   n - number of sort fractions to use
+# Returns: matrix of enrichment differences.
+enrich.diff = function(x.on.off, n) {
+  predict.set = c(single.fractions, double.sorted.fractions[2:4])
+
+  num.subsets = 20
+
+  # computes enrichment difference
+  enrich.diff.1 = function(p) {
+    x = t( pseudoinverse(m[p,]) %*% t(r[,p]) )
+    e = enrich.diff.on.off(x, x.on.off)
+    as.matrix(e)[,"x.diff"]
+  }
+
+  # see whether to try all subsets, or just a random sample
+  a = NULL
+  if (choose(length(predict.set), n) <= num.subsets) {
+    # there aren't "many" possibilities, so just use all combinations
+    a = apply(combn(predict.set, n), 2, enrich.diff.1)
+  } else {
+    # there are many possible groups of other markers, so sample some
+    for(i in 1:num.subsets) {
+      ps = sample(predict.set, n)
+      a = cbind(a, enrich.diff.1(ps))
+    }
+  }
+
+  a
+}
+
+ed = enrich.diff.on.off(x.pseudoinverse, x.on.off)
 
 # save results as table
-write.tsv(r, "git/sort_paper/unmix/validation/unmixAndImaging.tsv")
+write.tsv(ed, "git/sort_paper/unmix/validation/unmixAndImaging.tsv")
 
 # and plot them
 pdf("git/sort_paper/unmix/validation/unmixAndImaging.pdf",
   width=10, height=5)
 par(mfrow=c(1,2))
 
-plot(r$x.on, r$x.off, xlim=c(-2,5), ylim=c(-2,5), pch=20, col="#00000040")
+plot(ed$x.on, ed$x.off, xlim=c(-2,5), ylim=c(-2,5), pch=20, col="#00000040")
 abline(0, 1, col="#00000020", lwd=2)
 
-hist(r$x.diff, breaks=50, col="grey")
+hist(ed$x.diff, breaks=50, col="grey")
 
 dev.off()
+
+if (FALSE) {
+  enrich.vs.num.sort.fractions = NULL
+  for(n in c(5:16)) {
+    write.status(n)
+    enrich.vs.num.sort.fractions[[as.character(n)]] =
+      enrich.diff(x.on.off, n)
+    save(enrich.vs.num.sort.fractions,
+      file="git/sort_paper/unmix/validation/enrichVsNumSortFractions.Rdata")
+  }
+}
+
 

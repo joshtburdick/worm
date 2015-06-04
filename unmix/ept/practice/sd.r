@@ -1,8 +1,8 @@
-# A "scaled Dirichlet" ("SD") distribution.
+# A "scaled Dirichlet" ("SD") distribution, and various
+# utilities. These aren't exact, but are fairly simple.
 
 source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/moment.r")
-
 
 # Converts from SD parameters to marginal mean and variance.
 sd.s2mv = function(a) {
@@ -14,8 +14,9 @@ sd.s2mv = function(a) {
 }
 
 # Converts from marginal mean and variance to SD parameters.
-# XXX not currently working
 sd.mv2s = function(b) {
+  # FIXME: make sure these add up to 1?
+
   m = mv2moment(b)
 
   a = sum( m["x2",] )
@@ -27,10 +28,9 @@ sd.mv2s = function(b) {
   gamma.mv2s( moment2mv(m) )
 }
 
-
 # some simple tests. For concreteness, I'm scaling
-# the a's to sum to one. (even though it doesn't affect
-# the result of sd.s2mv())
+# the a's to sum to one (even though it doesn't affect
+# the result of sd.s2mv()).
 sd.test1 = function() {
   a1 = rbind(a=c(1,1,1), b=c(1,1,1))
   a1["b",] = a1["b",] * sum(gamma.s2mv(a1)["m",])
@@ -42,7 +42,7 @@ sd.test1 = function() {
   list(a1, b1, a2, b2)
 }
 
-# More tests.
+# More simple tests.
 sd.test2 = function(m, n) {
   for(i in 1:n) {
     a = rbind(a = rgamma(m,1,1), b = rgamma(m,1,1))

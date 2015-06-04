@@ -112,21 +112,24 @@ overlap.matrix = function(a, b) {
 }
 
 pdf("git/sort_paper/FACS/spencerComparison/geneEnrichComparison.pdf",
-  width=11, height=4)
-par(mfrow=c(1,3))
-par(mar=c(9,9.5,3,1)+0.1)
+  width=5.5, height=5.5)
+#  width=11, height=4)
+# par(mfrow=c(1,3))
+# par(mar=c(9,9.5,3,1)+0.1)
 
 # a = overlap.matrix(bool.matrix.to.list(m.unnormalized > 0),
 #   bool.matrix.to.list(spencer.m))[,13:1]
 a = tissue.enrich(facs.m, spencer.m)[,13:1]
-plot.heatmap(a, main="Enrichment of tissues",
-  cluster=FALSE, z.lim=c(-6, 6),
-  col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
-
 b = t(gene.set.avg.enrich(spencer.cluster, r[ , rownames(facs.m) ]))[,13:1]
-plot.heatmap(b, main="Enrichment of tissue-specific genes",
-  cluster=FALSE, z.lim=c(-2, 2),
-  col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
+
+if (FALSE) {
+  plot.heatmap(a, main="Enrichment of tissues",
+    cluster=FALSE, z.lim=c(-6, 6),
+    col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
+  plot.heatmap(b, main="Enrichment of tissue-specific genes",
+    cluster=FALSE, z.lim=c(-2, 2),
+    col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
+}
 
 par(mar=c(5,4,4,1)+0.1)
 plot(as.vector(a), as.vector(b),
@@ -134,6 +137,6 @@ plot(as.vector(a), as.vector(b),
   xlab="Enrichment of tissue (log2 scale)",
   ylab="Enrichment of tissue-specific genes (log2 scale)", 
   pch=20, col="#00000080")
-mtext(paste("r =", round(cor(as.vector(a), as.vector(b)), 2)), cex=0.6)
+mtext(paste("r =", round(cor(as.vector(a), as.vector(b)), 2)), cex=0.8)
 dev.off()
 

@@ -3,49 +3,64 @@
 source("git/utils.r")
 source("git/tf/motif/enrichment/motifHyperg.r")
 source("git/tf/motif/enrichment/motifHypergSummarize.r")
-source("git/tf/motif/motifName.r")
+# source("git/tf/motif/motifName.r")
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
+
 
 # genes to include
-g = read.table("git/tf/pop1/anterior_genes.tsv", as.is=TRUE)[,1]
+g.anterior = read.table("git/tf/pop1/anterior_genes.tsv", as.is=TRUE)[,1]
+g.posterior = read.table("git/tf/pop1/posterior_genes.tsv", as.is=TRUE)[,1]
 
 # where motif counts are
-motif.count.base = "git/tf/motif/count/upstreamMotifCount/"
-
-# originally clustered motifs. XXX hokey way of getting this
-orig.motif.list = {
-  load("git/sort_paper/tf/allResults/motif/hier.300.clusters.Rdata")
-  dimnames(enrich)[[1]]
-}
+motif.count.base = "git/sort_paper/tf/motif/upstreamCount/"
 
 orthologs.by.motif.1 = sapply(orthologs.by.motif,
   function(a) paste(a, collapse=" "))
 
+# Converts from a list of genes to a boolean vector.
+# (This is just to get the list of all genes for which we have motifs.)
+load(paste0(motif.count.base, "/Ce_1.02/M0103_1.02.Rdata"))
+genes.to.cluster = function(g) {
+  all.genes = dimnames(motif.count)[[1]]
+  cl = rep(FALSE, length(all.genes))
+  names(cl) = all.genes
+  cl[g] = TRUE
+  cl
+}
+gene.sets = list(anterior = genes.to.cluster(g.anterior),
+  posterior = genes.to.cluster(g.posterior))
 
-# compute vector for clustering
-load(paste0(motif.count.base, "/hughes_20141202/M0103_1.01.Rdata"))
-
-all.genes = dimnames(motif.count)[[1]]
-cl = rep(FALSE, length(all.genes))
-names(cl) = all.genes
-cl[g] = TRUE
-gene.sets = list(anterior = cl)
-
+# Test for enriched motifs.
 if (FALSE) {
-  enrich.hughes = enrich.test.gene.sets.many.motifs(
-    paste0(motif.count.base, "/hughes_20141202/"), gene.sets)
-  enrich.5kb = enrich.test.gene.sets.many.motifs(
-    paste0(motif.count.base, "/5kb/"), gene.sets, motifs=orig.motif.list)
-  save(enrich.hughes, enrich.5kb, file="git/tf/pop1/motif_enrich.Rdata")
+  output.dir = "git/tf/pop1/enrichResults/"
+
+  for(motif.set in c("Ce_1.02", "Dm_1.02", "Mm_1.02", "Hs_1.02")) {
+    cat(motif.set, "\n")
+    system(paste0("mkdir -p ", output.dir, "/", motif.set))
+    enrich = enrich.test.gene.sets.many.motifs(
+      paste0(motif.count.base, "/", motif.set), gene.sets)
+    save(enrich, file=paste0(output.dir, "/", motif.set, "/pop1.Rdata"))
+  }
 }
 
-load("git/tf/pop1/motif_enrich.Rdata")
+# Convert to a table.
+if (TRUE) {
+  r = NULL
+  for(motif.set in c("Ce_1.02", "Dm_1.02", "Mm_1.02", "Hs_1.02")) {
+    load(paste0(output.dir, "/", motif.set, "/pop1.Rdata"))
+    r = rbind(r, enrich.to.table(enrich))
+  }
+  r$p.corr = p.adjust(r$p, method="fdr")
+  r = r[ order(r$p.corr) , ]
+  r$motif.name = motif.info[r$motif, "motif.name"]
+  r = cbind(r, motif.info[r$motif, c("species", "related.gene")])
+  r$orthologs = orthologs.by.motif.1[ r$motif ]
 
-r.hughes = enrich.to.table(enrich.hughes)
-r.facs = enrich.to.table(enrich.5kb)
+  # for Ce genes, count the actual gene as an "ortholog"
+  i = (r$species=="C.elegans")
+  r[ i , "orthologs" ] = r[ i, "related.gene" ]
 
-r = rbind(r.hughes, r.facs)
-r = r[ order(r$p.corr) , ]
-r$orthologs = orthologs.by.motif.1[ r$motif ]
-r[ is.na(r$orthologs), "orthologs" ] = ""
-write.tsv(r, "git/tf/pop1/anterior_motifs.tsv")
+  write.tsv(r, "git/tf/pop1/motif_enrich.tsv")
+}
+
 
