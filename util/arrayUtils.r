@@ -37,6 +37,7 @@ array.bind = function(a, i) {
   r1 = array(c(a1, recursive=TRUE), dim=dims1[c(j,i)])
   r = aperm(r1, order(c(j,i)))
   dimnames(r) = dimnames1
+#  names(dimnames(r)) = names(dimnames(a[[1]]))
   r
 }
 

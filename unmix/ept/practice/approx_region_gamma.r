@@ -2,7 +2,7 @@
 # distributions.
 
 source("git/unmix/ept/gamma.r")
-
+source("git/unmix/ept/practice/sd.r")
 
 # wrapper for this
 gca = function(x, A, b) {
@@ -12,6 +12,33 @@ gca = function(x, A, b) {
   x2[,,1]
 }
 
+# Approximates marginals of
+#   x_i ~ Gamma() | ax = b
+# Args:
+#   x - gamma distribution (natural parameters)
+#   a, b - the linear constraint (for now, assuming
+#     all a != 0)
+# Returns: natural parameters of x | Ax = b
+# FIXME: compare this with sampling?
+gca1 = function(x, a, b) {
+  # convert to moments
+  m = gamma.n2mv(x)
+
+  # scale this
+  s = a / b    # FIXME
+  m["m",] = m["m",] / s
+  m["v",] = m["v",] / (s*s)
+
+  # approximate marginals, if those sum to 1
+  r = sd.s2mv(gamma.mv2s(m))
+
+  # undo the scaling
+  r["m",] = r["m",] * b
+  r["v",] = r["v",] * (b*b)
+
+  # convert back to natural parameters
+  gamma.mv2n(r)
+}
 
 # Approximates marginals with a gamma distribution.
 # Not focussing on efficiency here...
@@ -23,7 +50,7 @@ gca = function(x, A, b) {
 #   term - the term approximations
 #   FIXME update stats?
 # XXX not working
-approx.region.gamma = function(A, b, num.iters=3) {
+approx.region.gamma = function(A, b, num.iters=2) {
 
   # approximating terms
   term = array(1, dim=c(2, ncol(A), nrow(A)))
@@ -40,22 +67,18 @@ approx.region.gamma = function(A, b, num.iters=3) {
   for(iter in 1:num.iters) {
 
     # compute message to each term
-    t1 = term
     for(i in 1:nrow(A)) {
-      t1[,,i] = x - term[,,i]
-    }
-
-    # moment-match
-    x1 = gamma.conditional.approx(t1, A, b)
-
-    # correct terms
-    for(i in 1:nrow(A)) {
-      term[,,i] = term[,,i] + 1 * (x1[,,i] - x)
+      t1 = x - term[,,i]
+      x1 = gca1(t1, A[i,], b)
+      term[,,i] = term[,,i] + 0.1 * (x1 - x)
+      x = prior + apply(term, c(1,2), sum)
     }
 
     # update posterior    
-    x = prior + apply(term, c(1,2), sum)
+
+print(gamma.n2mv(x))
   }
+
   list(x = x, term = term)
 }
 
@@ -87,20 +110,19 @@ t2 = function() {
 
 
 # a small test
-A2 = matrix(c(1,1,1,1,0,0, 0,0,0,1,1,1), nrow=2, byrow=TRUE)
-A2 = rbind(A2, 1-A2)
+A2 = matrix(c(1,1,0.1, 0.1,1,1), nrow=2, byrow=TRUE)
+# A2 = rbind(A2, 1-A2)
 # b2 = c(0.6, 0.8)
 # b2 = c(b2, 1-b2)
 # x2 = array(gamma.s2n(rbind(a=rep(1,6), b=rep(1,6))), dim=c(2,6,1))
 # dimnames(x2)[[1]] = c("e1", "e2")
 
-x2 = rgamma(6, 2, 1)
-x2 = x2 / sum(x2)
+x2 = c(1,1,1)
+# x2 = x2 / sum(x2)
 b2 = as.vector(A2 %*% x2)
 
 
-foo = approx.region.gamma(A2, b2)
-
+r2 = approx.region.gamma(A2, b2)
 
 
 

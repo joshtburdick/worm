@@ -1,11 +1,11 @@
 # Computes motif enrichment for a few genes.
 
 source("git/utils.r")
+source("git/util/arrayUtils.r")
 source("git/tf/motif/enrichment/motifHyperg.r")
 source("git/tf/motif/enrichment/motifHypergSummarize.r")
 # source("git/tf/motif/motifName.r")
 source("git/sort_paper/tf/motif/hughes/motifInfo.r")
-
 
 # genes to include
 g.anterior = read.table("git/tf/pop1/anterior_genes.tsv", as.is=TRUE)[,1]
@@ -30,9 +30,11 @@ genes.to.cluster = function(g) {
 gene.sets = list(anterior = genes.to.cluster(g.anterior),
   posterior = genes.to.cluster(g.posterior))
 
+# where to store results
+output.dir = "git/tf/pop1/enrichResults/"
+
 # Test for enriched motifs.
 if (FALSE) {
-  output.dir = "git/tf/pop1/enrichResults/"
 
   for(motif.set in c("Ce_1.02", "Dm_1.02", "Mm_1.02", "Hs_1.02")) {
     cat(motif.set, "\n")
@@ -43,15 +45,23 @@ if (FALSE) {
   }
 }
 
+
 # Convert to a table.
 if (TRUE) {
-  r = NULL
+
+  # read in results from each organism
+  enrich1 = list()
   for(motif.set in c("Ce_1.02", "Dm_1.02", "Mm_1.02", "Hs_1.02")) {
     load(paste0(output.dir, "/", motif.set, "/pop1.Rdata"))
-    r = rbind(r, enrich.to.table(enrich))
+    enrich1[[ motif.set ]] = enrich
   }
-  r$p.corr = p.adjust(r$p, method="fdr")
+
+  r = enrich.to.table.many(enrich1)
+
+  # convert to a table, correcting p-values of combined results
   r = r[ order(r$p.corr) , ]
+
+  # add some annotation
   r$motif.name = motif.info[r$motif, "motif.name"]
   r = cbind(r, motif.info[r$motif, c("species", "related.gene")])
   r$orthologs = orthologs.by.motif.1[ r$motif ]

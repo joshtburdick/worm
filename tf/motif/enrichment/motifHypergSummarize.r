@@ -67,3 +67,24 @@ enrich.to.table = function(enrich) {
   r
 }
 
+# Same as above, but combines several arrays' worth of results,
+# correcting p-values by fdr together.
+enrich.to.table.many = function(enrich.list) {
+
+  p = sapply(enrich.list, function(e) as.vector(e[,,"p",,,]))
+  p1 = c(p, recursive=TRUE)
+  p2 = p.adjust(p1, method="fdr")
+
+  # XXX compute indices
+  a = cumsum(c(1, sapply(p, length)))
+  b = cumsum(sapply(p, length))
+  r = NULL
+  for(i in 1:length(enrich.list)) {
+    enrich.list[[i]][,,"p.corr",,,] = p2[ a[i] : b[i] ]
+    r = rbind(r, enrich.to.table(enrich.list[[i]]))
+  }
+
+  r
+}
+
+
