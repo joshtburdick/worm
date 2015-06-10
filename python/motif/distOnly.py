@@ -67,7 +67,7 @@ def computeMotifDistAndConservation(name):
     outputDir + "/" + name + "_upstreamMotifCons.tsv"])
 
   # clean up
-#  subprocess.call(["rm", "tmpMotif1.bed", "tmpMotif2.bed"])
+  subprocess.call(["rm", "tmpMotif1.bed", "tmpMotif2.bed"])
 
 subprocess.call(["mkdir", "-p", outputDir])
 
