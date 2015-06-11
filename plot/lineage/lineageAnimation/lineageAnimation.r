@@ -25,7 +25,7 @@ time.range = c(100, 115)
 y.range.pixels = c(80, 162)
 
 # speed of the movie
-frame.rate.in.seconds = 0.5
+frame.rate.in.seconds = 0.2
 
 ### end configuration
 
