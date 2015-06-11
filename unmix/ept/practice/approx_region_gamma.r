@@ -24,17 +24,18 @@ gca1 = function(x, a, b) {
   # convert to moments
   m = gamma.n2mv(x)
 
-  # scale this
-  s = a / b    # FIXME
-  m["m",] = m["m",] / s
-  m["v",] = m["v",] / (s*s)
+  # scale this (??? or not)
+  s = a
+  m["m",] = m["m",] / a
+  m["v",] = m["v",] / (a*a)
 
   # approximate marginals, if those sum to 1
-  r = sd.s2mv(gamma.mv2s(m))
+  #  r = sd.s2mv(gamma.mv2s(m))
+  r = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(m)))
 
-  # undo the scaling
-  r["m",] = r["m",] * b
-  r["v",] = r["v",] * (b*b)
+  # scale this
+  r["m",] = r["m",] * s
+  r["v",] = r["v",] * (s*s)
 
   # convert back to natural parameters
   gamma.mv2n(r)
@@ -50,7 +51,7 @@ gca1 = function(x, a, b) {
 #   term - the term approximations
 #   FIXME update stats?
 # XXX not working
-approx.region.gamma = function(A, b, num.iters=2) {
+approx.region.gamma = function(A, b, num.iters=30) {
 
   # approximating terms
   term = array(1, dim=c(2, ncol(A), nrow(A)))
@@ -69,12 +70,14 @@ approx.region.gamma = function(A, b, num.iters=2) {
     # compute message to each term
     for(i in 1:nrow(A)) {
       t1 = x - term[,,i]
-      x1 = gca1(t1, A[i,], b)
-      term[,,i] = term[,,i] + 0.1 * (x1 - x)
-      x = prior + apply(term, c(1,2), sum)
+#      x1 = gca1(t1, A[i,], b[i])
+      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
+
+      term[,,i] = 1 * term[,,i] + 0.1 * (x1 - x)
     }
 
-    # update posterior    
+    # update posterior
+    x = prior + apply(term, c(1,2), sum)
 
 print(gamma.n2mv(x))
   }
@@ -118,11 +121,10 @@ A2 = matrix(c(1,1,0.1, 0.1,1,1), nrow=2, byrow=TRUE)
 # dimnames(x2)[[1]] = c("e1", "e2")
 
 x2 = c(1,1,1)
-# x2 = x2 / sum(x2)
 b2 = as.vector(A2 %*% x2)
 
 
-r2 = approx.region.gamma(A2, b2)
+# r2 = approx.region.gamma(A2, b2)
 
 
 

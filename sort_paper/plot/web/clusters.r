@@ -4,7 +4,7 @@ library("hwriter")
 
 source("git/data/name_convert.r")
 source("git/utils.r")
-source("git/tf/motif/motifName.r")
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 source("git/plot/web/html.r")
 
 clustering.dir = "git/cluster/hierarchical/"
@@ -77,6 +77,7 @@ motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 # motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
 
 # for each motif, list of potential orthologs
+if (FALSE) {
 orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$motif.id,
   function(x) {
     x = as.character(x)
@@ -88,8 +89,10 @@ orthologs.by.motif = by(motif.ortholog$gene, motif.ortholog$motif.id,
     return(unique(as.character(x))) 
   }
 )
+}
 
-# enriched motifs
+# enriched motifs (old version)
+if (FALSE) {
 motif.enriched = read.tsv(gzfile(paste0("git/sort_paper/tf/summary/motif/",
   clustering.name, "_merged.tsv.gz")))
 # significance cutoff (since this includes all the enrichments)
@@ -99,9 +102,16 @@ motif.enriched =
   motif.enriched[ motif.enriched$motif %in% names(motif.name) , ]
 
 # motif enrichment, using the hypergeometric test
-hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
+# hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
+}
+hyperg.motif = read.tsv(gzfile(
+  "git/sort_paper/tf/hughes/table/hier.300.clusters.tsv.gz"))
+
 hyperg.motif = hyperg.motif[ hyperg.motif$p.corr <= 0.05 , ]
-hyperg.motif$motifs.cluster = hyperg.motif$"genes with motif in cluster"
+hyperg.motif$motifs.cluster = hyperg.motif$m.cluster
+
+# XXX possibly this should be done earlier
+hyperg.motif$motif.name = motif.info[ hyperg.motif$motif, "motif.name" ]
 
 # Function to make ChIP factor names lower case (to help
 # match them with motif names), and otherwise tweak them
@@ -220,8 +230,10 @@ tf.list.annotate = function(tf, cl) {
     else
       paste(paste(a[1:20], collapse=" "), "and", length(a) - 20, "others", collapse=" ")
 
-  if (length(a) == 0)
-    ""
+#  if (length(a) == 0)
+#    ""
+  if (length(a)<=21)
+    shorter.list
   else
     paste(shorter.list,
       paste0("<br><span title=\"", full.list, "\">[full list]</span>"))
@@ -262,15 +274,19 @@ motif.table = function(a) {
       })
   }
 
+# browser()
+
   # possibly tack on list of orthologous genes
   if (! ("ortholog" %in% colnames(a))) {
     a$ortholog = sapply(a$motif,
       function(m) tf.list.annotate(orthologs.by.motif[[m]], cl))
   }
-  a = a[ , c("motif", "logo", "ortholog", "motifs.cluster", "enrich", "p.corr") ]
 
   # use human-readable motif names
-  a$motif = motif.name[ a$motif ]
+  a$motif = a$motif.name
+
+  a = a[ , c("motif", "logo", "ortholog", "motifs.cluster", "enrich", "p.corr") ]
+
 
   # XXX ideally hwrite should write the first line in <th>
   colnames(a) = sapply(
@@ -384,8 +400,8 @@ write.cluster = function(x, cl) {
   css = paste0(read.table("git/sort_paper/plot/web/clusterCss.txt", sep="~")[,1], collapse="")
 #  css = ""  # XXX hack to disable CSS
 
-  motif.enriched.1 = motif.enrich.compact(
-    motif.enriched[motif.enriched$group == cl,], cl)
+#  motif.enriched.1 = motif.enrich.compact(
+#    motif.enriched[motif.enriched$group == cl,], cl)
 
   hyperg.motif.enriched.1 = motif.enrich.compact(
     hyperg.motif[hyperg.motif$group == cl,], cl)
@@ -449,9 +465,10 @@ write.cluster = function(x, cl) {
 }
 
 if (TRUE) {
+for(cl in c(45)) {
 # for(cl in c(1,30,52,245,286)) {
 # for(cl in c(1,2,3,30,35,52,245,286)) {
-for(cl in sort(unique(x$Cluster))) {
+# for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
 cat("\n")

@@ -2,7 +2,7 @@
 # For each occurence of a given motif, finds the nearest
 # gene it's upstream of (and the distance to that gene),
 # but doesn't compute motif conservation. Designed for counting
-# motifs in, e.g., C.briggsae.
+# motifs in, e.g., C. briggsae.
 
 # Requires bedtools and Jim Kent's software to be in $PATH.
 
@@ -60,14 +60,22 @@ def computeMotifDistAndConservation(name):
     "-wa", "-wb",
     "-a", upstreamBed,
     "-b", "tmpMotif2.bed"],
-    stdout=open(outputDir + "/" + name + "_upstreamMotifCons.tsv", "w"))
+    stdout=open("tmpMotif3.bed", "w"))
+#    stdout=open(outputDir + "/" + name + "_upstreamMotifCons.tsv", "w"))
+
+  # tack on a 0 (conservation, which we're ignoring)
+  outFileName = outputDir + "/" + name + "_upstreamMotifCons.tsv"
+  outFile = open(outFileName, "w")
+  for line in open("tmpMotif3.bed", "r"):
+    s = line.rstrip("\n")
+    outFile.write(s + "\t0\n")
+  outFile.close()
 
   # compress output
-  subprocess.call(["gzip", "-f",
-    outputDir + "/" + name + "_upstreamMotifCons.tsv"])
+  subprocess.call(["gzip", "-f", outFileName])
 
   # clean up
-  subprocess.call(["rm", "tmpMotif1.bed", "tmpMotif2.bed"])
+  subprocess.call(["rm", "tmpMotif1.bed", "tmpMotif2.bed", "tmpMotif3.bed"])
 
 subprocess.call(["mkdir", "-p", outputDir])
 

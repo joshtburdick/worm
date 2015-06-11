@@ -1,5 +1,7 @@
 # Filters non-Ce motifs, so as not to be running FIMO on
 # all of them.
+# (Also omits motifs listed as being Ce motifs.)
+# deprecated: now in motifCluster.r
 
 load("git/sort_paper/tf/motif/hughes/motifCluster.Rdata")
 
@@ -18,15 +20,18 @@ filter.motifs = function(h) {
 # motifs to search for.
 write.nr.motifs = function(org) {
   motif.set = filter.motifs(hughes.motif.cluster[[org]])
-  write.table(names(motif.set),
+  m = setdiff(names(motif.set), hughes.motif.cluster[["Ce"]]$labels)
+  write.table(m,
     file=paste0("git/sort_paper/tf/motif/hughes/", org, "_motif_nr.txt"),
     sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
 }
+
 # mm.motif.set = filter.motifs(hughes.motif.cluster[["Mm"]])
 # write.table(names(mm.motif.set), file="git/sort_paper/tf/motif/hughes/Mm_motif_nr.txt",
 #   sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
-
-write.nr.motifs("Dm")
-write.nr.motifs("Hs")
-write.nr.motifs("Mm")
+if (TRUE) {
+  write.nr.motifs("Dm")
+  write.nr.motifs("Hs")
+  write.nr.motifs("Mm")
+}
 

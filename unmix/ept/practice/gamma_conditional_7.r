@@ -66,6 +66,7 @@ gamma.cond.1 = function(A, b) function(x) {
 
   gamma.mv2n(rbind(m = m.p, v = v.p))
 }
+gamma.cond.orig = gamma.cond.1
 
 A = matrix(rgamma(10, shape=1, rate=1), nrow=2)
 

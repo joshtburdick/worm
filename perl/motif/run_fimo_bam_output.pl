@@ -19,6 +19,9 @@ die if not defined $output_base;
 
 my $meme_bin = "~jburdick/meme/bin/";
 my $fasta = "/home/jburdick/data/seq/Caenorhabditis_elegans.WS220.64.dna.toplevel.fa";
+if (defined ($ARGV[2])) {
+  $fasta = $ARGV[2];
+}
 
 # sizes of chromosomes, for SAM->BAM conversion
 my $fasta_sizes = $fasta . ".sizes";

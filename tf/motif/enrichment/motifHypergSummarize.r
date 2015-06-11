@@ -61,15 +61,50 @@ enrich.to.table = function(enrich) {
   r = dcast(melt(enrich1), motif + group ~ Var1)
   r$motif = as.character(r$motif)
   r$group = as.character(r$group)
-  r$motif.name = motif.name[ r$motif ]
-  r$motif.name[ is.na(r$motif.name) ] = ""
-  r = r[ , c(1,12,2:11) ]
+#  r$motif.name = motif.name[ r$motif ]
+#  r$motif.name[ is.na(r$motif.name) ] = ""
+#  r = r[ , c(1,12,2:11) ]
   r
 }
 
 # Same as above, but combines several arrays' worth of results,
 # correcting p-values by fdr together.
+# XXX this is slow, and uses a lot of memory (particularly
+# "enrich.to.table()").
 enrich.to.table.many = function(enrich.list) {
+
+  p = sapply(enrich.list, function(e) as.vector(e[,,"p",,,]))
+
+  # XXX compute indices
+  a = cumsum(c(1, sapply(p, length)))
+  b = cumsum(sapply(p, length))
+
+  # adjust all p values together
+  p = as.numeric(c(p, recursive=TRUE))
+cat("concatted p")
+  p = p.adjust(p, method="fdr")
+cat("adjusted p")
+
+  r = NULL
+  for(i in 1:length(enrich.list)) {
+cat("converting", names(enrich.list)[[i]])
+    e1 = enrich.list[[i]]
+cat("created array")
+    e1[,,"p.corr",,,] = p[ a[i] : b[i] ]
+cat("wrote to array")
+    t1 = enrich.to.table(e1)
+cat("converted to table")
+    r = rbind(r, t1)
+cat("did rbind")
+  }
+
+  r
+}
+
+# Same as above, but combines several arrays' worth of results,
+# correcting p-values by fdr together.
+# XXX this is slow, and uses a lot of memory
+enrich.to.table.many.1 = function(enrich.list) {
 
   p = sapply(enrich.list, function(e) as.vector(e[,,"p",,,]))
   p1 = c(p, recursive=TRUE)
@@ -86,5 +121,3 @@ enrich.to.table.many = function(enrich.list) {
 
   r
 }
-
-
