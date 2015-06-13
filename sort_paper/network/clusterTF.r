@@ -1,9 +1,8 @@
 # Writes a large TSV file, listing clusters and TF-related enrichments.
 
-# library("hwriter")
-
 source("git/utils.r")
 source("git/data/name_convert.r")
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 
 clustering.dir = "git/cluster/hierarchical/"
 output.dir = "git/sort_paper/plot/web/clusters"
@@ -12,15 +11,17 @@ output.dir = "git/sort_paper/plot/web/clusters"
 clustering.name = "hier.300.clusters"
 
 # get all enriched motif and ChIP signals (not just significant cases)
-motif.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/table/",
+motif.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/summary/hughes/",
   clustering.name, ".tsv.gz")))
+motif.enriched.all$motif.name =
+  motif.info[ motif.enriched.all$motif, "motif.name" ]
 
 chip.enriched.all = read.tsv(gzfile(paste0("git/sort_paper/tf/motif/hyperg/chipTable/",
   clustering.name, ".tsv.gz")))
 colnames(chip.enriched.all)[1] = "experiment"
 chip.enriched.all$factor = sub("_.*$", "", chip.enriched.all$experiment)
 
-# read in data to cluster
+# read in clustered data
 x = read.table(paste0(clustering.dir, "/", clustering.name, "/cluster.cdt"),
   sep="\t", quote="", fill=TRUE, header=TRUE, check.names=FALSE, as.is=TRUE)
 x = x[ c(-1,-2) , ]
@@ -67,7 +68,7 @@ cluster.tf.table = function() {
 # r = motif.enriched.all[ motif.enriched$group %in% as.character(c(1,2,3,52,286))  , c("group", "motif", "enrich", "p.corr") ]
   colnames(r) = c("group", "motif.id", "motif.enrich", "motif.p")
 
-  m1 = unique(motif.ortholog[ , c("gene", "motif.id", "motif.name") ])
+  m1 = unique(motif.info.1[ , c("gene", "motif.id", "motif.name") ])
   r = merge(r, m1)
 
   # merge in cases in which a ChIP signal was enriched
