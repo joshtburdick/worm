@@ -122,6 +122,7 @@ pdf("git/sort_paper/FACS/spencerComparison/geneEnrichComparison.pdf",
 a = tissue.enrich(facs.m, spencer.m)[,13:1]
 b = t(gene.set.avg.enrich(spencer.cluster, r[ , rownames(facs.m) ]))[,13:1]
 
+# XXX omitting these for now
 if (FALSE) {
   plot.heatmap(a, main="Enrichment of tissues",
     cluster=FALSE, z.lim=c(-6, 6),
@@ -133,10 +134,18 @@ if (FALSE) {
 
 par(mar=c(5,4,4,1)+0.1)
 plot(as.vector(a), as.vector(b),
-  main="Comparison of enrichments",
+  main="",
   xlab="Enrichment of tissue (log2 scale)",
   ylab="Enrichment of tissue-specific genes (log2 scale)", 
   pch=20, col="#00000080")
-mtext(paste("r =", round(cor(as.vector(a), as.vector(b)), 2)), cex=0.8)
+
+a1 = as.vector(a)
+b1 = as.vector(b)
+s = cor.test(a1, b1)
+m = lm(b1 ~ a1)
+legend("bottomright",
+  legend=paste("r =", round(s$estimate, 2)), bty="n")
+# FIXME add p-value?
+abline(m, lwd=2, col="#00000040")
 dev.off()
 

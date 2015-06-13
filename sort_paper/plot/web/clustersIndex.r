@@ -51,7 +51,7 @@ cluster.name.format.old = function(a) {
 # Formats a motif name.
 motif.name.format = function(m) {
   # FIXME: these motif names are mostly lame
-  paste0(motif.name[m], " <img src=\"motifSvg/", m, ".svg\" ",
+  paste0(motif.info[m,"motif.name"], " <img src=\"motifSvg/", m, ".svg\" ",
     "title=\"Logo for motif ", m, "\" width=\"107px\" height=\"24px\">")
 }
 

@@ -105,7 +105,8 @@ motif.enriched =
 # hyperg.motif = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/table/hier.300.clusters.tsv.gz"))
 }
 hyperg.motif = read.tsv(gzfile(
-  "git/sort_paper/tf/hughes/table/hier.300.clusters.tsv.gz"))
+#  "git/sort_paper/tf/hughes/table/hier.300.clusters.tsv.gz"))
+  "git/sort_paper/tf/motif/hyperg/summary/hughes/hier.300.clusters.tsv.gz"))
 
 hyperg.motif = hyperg.motif[ hyperg.motif$p.corr <= 0.05 , ]
 hyperg.motif$motifs.cluster = hyperg.motif$m.cluster
@@ -465,10 +466,9 @@ write.cluster = function(x, cl) {
 }
 
 if (TRUE) {
-for(cl in c(45)) {
 # for(cl in c(1,30,52,245,286)) {
 # for(cl in c(1,2,3,30,35,52,245,286)) {
-# for(cl in sort(unique(x$Cluster))) {
+for(cl in sort(unique(x$Cluster))) {
   write.cluster(x, cl)
 }
 cat("\n")

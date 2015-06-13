@@ -17,8 +17,8 @@ clustering.name = "hier.300.clusters"
 
 hughes.enrichments = function(enrich.dir, clustering) {
   enrich.list = list()
-#  for(motif.set in paste0(c("Mm", "Dm"), "_1.02")) {
-  for(org in c("Dm", "Hs", "Mm", "Ce")) {
+#  for(org in c("Mm", "Dm")) {
+  for(org in c("Ce", "Dm", "Hs", "Mm")) {
     motif.set = paste0(org, "_1.02")
     write.status(paste(clustering, motif.set))
     enrich = NULL
@@ -34,9 +34,23 @@ hughes.enrichments = function(enrich.dir, clustering) {
   enrich.list
 }
 
-enrich.list = hughes.enrichments(enrich.dir, "hier.300.clusters")
 
-r = enrich.to.table.many.1(enrich.list)
-write.tsv(r, file=gzfile(paste0(output.dir, "hier.300.clusters.tsv.gz")))
+
+if (FALSE) {
+  enrich.list = hughes.enrichments(enrich.dir, "hier.300.clusters")
+  r = enrich.to.table.many.1(enrich.list)
+#  write.tsv(r, file=gzfile(paste0(output.dir, "hier.300.clusters.tsv.gz")))
+}
+
+if (TRUE) {
+  system(paste0("mkdir -p ", output.dir, "/hughes/"))
+  for(cl in c("facs")) {
+    enrich.list = hughes.enrichments(enrich.dir, cl)
+    r = enrich.to.table.many.1(enrich.list)
+    write.tsv(r,
+      file=gzfile(paste0(output.dir, "/hughes/", cl, ".tsv.gz")))
+  }
+}
+
 
 

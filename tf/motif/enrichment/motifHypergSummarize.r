@@ -81,6 +81,7 @@ enrich.to.table.many = function(enrich.list) {
 
   # adjust all p values together
   p = as.numeric(c(p, recursive=TRUE))
+gc()
 cat("concatted p")
   p = p.adjust(p, method="fdr")
 cat("adjusted p")
@@ -96,6 +97,7 @@ cat("wrote to array")
 cat("converted to table")
     r = rbind(r, t1)
 cat("did rbind")
+    gc()
   }
 
   r
@@ -103,21 +105,31 @@ cat("did rbind")
 
 # Same as above, but combines several arrays' worth of results,
 # correcting p-values by fdr together.
-# XXX this is slow, and uses a lot of memory
+# XXX this also uses a lot of memory.
 enrich.to.table.many.1 = function(enrich.list) {
-
+cat("getting p\n")
   p = sapply(enrich.list, function(e) as.vector(e[,,"p",,,]))
-  p1 = c(p, recursive=TRUE)
-  p2 = p.adjust(p1, method="fdr")
-
   # XXX compute indices
   a = cumsum(c(1, sapply(p, length)))
   b = cumsum(sapply(p, length))
+
+cat("after sapply\n")
+  p = c(p, recursive=TRUE)
+cat("concat p\n")
+  p = p.adjust(p, method="fdr")
+cat("adjusted p\n")
+print(gc())
   r = NULL
   for(i in 1:length(enrich.list)) {
-    enrich.list[[i]][,,"p.corr",,,] = p2[ a[i] : b[i] ]
+cat(i, "\n")
+    enrich.list[[i]][,,"p.corr",,,] = p[ a[i] : b[i] ]
+cat("updating p.corr\n")
     r = rbind(r, enrich.to.table(enrich.list[[i]]))
+#    r[[i]] = enrich.to.table(enrich.list[[i]])
+cat("after rbind\n")
+    print(gc())
   }
 
   r
 }
+
