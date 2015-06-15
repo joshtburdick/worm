@@ -3,6 +3,7 @@
 # FIXME: correct the p-values
 
 source("git/utils.r")
+source("git/plot/label_panel.r")
 
 # embryonic expression patterns
 emb.expr = read.tsv("~/data/image/exprCell.tsv")
@@ -39,12 +40,14 @@ larval.r = cor(t(larval.expr))
 #     cluster, or in different clusters
 # Side effects: plots histograms of the correlation of genes
 #   in the same or different clusters, respectively
-cor.and.clustering = function(cl, r, main) {
+cor.and.clustering = function(cl, r, main, label) {
 
   # restrict to shared genes
   g = intersect(names(cl), rownames(r))
   cl = cl[ g ]
   r = r[ g, g ]
+
+cat(paste(main, ": ", length(g), "genes\n"))
 
   # mask out diagonal
   diag(r) = NA
@@ -60,11 +63,12 @@ cor.and.clustering = function(cl, r, main) {
 
   # plot images
   hist(r.different, breaks=50, col="#c0c0c0",
-    xlim=c(-1,1), main=main,
-    xlab="Correlation of genes in different clusters")
+    xlim=c(-1,1), main=paste(main, "(different clusters)"),
+    xlab="Correlation of expression across cells")
+label.panel(label)
   hist(r.same, breaks=40, col="#808080",
-    xlim=c(-1,1), main=main,
-    xlab="Correlation of genes in the same cluster")
+    xlim=c(-1,1), main=paste(main, "(same cluster)"),
+    xlab="Correlation of expression across cells")
   mtext(paste0("Wilcoxon p = ",
     signif(2 * wilcox$p.value, 2)), side=3, cex=0.8)
 
@@ -73,7 +77,7 @@ cor.and.clustering = function(cl, r, main) {
 }
 
 # Plots this comparison for a given clustering.
-plot.it = function(clustering.file, r, main) {
+plot.it = function(clustering.file, r, main, label) {
 
   # a clustering (for now, just one of them)
   cl = {
@@ -84,7 +88,7 @@ plot.it = function(clustering.file, r, main) {
     cl
   }
 
-  r = cor.and.clustering(cl, r, main)
+  r = cor.and.clustering(cl, r, main, label)
 }
 
 # cluster.sizes = c(50,100,150,200,250,300)
@@ -98,13 +102,13 @@ par(mfrow=c(2,2))
 for(s in cluster.sizes) {
   plot.it(
     paste0("git/cluster/hierarchical/hier.", s, ".clusters/clusters.tsv"),
-    emb.r, "Embryonic expression")
+    emb.r, "Embryonic", "A")
 }
 
 for(s in cluster.sizes) {
   plot.it(
     paste0("git/cluster/hierarchical/hier.", s, ".clusters/clusters.tsv"),
-    larval.r, "Larval expression")
+    larval.r, "Larval", "B")
 }
 
 dev.off()
