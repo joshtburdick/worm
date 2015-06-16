@@ -91,12 +91,14 @@ plot.it.orig = function() {
   dev.off()
 }
 
-plot.one = function(m, hue, rowLabels=NULL) {
-  if (is.null(rowLabels))
-    rowLabels = rownames(m)
+plot.one = function(m, hue, italicize=FALSE) {
 
   h = hclust(cor.dist(m))
   m1 = m[h$order,]
+
+  rowLabels = rownames(m1)
+  if (italicize)
+    rowLabels = sapply(rowLabels, italicize)
 
   par(mar=c(0,16,0,0.1))
   image(t(m1), useRaster=TRUE,
@@ -128,7 +130,7 @@ plot.separately = function() {
   legend(-100,50, legend=names(tissue.to.color), fill=tissue.to.color,
     bty="n", xpd=NA, cex=1.4)
 
-  plot.one(m.leaf, 0, sapply(rownames(m.leaf), italicize))
+  plot.one(m.leaf, 0, italicize=TRUE)
   plot.one(spencer.m.leaf, 1/6)
   dev.off()
 }
