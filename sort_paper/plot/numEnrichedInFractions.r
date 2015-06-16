@@ -73,9 +73,10 @@ if (TRUE) {
 
   barplot(log10(cumulative.counts), yaxt="n",
 #    main="Number of fractions in which\na gene is enriched or depleted",
-    main=expression(paste("Number of genes enriched or depleted in ",
-      italic("n"), " or more fractions")),
-    xlab=expression(italic("n")), ylab="Number of genes",
+#    main=expression(paste("Number of genes enriched or depleted in ",
+#      italic("n"), " or more fractions")),
+    xlab="Number of fractions",
+    ylab="Number of genes",
     col="grey", cex.main=1.2, cex.axis=0.9, cex.lab=1.2)
   axis(2, labels = c(1,10,100,1000), at=c(0,1,2,3))
   abline(h=0)
