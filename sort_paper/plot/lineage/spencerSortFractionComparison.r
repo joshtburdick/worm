@@ -84,13 +84,17 @@ plot.it.orig = function() {
 
   # XXX somewhat hacky
   for(j in 1:30) {
-    axis(1, at=(j-1)/29, labels=tissue[j], col.axis=tissue.colors[j],
+    axis(1, at=(j-1)/29, labels=tissue[j],
+      col.axis=tissue.colors[j],
       line=0, tick=FALSE, las=2)
   }
   dev.off()
 }
 
-plot.one = function(m, hue) {
+plot.one = function(m, hue, rowLabels=NULL) {
+  if (is.null(rowLabels))
+    rowLabels = rownames(m)
+
   h = hclust(cor.dist(m))
   m1 = m[h$order,]
 
@@ -98,7 +102,7 @@ plot.one = function(m, hue) {
   image(t(m1), useRaster=TRUE,
     xaxt="n", yaxt="n", zlim=c(0,1), col=hsv(hue, 1, 0:128/128))
   n = nrow(m1)-1
-  axis(2, at=(0:n)/n, labels=rownames(m1), cex.axis=1.39,
+  axis(2, at=(0:n)/n, labels=rowLabels, cex.axis=1.39,
     line=0, tick=FALSE, las=2)
 }
 
@@ -122,9 +126,9 @@ plot.separately = function() {
 
   # XXX hack to draw legend outside the plot region
   legend(-100,50, legend=names(tissue.to.color), fill=tissue.to.color,
-    bty="n", xpd=NA, cex=1.3)
+    bty="n", xpd=NA, cex=1.4)
 
-  plot.one(m.leaf, 0)
+  plot.one(m.leaf, 0, sapply(rownames(m.leaf), italicize))
   plot.one(spencer.m.leaf, 1/6)
   dev.off()
 }
