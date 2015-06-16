@@ -135,8 +135,9 @@ if (FALSE) {
 par(mar=c(5,4,4,1)+0.1)
 plot(as.vector(a), as.vector(b),
   main="",
-  xlab="Enrichment of tissue (log2 scale)",
-  ylab="Enrichment of tissue-specific genes (log2 scale)", 
+  xlab=expression("Enrichment of tissue " * (log[2] * " scale")),
+  ylab=expression("Enrichment of tissue-specific genes " *
+    (log[2] * " scale")), 
   pch=20, col="#00000080")
 
 a1 = as.vector(a)
