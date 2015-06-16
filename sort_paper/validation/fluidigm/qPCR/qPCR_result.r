@@ -19,6 +19,23 @@ add.hyphen = function(s) {
   sapply(s, f)
 }
 
+# pretty-printing utilities
+italicize = function(x) {
+  a = expression(italic(1))
+  a[[1]][[2]] = x
+  a
+}
+# p-value
+format.p = function(p) {
+  s = signif(p, 2)
+  if (grepl("e", s)) {
+    # XXX
+    s = expression("" < 10^0)
+    s[[1]][[3]][[3]][[1]] = ceiling(log10(p))
+  }
+  s
+}
+
 # Summarizes a table of RT results.
 # Args:
 #   r - a table of RT results
@@ -111,19 +128,22 @@ rt.compare = function(s, dct.column) {
 plot.stats = function(r, main) {
   ylim = range(c(2, r$ddct - r$ddct.se, r$ddct + r$ddct.se))
   par(mar=c(8,6,2,0) + 0.1)
-  m = barplot(r$ddct, ylim=ylim, names.arg = r$target,
+  m = barplot(r$ddct, ylim=ylim,
+    names.arg = sapply(r$target, italicize),
     col=c(rep("#ff0000a0", 3), rep("#0000ffa0", 3)),
     space=1, las=2, yaxt="n", main=main)
   mtext("          Relative expression", side=2, line=4.5) # XXX
-  mtext("   daf-19 RNAi", side = 1, line=6, adj=0, col="#ff0000c0")
-  mtext("hlh-6 RNAi   ", side = 1, line=6, adj=1, col="#0000ffc0")
+  mtext(expression("   " * italic("daf-19") * " RNAi"),
+    side = 1, line=6, adj=0, col="#ff0000c0")
+  mtext(expression(italic("hlh-6") * " RNAi   "),
+    side = 1, line=6, adj=1, col="#0000ffc0")
 
   arrows(m, r$ddct - r$ddct.se, m, r$ddct + r$ddct.se,
     length=0.06, angle=90, code=3, col="black", lwd=2)
   y = trunc(ylim)[1] : trunc(ylim)[2]
   axis(2, at=y, labels = 2^y, las=1)
 
-  text(m, 1.1, signif(r$p, 2), srt=90, cex=0.8)
+  text(m, 1.1, sapply(r$p, format.p), srt=90, cex=0.8)
 }
 
 # summarize the technical replicates
