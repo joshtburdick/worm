@@ -1,5 +1,7 @@
 # Looks for genes which are only on at particular times.
 
+source("git/utils.r")
+
 embryo.timeseries = read.table("git/unmix/seq/timing/embryo.timeseries.tsv.gz",
   sep="\t", header=TRUE, row.names=1, as.is=TRUE)
 time.points = c(0,30,60,90,120,140,180,240,270,300,330,360,390,
@@ -13,6 +15,7 @@ embryo.timeseries =
 # log-transformed expression
 log.ets = log2(1+embryo.timeseries)
 
+if (FALSE) {
 # expression data from FACS sorting
 r = as.matrix(read.table(gzfile("git/unmix/seq/quant/readsPerMillion.tsv.gz"),
   sep="\t", check.names=FALSE, header=TRUE, row.names=1, as.is=TRUE))
@@ -52,6 +55,7 @@ plot.pair(60,120)
 plot.pair(390,630)
 plot.pair(690,720)
 dev.off()
+}
 
 # estimate mean and sd of when each gene is on
 x1 = embryo.timeseries[ apply(embryo.timeseries, 1, mean) >= 1 , ]
@@ -64,42 +68,49 @@ time.dist = {
   cbind(mean = t.mean, sd = t.sd)
 }
 
-
 # plot these
 pdf("git/unmix/seq/timing/timeMeanAndSD.pdf", width=6, height=6)
 smoothScatter(time.dist[,"mean"], time.dist[,"sd"],
-  main="Time when genes are expressed",
+#  main="Time when genes are expressed",
   xlab="mean of time expressed", ylab="s.d. of time expressed")
 print(quantile(time.dist[,"sd"], 0.2))
 abline(h=quantile(time.dist[,"sd"], 0.2), col="#303030")
 dev.off()
 
-# Writes out all genes sorted by time. FIXME: use the above t.s2 and t.sd?
-write.sorted.by.time = function() {
-  #sorted.by.time = log.ets[ order(cor(t(log.ets), 1:23)) , ]
-  #write.table(round(sorted.by.time, 1), file="git/unmix/seq/timing/expr.by.time.tsv", sep="\t",
-  #  row.names=TRUE, col.names=NA)
-}
-
-# Plots expression of those genes.
-
 td1 = time.dist[ time.dist[,"sd"] <= quantile(time.dist[,"sd"], 0.2) , ]
 td1 = td1[ order(td1[,"mean"], decreasing=FALSE) , ]
 
-# Plots profile of log2(g) - log2(g.control).
-plot.time.profile = function(g, g.control, main) {
-  plot(td1[,"mean"],
-    log2(1 + r[ rownames(td1), g ]) - log2(1+r[ rownames(td1), g.control ]),
-    main = main, xlab = "time", ylab="log2(relative coverage)",
-    pch=20, cex=0.5)
-  abline(h = 0, col="#606060")
+write.tsv(td1, "git/unmix/seq/timing/time_specific_genes.tsv")
+
+if (FALSE) {
+
+  # Writes out all genes sorted by time. FIXME: use the above t.s2 and t.sd?
+  write.sorted.by.time = function() {
+    #sorted.by.time = log.ets[ order(cor(t(log.ets), 1:23)) , ]
+    #write.table(round(sorted.by.time, 1), file="git/unmix/seq/timing/expr.by.time.tsv", sep="\t",
+    #  row.names=TRUE, col.names=NA)
+  }
+
+  # Plots expression of those genes.
+
+  td1 = time.dist[ time.dist[,"sd"] <= quantile(time.dist[,"sd"], 0.2) , ]
+  td1 = td1[ order(td1[,"mean"], decreasing=FALSE) , ]
+
+  # Plots profile of log2(g) - log2(g.control).
+  plot.time.profile = function(g, g.control, main) {
+    plot(td1[,"mean"],
+      log2(1 + r[ rownames(td1), g ]) - log2(1+r[ rownames(td1), g.control ]),
+      main = main, xlab = "time", ylab="log2(relative coverage)",
+      pch=20, cex=0.5)
+    abline(h = 0, col="#606060")
+  }
+
+  pdf("git/unmix/seq/timing/perStageMarkersInSorted.pdf", width=9, height=8)
+  par(mfrow=c(3,1))
+  plot.time.profile("pha-4", "all", "pha-4 vs singlets")
+  plot.time.profile("ceh-26", "all", "ceh-26 vs singlets")
+  plot.time.profile("ttx-3", "all", "ttx-3 vs singlets")
+  dev.off()
+
 }
-
-pdf("git/unmix/seq/timing/perStageMarkersInSorted.pdf", width=9, height=8)
-par(mfrow=c(3,1))
-plot.time.profile("pha-4", "all", "pha-4 vs singlets")
-plot.time.profile("ceh-26", "all", "ceh-26 vs singlets")
-plot.time.profile("ttx-3", "all", "ttx-3 vs singlets")
-dev.off()
-
 
