@@ -19,8 +19,8 @@ ctf2$"ChIP p"[ is.na(ctf2$"ChIP p") ] = 1
 # table of number
 num.clusters.with.tfs = NULL
 for(cor.cutoff in c(-1, -0.5, -0.4, 0, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))
-  for(motif.p.cutoff in c(1, 0.05, 1e-5, 1e-10, 1e-15))
-    for(chip.p.cutoff in c(1, 0.05, 1e-5, 1e-10, 1e-15)) {
+  for(motif.p.cutoff in c(1, 0.05, 1e-3, 1e-5, 1e-10))
+    for(chip.p.cutoff in c(1, 0.05, 1e-3, 1e-5, 1e-10)) {
       write.status(paste(cor.cutoff, motif.p.cutoff, chip.p.cutoff))
       a = ctf2[ ctf2$"TF-cluster corr." >= cor.cutoff &
         ctf2$"Motif p" <= motif.p.cutoff &

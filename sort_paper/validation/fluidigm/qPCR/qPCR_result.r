@@ -1,6 +1,7 @@
 # Analysis of the qPCR results.
 
 source("git/utils.r")
+source("git/plot/utils.r")
 
 data.dir = "data/expression/qPCR/20150428 daf-19 hlh-6/"
 
@@ -17,23 +18,6 @@ add.hyphen = function(s) {
     x
   }
   sapply(s, f)
-}
-
-# pretty-printing utilities
-italicize = function(x) {
-  a = expression(italic(1))
-  a[[1]][[2]] = x
-  a
-}
-# p-value
-format.p = function(p) {
-  s = signif(p, 2)
-  if (grepl("e", s)) {
-    # XXX
-    s = expression("" < 10^0)
-    s[[1]][[3]][[3]][[1]] = ceiling(log10(p))
-  }
-  s
 }
 
 # Summarizes a table of RT results.

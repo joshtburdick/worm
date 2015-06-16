@@ -41,6 +41,63 @@ plot.time.profile = function(a, b, main, ylab="Enrichment") {
   abline(h = 0, col="#606060")
 }
 
+# arbitrary cutoffs defining early, middle, and late genes
+time.cutoffs = c(400, 550)
+ts.genes = list(early = rownames(td1)[
+    td1$mean < time.cutoffs[1] ],
+  middle = rownames(td1)[
+    td1$mean >= time.cutoffs[1] & td1$mean < time.cutoffs[2] ],
+  late = rownames(td1)[
+    td1$mean >= time.cutoffs[2] ])
+
+
+
+# XXX global variable of stats
+temporal.stats = NULL
+
+# Statistics about time-specific expression.
+# Args:
+#   x - the relevant ratios
+# Returns: vector of stats
+temporal.info.stats = function(x) {
+  x = x[ rownames(td1) ]
+  xs = lapply(ts.genes, function(s) x[s])
+  wilcox.test.1 = function(a, b) {
+    c(enriched = wilcox.test(a, b, alternative="greater")$p.value,
+      depleted = wilcox.test(a, b, alternative="less")$p.value)
+  }
+
+  c(early = wilcox.test.1(xs[["early"]],
+      c(xs[c("middle", "late")], recursive=TRUE)),
+    middle = wilcox.test.1(xs[["middle"]],
+      c(xs[c("early", "late")], recursive=TRUE)),
+    late = wilcox.test.1(xs[["late"]],
+      c(xs[c("early", "middle")], recursive=TRUE)))
+}
+
+# Plots profile of enrichment, including storing stats about
+# differential enrichment.
+plot.time.profile.1 = function(a, b, main, ylab="Enrichment") {
+  write.status(main)
+  plot(td1[,"mean"],
+    a[ rownames(td1) ] - b[ rownames(td1) ],
+    main = main, xlab = "Time (minutes)", ylab=ylab,
+    ylim=c(-5,5), xaxt="n", yaxt="n",
+    pch=183, font=5, cex=1, col="#00000080")
+  axis(1)
+  axis(2)
+  abline(h = 0, col="#606060")
+
+  # arbitrary lines between "times"
+  # FIXME color dots instead?
+  abline(v = time.cutoffs, col="#00000080", lwd=2)
+
+  temporal.stats <<-
+    rbind(temporal.stats,
+      temporal.info.stats(a[ rownames(td1) ] - b[ rownames(td1) ]))
+  rownames(temporal.stats)[nrow(temporal.stats)] <<- main
+}
+
 # Plots expression versus time for all the sorting experiments,
 # and experiments from Spencer et al.
 plot.all.expr.by.time = function() {
@@ -52,7 +109,7 @@ plot.all.expr.by.time = function() {
   samples = sort(grep("ceh-6.*hlh-16", samples, value=TRUE, invert=TRUE))
 
   for(s in samples) {
-    plot.time.profile(r[,s], singlet.average,
+    plot.time.profile.1(r[,s], singlet.average,
       paste(s, "vs singlets"))
   }
 
@@ -60,18 +117,17 @@ plot.all.expr.by.time = function() {
   for(s in samples) {
     neg = sub("\\(\\+\\)", "\\(\\-\\)", s)
     if (neg %in% colnames(r)) {
-      plot.time.profile(r[,s], r[,neg], paste(s, "vs", neg))
+      plot.time.profile.1(r[,s], r[,neg], paste(s, "vs", neg))
     }
   }
 
   # singlet vs. ungated
-  plot.time.profile(r[,"cnd-1 singlets"], r[,"cnd-1 ungated"],
+  plot.time.profile.1(r[,"cnd-1 singlets"], r[,"cnd-1 ungated"],
     "cnd-1 singlets vs ungated")
-  plot.time.profile(r[,"pha-4 singlets"], r[,"pha-4 ungated"],
+  plot.time.profile.1(r[,"pha-4 singlets"], r[,"pha-4 ungated"],
     "pha-4 singlets vs ungated")
 
-
-
+if (FALSE) {
 
   # Spencer data
   plot.time.profile(s1[,"EE.GLP"], s1[,"EE.reference"], "EE.GLP")
@@ -97,7 +153,7 @@ plot.all.expr.by.time = function() {
     "LE intestine")
   plot.time.profile(s1[,"LE.PhM"], s1[,"LE.reference"],
     "LE pharyngeal muscle")
-
+}
   dev.off()
 }
 
@@ -165,4 +221,6 @@ if (FALSE) {
 #}
 
 plot.all.expr.by.time()
+temporal.stats[,] = p.adjust(temporal.stats, method="fdr")
+write.tsv(temporal.stats, "git/sort_paper/FACS/timing/sortingTemporalInfo.tsv")
 

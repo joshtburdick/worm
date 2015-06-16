@@ -28,17 +28,17 @@ mean.max.rpm = tapply(max.rpm, cl, mean)
 mean.max.rpm = mean.max.rpm[ order(as.numeric(names(mean.max.rpm))) ]
 
 cluster.ratio.sd = apply(cluster.means, 1, sd)
-cluster.ratio.sd = cluster.ratio.var[ names(mean.max.rpm) ]
+cluster.ratio.sd = cluster.ratio.sd[ names(mean.max.rpm) ]
 
 clusters.to.label = read.tsv("git/sort_paper/cluster/annotation/tissueSpecClustersToLabel.tsv")
 
 pdf("git/sort_paper/cluster/annotation/tissueSpecificity.pdf",
-  width=6, height=5)
-
+  width=6, height=6)
+par(mar=c(5,4,1,1)+0.1)
 plot(log2(1+mean.max.rpm), cluster.ratio.sd, pch=20, cex=1,
   col=ifelse(names(mean.max.rpm) %in% anatomy.annotated$cluster,
     "#ff000080", "#00000030"),
-  xlab="Mean cluster expression (log2(1 + RPM))",
+  xlab=expression("Mean cluster expression " * (log[2](1 + "RPM"))),
   ylab="Standard deviation of cluster enrichments")
 
 cl = rownames(clusters.to.label)
@@ -49,22 +49,32 @@ text(log2(1+mean.max.rpm[cl]), cluster.ratio.sd[cl],
     cex = 0.7)
 
 # showing "tissue-specific" count
-rect(4, 0.1, 100, 100, border="#00000040", lwd=2)
+rect(4, 0.2, 100, 100, border="#00000040", lwd=2)
+dev.off()
 
-# for debugging
-if (FALSE) {
+# for reference, plot this with all numbers labeled
+if (TRUE) {
+pdf("git/sort_paper/cluster/annotation/tissueSpecificitySupplemental.pdf",
+  width=10, height=9)
+a = names(mean.max.rpm) %in% anatomy.annotated$cluster
+plot(log2(1+mean.max.rpm), cluster.ratio.sd, pch=20, cex=0.5,
+  col=ifelse(a, "#ff000080", "#00000030"),
+  xlab=expression("Mean cluster expression " * (log[2](1 + "RPM"))),
+  ylab="Standard deviation of cluster enrichments")
+rect(4, 0.2, 100, 100, border="#00000040", lwd=2)
 text(log2(1+mean.max.rpm), cluster.ratio.sd,
     labels = names(mean.max.rpm), pos=1,
+    col=ifelse(a, "#ff0000a0", "#000000a0"),
     cex = 0.5)
 }
 dev.off()
 
 
 # number at various cutoffs
-cat("num with sd >= 0.1 and expr > 4 =",
-  sum(((log2(1 + mean.max.rpm) >= 4) & (cluster.ratio.sd >= 0.1))),
+cat("num with sd >= 0.2 and expr > 4 =",
+  sum(((log2(1 + mean.max.rpm) >= 4) & (cluster.ratio.sd >= 0.2))),
   "\n")
-
-
+cat("number of those annotated =",
+  sum(
 
 

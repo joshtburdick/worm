@@ -1,10 +1,7 @@
 # Computes various network stats.
 
 if (TRUE) {
-load("git/sort_paper/tf/motif/hyperg/allResults/5kb/hier.300.clusters.Rdata")
-motif1.min.p = apply(enrich[,,"p.corr",,,], c(1,2), min)
-
-load("git/sort_paper/tf/motif/hyperg/allResults/hughes/hier.300.clusters.Rdata")
+load("git/sort_paper/tf/motif/hyperg/allResults2/hughes/hier.300.clusters.Rdata")
 hughes.min.p = apply(enrich[,,"p.corr",,,], c(1,2), min) 
 
 motif.min.p = rbind(hughes.min.p, motif1.min.p)

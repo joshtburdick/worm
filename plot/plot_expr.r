@@ -202,7 +202,7 @@ plot.segments = function(r, main, root="P0",
     int.n.1 = int.n.to.label
   }
   text(cell.to.x[int.n.1], time.1[int.n.1]-7, int.n.1,
-    adj=c(0.5, -0.1), cex=0.9, srt=srt)  # was adj=0, cex=0.7, srt=90
+    adj=c(0.5, -0.1), cex=1.3, srt=srt)  # was adj=0, cex=0.7, srt=90
 
 #  axis(1, at=cell.to.column[axis.nodes], labels=axis.nodes, cex=0.5, las=3)
 

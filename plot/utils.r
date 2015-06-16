@@ -21,12 +21,19 @@ italicize = function(x) {
 
 # Formats a p-value, including converting smallish
 # p-values to 10^{-_}.
-format.p = function(p) {
+# Args:
+#   p - a p-value
+#   include.equals.sign - whether to include an equals sign
+#     before numbers which are not converted to 10^{-_}.
+format.p = function(p, include.equals.sign = FALSE) {
   s = signif(p, 2)
   if (grepl("e", s)) {
     # XXX
     s = expression("" < 10^0)
     s[[1]][[3]][[3]][[1]] = ceiling(log10(p))
+  }
+  else if (include.equals.sign) {
+    s = paste("=", s)
   }
   s
 }

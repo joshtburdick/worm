@@ -3,26 +3,39 @@
 
 source("git/utils.r")
 
-motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+motif.gene.dir = "/media/jburdick/disk2/jburdick/distAndConservation/"
 
 clusters = read.tsv(
   "git/cluster/hierarchical/hier.300.clusters/clusters.tsv")
 
 # p-values
-load("git/sort_paper/tf/motifEnrichment/hier.300.clusters.Rdata")
-
+# motif.enriched = read.tsv(gzfile(
+#   "git/sort_paper/tf/summary/motif/hier.300.clusters_merged.tsv.gz"))
 motif.enriched = read.tsv(gzfile(
-  "git/sort_paper/tf/summary/motif/hier.300.clusters_merged.tsv.gz"))
-
-# significance cutoff (since this includes all the enrichments)
-motif.enriched = motif.enriched[ motif.enriched$p.corr <= 0.05 , ]
+  "git/sort_paper/tf/motif/hyperg/summary/hughes/hier.300.clusters.tsv.gz"))
 
 # sorting (to process most significant first)
 motif.enriched = motif.enriched[ order(motif.enriched$p.corr) , ]
 
+# only including most significant enrichments
+motif.enriched = motif.enriched[1:10000,]
+
 # data for histogram of amount of upstream conservation
-upstream.cons.hist = read.tsv(gzfile(
-  "git/tf/motif/conservation/cons_hist_WS220_5kb_upstream.tsv.gz"))
+# upstream.cons.hist = read.tsv(gzfile(
+#   "git/tf/motif/conservation/cons_hist_WS220_5kb_upstream.tsv.gz"))
+
+# XXX hack to get the appropriate motif from whichever directory
+get.motif.filename = function(m) {
+  for(org in c("Ce", "Dm", "Hs", "Mm")) {
+    f = paste0(motif.gene.dir, org, "_1.02/", m,
+      "_upstreamMotifCons.tsv.gz")
+    if (file.exists(f))
+      return(f)
+  }
+
+  cat("\nfailed to find info for motif", m, "\n")
+  return(NA)
+}
 
 # Does a Mann-Whitney test for different distribution
 # of upstream distance and conservation, between genes
@@ -45,7 +58,7 @@ compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
     write.status(paste(i, m, cl))
 
     # read information for that motif
-    r = read.table(paste(motif.gene.dir, m, "_upstreamMotifCons.tsv.gz", sep=""),
+    r = read.table(get.motif.filename(m),
       as.is=TRUE)
     colnames(r) = c("region.chr", "region.a", "region.b", "gene", "score",
       "strand", "motif", "motif.a", "motif.b", "motif.id", "motif.cons")

@@ -1,8 +1,8 @@
 # Comparison of clustering with larval expression data
 # from Liu et al.
-# FIXME: correct the p-values
 
 source("git/utils.r")
+source("git/data/name_convert.r")
 source("git/plot/label_panel.r")
 
 # embryonic expression patterns
@@ -25,6 +25,10 @@ rename.genes = function(g) {
 }
 
 rownames(larval.expr) = rename.genes(rownames(larval.expr))
+
+emb.expr = rename.gene.names(emb.expr)
+rownames(emb.expr) = sub("ceh-26", "pros-1", rownames(emb.expr))
+larval.expr = rename.gene.names(larval.expr)
 
 emb.r = cor(t(emb.expr))
 larval.r = cor(t(larval.expr))
@@ -71,6 +75,10 @@ label.panel(label)
     xlab="Correlation of expression across cells")
   mtext(paste0("Wilcoxon p = ",
     signif(2 * wilcox$p.value, 2)), side=3, cex=0.8)
+  # XXX this isn't working
+#  e = expression("Wilcoxon p " * 1)
+#  e[[1]][[3]] = format.p(wilcox$p.value, include.equals=TRUE)
+#  mtext(e, side=3, cex=0.8)
 
   list(g = g, r.same = r.same, r.different = r.different,
     wilcox = wilcox)
