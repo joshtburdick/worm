@@ -3,8 +3,10 @@
 
 source("git/utils.r")
 source("git/sort_paper/plot/enrichment/heatmapUtils.r")
+
+# source("git/tf/motif/motifName.r")
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 source("git/sort_paper/tf/motifInfo.r")
-source("git/tf/motif/motifName.r")
 source("git/data/wormbase/wb.cluster.name.r")
 
 # Reads anatomy info (or WB cluster info).
@@ -78,13 +80,16 @@ plot.stacked = function(f, cluster.subset = NULL) {
 
   # read motif / ChIP signal enrichment
   # XXX filenames not yet changed over
-  f.cm = f
-  if (f == "facs")
-    f.cm = "facs_enrichmentVsOpposite_2"
+  f.chip = f
+  f.motif = f
+  if (f == "facs") {
+    f.chip = "facs_enrichmentVsOpposite_2"
+    f.motif = "facs_vs_opposite_1"
+  }
 
-  motif.m = motif.chip.matrix(paste0("table/", f.cm),
+  motif.m = motif.chip.matrix(paste0("summary/hughes/", f.motif),
     p.cutoff=0, max.color.p = 10, num.to.include=1)
-  chip.m = motif.chip.matrix(paste0("chipTable/", f.cm),
+  chip.m = motif.chip.matrix(paste0("chipTable/", f.chip),
     p.cutoff=0, max.color.p = 5, num.to.include=1)
 
   # possibly subset these
@@ -161,22 +166,26 @@ plot.stacked = function(f, cluster.subset = NULL) {
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
   axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
+  # add grid lines
+  g = dim(r) - 1
+  abline(h = (c(0:g[2])-0.5) / g[2], lwd=0.1, col="#00000040")
+  abline(v = (c(0:g[1])-0.5) / g[1], lwd=0.1, col="#00000040")
+
   rownames1 = colnames(r)
 
   # orthology info
   ortho = rep("", length(rownames1))
   names(ortho) = rownames1
-  m = rownames1 %in% names(motif.info)
-  ortho[ rownames1[ m ] ] = motif.info[ rownames1 [ m ] ]
+  m = rownames1 %in% names(ortholog.by.motif.small)
+  ortho[ rownames1[ m ] ] = ortholog.by.motif.small[ rownames1 [ m ] ]
 
+  # convert motif names to the relevant gene name
   m = rownames1 %in% names(motif.gene)
   rownames1[ m ] = motif.gene[ rownames1[m] ]
-  m = rownames1 %in% names(motif.name)
-  rownames1[ m ] = motif.name[ rownames1[m] ]
 
-    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
-
-    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=ortho, las=2, cex.axis=0.3, line=4.0, tick=FALSE)
+  # label rows, and then orthologs, further out
+  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
+  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=ortho, las=2, cex.axis=0.3, line=2.0, tick=FALSE)
 
   # color different portions of the graph
 #  rect(0, 0, 1, 1, border=NA,
@@ -224,9 +233,9 @@ plot.stacked("hier.300.clusters", cl.subset)
      # , as.character(c(1,2,30,52,79,223,286)))
 dev.off()
 
-
+# all of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
-  width=17.5, height=16.5)
+  width=21, height=23.5)
 par(mar=c(1,10,0.1,0.1))
 
 plot.stacked("hier.300.clusters")

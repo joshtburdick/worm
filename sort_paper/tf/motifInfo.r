@@ -2,31 +2,33 @@
 
 source("git/utils.r")
 
-# information about orthologs
-#motif.ortholog = read.table("git/tf/motif.ortholog.3.tsv",
-#  as.is=TRUE, header=TRUE)
-#
-motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
+# previous version of motif-ortholog stuff
+if (FALSE) {
+  # information about orthologs
+  motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
+  motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
 
-motif.filter = read.tsv("git/tf/motif/motifFilter.tsv")
+  # add representative motif name, from the motif clustering
+  motif.ortholog$canonical.motif =
+    motif.filter[ motif.ortholog$motif.id, "canonical.name" ]
+  motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
+}
 
-# add representative motif name, from the motif clustering
-motif.ortholog$canonical.motif =
-  motif.filter[ motif.ortholog$motif.id, "canonical.name" ]
-# motif.ortholog = motif.ortholog[ !is.na(motif.ortholog$canonical.motif) , ]
-# for each motif, list of potential orthologs
-motif.info = by(motif.ortholog$gene, motif.ortholog$motif.id,
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
+
+# For each motif, a concise list of potential orthologs.
+ortholog.by.motif.small = by(motif.ortholog$gene, motif.ortholog$motif.id,
   function(g) {
     g = unique(as.character(g))
 
-    # slight optional reordering
+    # slight reordering
     g = g[ order( !(g %in% c("pha-4"))) ]
 
     # summarize NHRs
-    nhrs = grep("nhr", g)
-    if (length(g) >= 5 && length(nhrs) >= 5) {
-      return(unique(c(grep("nhr", g, invert=TRUE, value=TRUE), paste(length(nhrs), "NHRs"))))
-    }
+#    nhrs = grep("nhr", g)
+#    if (length(g) >= 5 && length(nhrs) >= 5) {
+#      return(unique(c(grep("nhr", g, invert=TRUE, value=TRUE), paste(length(nhrs), "NHRs"))))
+#    }
 
     # if there are many genes, summarize this
     if (length(g) > 5) {
@@ -36,11 +38,9 @@ motif.info = by(motif.ortholog$gene, motif.ortholog$motif.id,
     return(paste(g, collapse=" "))
   }
 )
-motif.info = c(motif.info, recursive=TRUE)
+ortholog.by.motif.small = c(ortholog.by.motif.small, recursive=TRUE)
 
 # The gene for each motif.
-meme.tf.annotate = read.table("git/tf/motif/meme.tf.annotate.tsv",
-  sep="\t", header=TRUE, as.is=TRUE)
-motif.gene = c(by(meme.tf.annotate$gene, meme.tf.annotate$id,
+motif.gene = c(by(motif.info.1$related.gene, motif.info.1$motif.id,
   function(x) as.character(x[1])))
 

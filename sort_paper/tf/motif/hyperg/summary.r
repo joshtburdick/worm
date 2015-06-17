@@ -44,8 +44,8 @@ if (FALSE) {
 
 if (TRUE) {
   system(paste0("mkdir -p ", output.dir, "/hughes/"))
-  for(cl in c("spencerEmbryonic")) {
-#  for(cl in c("spencer", "hy")) {
+  for(cl in c("facs_vs_opposite_1")) {
+#  for(cl in c("spencer", "spencerEmbryonic", "hy")) {
     enrich.list = hughes.enrichments(enrich.dir, cl)
     r = enrich.to.table.many.1(enrich.list)
     write.tsv(r,

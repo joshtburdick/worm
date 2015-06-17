@@ -63,9 +63,11 @@ cat("number of genes enriched/depleted in at least one fraction =",
   length(num.fractions.enriched.depleted), "\n")
 
 pdf("git/sort_paper/plot/numEnrichedInFractions.pdf",
-  width=7.5, height=4)
+  width=8, height=5.5)
 
 if (TRUE) {
+  par(mar = c(5,5,4,2) + 0.1)
+
   # log-scale version of this
   counts = table(num.fractions.enriched.depleted)
 
@@ -76,7 +78,7 @@ if (TRUE) {
 #    main=expression(paste("Number of genes enriched or depleted in ",
 #      italic("n"), " or more fractions")),
     xlab="Number of fractions",
-    ylab="Number of genes",
+    ylab="Number of genes\nenriched / depleted",
     col="grey", cex.main=1.2, cex.axis=0.9, cex.lab=1.2)
   axis(2, labels = c(1,10,100,1000), at=c(0,1,2,3))
   abline(h=0)
