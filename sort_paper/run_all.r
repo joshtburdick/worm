@@ -33,4 +33,10 @@ source("git/sort_paper/plot/enrichment/stackedPlots.r")
 
 source("git/cluster/motif/plot/distConservationWilcoxon.r")
 
+# comparison of "number of motifs enriched for different sizes of cluster"
+source("git/sort_paper/tf/motif/hyperg/numEnriched/clusteringComparison.r")
+source("git/sort_paper/tf/motif/hyperg/numEnriched/numEnrichedInClustering.r")
+
+
+
 
