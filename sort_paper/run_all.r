@@ -25,8 +25,12 @@ source("git/sort_paper/enrichment/summary.r")
 source("git/sort_paper/enrichment/clustersWithAnatomyAnnotation.r")
 
 
+source("git/sort_paper/plot/web/clusters.r")
 
+source("git/sort_paper/network/clusterTF.r")
 
+source("git/sort_paper/plot/enrichment/stackedPlots.r")
 
+source("git/cluster/motif/plot/distConservationWilcoxon.r")
 
 

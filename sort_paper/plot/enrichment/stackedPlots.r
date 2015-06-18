@@ -2,6 +2,7 @@
 # FACS-sorted cells or clusters.
 
 source("git/utils.r")
+source("git/plot/utils.r")
 source("git/sort_paper/plot/enrichment/heatmapUtils.r")
 
 # source("git/tf/motif/motifName.r")
@@ -91,6 +92,11 @@ plot.stacked = function(f, cluster.subset = NULL) {
     p.cutoff=0, max.color.p = 10, num.to.include=1)
   chip.m = motif.chip.matrix(paste0("chipTable/", f.chip),
     p.cutoff=0, max.color.p = 5, num.to.include=1)
+
+  # filter rows of m to be non-redundant by motif gene name
+  j = ! duplicated(motif.gene[colnames(motif.m)])
+  motif.m = motif.m[ , j ]
+  cat("reduced from", length(j), "to", sum(j), "rows\n")
 
   # possibly subset these
   if (!is.null(cluster.subset)) {
@@ -185,7 +191,9 @@ plot.stacked = function(f, cluster.subset = NULL) {
 
   # label rows, and then orthologs, further out
   axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
-  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=ortho, las=2, cex.axis=0.3, line=2.0, tick=FALSE)
+  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
+    labels=sapply(ortho, italicize),
+    las=2, cex.axis=0.3, line=1.5, tick=FALSE)
 
   # color different portions of the graph
 #  rect(0, 0, 1, 1, border=NA,
@@ -235,7 +243,7 @@ dev.off()
 
 # all of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
-  width=21, height=23.5)
+  width=21, height=24)
 par(mar=c(1,10,0.1,0.1))
 
 plot.stacked("hier.300.clusters")
@@ -250,7 +258,7 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.8, height=8.5)
+  width=4.2, height=7)
 par(mar=c(5,10,0.1,0.1))
 plot.stacked("facs")
 dev.off()

@@ -71,6 +71,7 @@ enrich.to.table = function(enrich) {
 # correcting p-values by fdr together.
 # XXX this is slow, and uses a lot of memory (particularly
 # "enrich.to.table()").
+# Deprecated, see enrich.to.table.many.1(), below.
 enrich.to.table.many = function(enrich.list) {
 
   p = sapply(enrich.list, function(e) as.vector(e[,,"p",,,]))
@@ -101,6 +102,25 @@ cat("did rbind")
   }
 
   r
+}
+
+# Filters motifs to be non-redundant.
+# XXX arguably this shouldn't be neccessary
+# possibly not used
+# Args:
+#   a - a list of enrichment objects
+# Returns: those objects, with motifs filtered
+filter.enrichment.motif = function(a) {
+  if (length(a) == 1)
+    return(a)
+  m = dimnames(a)[[1]]      # motifs seen so far
+  for(i in c(2:length(a))) {
+    m1 = dimnames(a[[i]])[1]   # motifs for this, currently
+    a[[i]] = a[[i]][setdiff(m1,m),,,,,]  # filter motifs
+    m = union(m, m1)    # add in motifs just seen
+  }
+
+  a
 }
 
 # Same as above, but combines several arrays' worth of results,

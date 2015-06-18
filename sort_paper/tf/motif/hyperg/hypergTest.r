@@ -48,7 +48,19 @@ if (FALSE) {
     enrich.test.one.clustering(cl, clustering.name)
   }
 
+}
 
+# Run this for all clusterings (just for the Ce motifs), to
+# see which has the most enrichments.
+if (FALSE) {
+  for(clustering.name in list.files("git/cluster/hierarchical")) {
+    cat(clustering.name, "\n")
+
+    cl = as.matrix(read.tsv(
+      paste0("git/cluster/hierarchical/", clustering.name, "/clusters.tsv")))[,2]
+    cl = gsub(" ", "", cl)
+    hyperg.test.1(cl, "Ce_1.02", clustering.name)
+  }
 }
 
 # Runs on one directory.
@@ -69,7 +81,7 @@ enrich.test.file = function(f) {
 
 }
 
-if (TRUE) {
+if (FALSE) {
   enrich.test.file("hy.tsv")
   enrich.test.file("spencer.tsv")
   enrich.test.file("spencerEmbryonic.tsv") 
