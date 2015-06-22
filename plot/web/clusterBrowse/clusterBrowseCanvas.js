@@ -13,13 +13,13 @@ goog.require('goog.math');
 cellSize = 20;
 
 // Number of rows to show.
-numRows = 200;
+numRows = 200;  // was 200
 
 // bound for the expression range coloring
 exprRange = 2;
 
 // index of gene to "center" the clustering on
-clusterCenterIndex = 13;
+clusterCenterIndex = 0;
 
 // Reads in clustering data, in CDT format.
 function readCDT(url) {
@@ -214,6 +214,8 @@ function clusterBrowseInit() {
   geneField = document.getElementById("genes");
   geneField.focus();
 
+// console.log("exprData1 = " + exprData1);
+
 console.log("in clusterBrowseInit()");
   // set up for drawing
   graphics = goog.graphics.createGraphics('1200px', '2000px');
@@ -226,7 +228,8 @@ console.log("in clusterBrowseInit()");
   geneField.value = genes;
 
   // read in the data, and standardize (mean-center) it
-  a = readCDT("cluster.cdt");
+// this should now simply be read in as JavaScript
+//  a = readCDT("cluster.cdt");
 
   xStandardized = a.x.map( vectorMath.standardize );
 
