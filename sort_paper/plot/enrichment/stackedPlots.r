@@ -10,6 +10,10 @@ source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 source("git/sort_paper/tf/motifInfo.r")
 source("git/data/wormbase/wb.cluster.name.r")
 
+# clusters to annotate in the "selected clusters" thing
+selected.clusters = as.matrix(read.tsv(
+  "git/sort_paper/plot/enrichment/selectedClusters.tsv"))[,1]
+
 # Reads anatomy info (or WB cluster info).
 anatomy.info.matrix = function(f, ao.or.wbcluster) {
   max.color.p = 9
@@ -70,7 +74,8 @@ add.rows = function(a, rows) {
 # Plots one of these heatmaps.
 # Args:
 #   f - name of file
-#   cluster.subset - list of clusters to include (optional)
+#   cluster.subset - vector with names = clusters to include
+#     (optional). (Entries of this will be labels.)
 # Side effects: plots a heatmap.
 plot.stacked = function(f, cluster.subset = NULL) {
 
@@ -101,7 +106,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
   # possibly subset these
   if (!is.null(cluster.subset)) {
     f = function(a, num.to.keep) {
-      a = row.subset(a, cluster.subset)
+      a = row.subset(a, names(cluster.subset))
       a = a[ , pick.top.few.columns(a, num.to.keep) ]
       a
     }
@@ -169,6 +174,13 @@ plot.stacked = function(f, cluster.subset = NULL) {
   r[ r==0 ] = NA
 #  rownames(r) = sub(" enriched", "", rownames(r))
 
+  # possibly add to cluster subset names
+  if (!is.null(cluster.subset)) {
+    r1 = cluster.subset[as.character(rownames(r))]
+    rownames(r) = ifelse(r1 == "", rownames(r),
+      paste0(rownames(r), ": ", r1))
+  }
+
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
   axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
@@ -195,10 +207,10 @@ plot.stacked = function(f, cluster.subset = NULL) {
     labels=sapply(ortho, italicize),
     las=2, cex.axis=0.3, line=1.5, tick=FALSE)
 
-  # color different portions of the graph
+  # color different portions of the graph, and label them
 #  rect(0, 0, 1, 1, border=NA,
 #    col=hsv(0, 0.8, 1, alpha=0.2))
-  color.columns = function(m, hue) {
+  color.columns = function(m, hue, ylab) {
     colnames.to.color = colnames(m)
     y = range(which(colnames(r) %in% colnames.to.color)) - 1
     n1 = length(colnames(r))-1
@@ -206,13 +218,24 @@ plot.stacked = function(f, cluster.subset = NULL) {
       (nrow(r)+0.5)/nrow(r), (y[2]+0.5)/n1,
       border=hsv(0,0,0.6), lwd=0.2,      
       col=hsv(hue, 0.8, 1, alpha=0.15), xpd=TRUE)
+
+    text(-30/nrow(r), 0.5*(y[1]+y[2]) / ncol(r),
+      labels=ylab,
+      srt=90, xpd=TRUE, adj=0.5, cex=0.68)
+
+    # XXX hack
+    if (ylab=="Possible orthologs") {
+      text(-7/nrow(r), 0.5*(y[1]+y[2]) / ncol(r), 
+        labels="Motifs",
+        srt=90, xpd=TRUE, adj=0.5, cex=0.68)
+    }
   }
 
-  color.columns(anatomy.m, 0)
-  color.columns(cluster.m, 0.2)
-  color.columns(go.m, 0.4)
-  color.columns(motif.m, 0.6)
-  color.columns(chip.m, 0.8)
+  color.columns(anatomy.m, 0, "Anatomy\nterms")
+  color.columns(cluster.m, 0.2, "Expression\nclusters")
+  color.columns(go.m, 0.4, "GO terms")
+  color.columns(motif.m, 0.6, "Possible orthologs")
+  color.columns(chip.m, 0.8, "ChIP\nsignals")
 
   # ??? return info needed by highlight.column() ?
 }
@@ -232,34 +255,34 @@ if (TRUE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
-  width=3.3, height=5.5)
-par(mar=c(1,10,0.1,0.1))
+  width=3, height=6)
+par(mar=c(5,10,0.1,0.1))
 ao = anatomy.info.matrix("hier.300.clusters", "anatomyEnrichment")
 wbc = anatomy.info.matrix("hier.300.clusters", "wormbaseCluster")
-cl.subset = unique(c(rownames(ao), sort(rownames(wbc), decreasing=TRUE)[1:5]))
-plot.stacked("hier.300.clusters", cl.subset)
+# cl.subset = unique(c(rownames(ao), sort(rownames(wbc), decreasing=TRUE)[1:5]))
+
+plot.stacked("hier.300.clusters", selected.clusters)
      # , as.character(c(1,2,30,52,79,223,286)))
+mtext("Cluster", side=1, line=3.5, cex=0.68)
+
 dev.off()
 
 # all of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
-  width=21, height=24)
-par(mar=c(1,10,0.1,0.1))
+  width=21.5, height=24)
+par(mar=c(3,11,0.1,0.1))
 
 plot.stacked("hier.300.clusters")
 
-# possibly interesting clusters
-# highlight.column":(rownames(r), "52", 0)
-# highlight.column(rownames(r), "110", 1/4)
-# highlight.column(rownames(r), "286", 2/4)
-
+mtext("Cluster", side=1, line=1.5, cex=0.68)
 dev.off()
 }
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.2, height=7)
+  width=4.2, height=6.5)
 par(mar=c(5,10,0.1,0.1))
 plot.stacked("facs")
+mtext("Sort fraction", side=1, line=4, cex=0.68)
 dev.off()
 
