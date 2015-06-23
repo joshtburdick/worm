@@ -75,6 +75,20 @@ function drawArrayLabels(g, bounds, arrayName) {
   }
 }
 
+// Draws the column labels. Should only need to be called
+// once, when the page loads.
+function drawColumnLabels() {
+
+  // set up for drawing
+  graphics1 = goog.graphics.createGraphics('1300px', '150px');
+  canvas1 = goog.dom.$('columnLabels');
+
+  drawArrayLabels(graphics1, new goog.math.Rect(
+    300, 0, 200, 150), a.arrayName);
+
+  graphics1.render(canvas1);
+}
+
 // Draws a heatmap of the clusters.
 function drawHeatmap(g, bounds, a, p) {
 
@@ -102,10 +116,10 @@ function drawClusters(g, a, p) {
 
   console.log("in drawClusters: p[0] =" + p[0]);
   bounds = new goog.math.Rect(0, 0,
-    1200, 2000);   // FIXME shouldn't be hardcoded
+    1060, 2000);   // FIXME shouldn't be hardcoded
 
   // where to put the actual heatmap
-  heatmapBounds = new goog.math.Rect(300, 150, 900, 1800);
+  heatmapBounds = new goog.math.Rect(300, 0, 760, 1800);
 
   // draw various labels
   drawArrayLabels(g, new goog.math.Rect(
@@ -187,6 +201,12 @@ console.log("after sort: p[0] = " + p[0]);
   // assuming all of the above worked, update the hash,
   // so that this is bookmarkable
 //  location.hash = geneName1.toString();
+
+  // update links
+  document.getElementById("wormbaseLink").href =
+    "http://www.wormbase.org/db/get?name=" + genes + ";class=Gene"
+  document.getElementById("wormbaseLink").text =
+    "[Wormbase on " + genes + "]";
 }
 
 // event handler for when a gene is clicked
@@ -213,6 +233,7 @@ console.log("loc = " + loc.toString());
   location.search = uri;
 }
 
+
 // This is initially called when the page loads.
 function clusterBrowseInit() {
   geneField = document.getElementById("genes");
@@ -221,8 +242,12 @@ function clusterBrowseInit() {
 // console.log("exprData1 = " + exprData1);
 
 console.log("in clusterBrowseInit()");
+
+  // draw the column labels
+  drawColumnLabels();
+
   // set up for drawing
-  graphics = goog.graphics.createGraphics('1300px', '2000px');
+  graphics = goog.graphics.createGraphics('1060px', '2000px');
   canvas = goog.dom.$('heatmap');
 
   uri = new goog.Uri(location.search);

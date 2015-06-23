@@ -5,7 +5,7 @@
 <title>Cluster browser</title>
 <style>
 
-.tbl_container { overflow-x:hidden; overflow-y:scroll; width:1300px; height:800px; }
+.tbl_container { overflow-x:hidden; overflow-y:scroll; width:1100px; height:600px; }
 
 </style>
     <script src="../js/closure-library/closure/goog/base.js"></script>
@@ -21,9 +21,12 @@ onkeypress="if (event.keyCode==13) { updateClicked(); }" />
 <!--
     Minimum expression: <input type="text" id="minExpr" value="FIXME not yet implemented" /> -->
     <input type="button" value="Update" id="update" onClick="updateClicked()" />
+<a href="http://wormbase.org" id="wormbaseLink">[Wormbase]</a>
 
+<div id="columnLabels" class="width:1100px; height:150px;">
+</div>
 <div id="wrapper" class="tbl_container">
-<div id="heatmap" class="width:1600px; height:2000px;">
+<div id="heatmap" class="width:1100px; height:4000px;">
 </div>
 </div>
 
