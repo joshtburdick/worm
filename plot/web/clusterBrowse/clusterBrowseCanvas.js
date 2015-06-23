@@ -1,4 +1,6 @@
 // Draws browsable clusters.
+// FIXME: ideally, this should use the hash, to avoid
+// reloading it so often
 
 goog.provide('clusterBrowseCanvas');
 
@@ -8,12 +10,13 @@ goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.graphics');
 goog.require('goog.math');
+goog.require('goog.ui.Control');
 
 // Size of a heatmap cell.
 cellSize = 20;
 
 // Number of rows to show.
-numRows = 200;  // was 200
+numRows = 200;
 
 // bound for the expression range coloring
 exprRange = 2;
@@ -21,43 +24,40 @@ exprRange = 2;
 // index of gene to "center" the clustering on
 clusterCenterIndex = 0;
 
-// Reads in clustering data, in CDT format.
-function readCDT(url) {
-
-  var s = readTSV(url);
-
-  // number of genes
-  var m = s.length - 3;
-  var arrayName = s[0].slice(4);
-  var geneName = new Array(m);
-  var geneNameToIndex = {};
-  var descr = new Array(m);
-  var x = new Array(m);
-
-  // loop through the lines, filling in gene info and expression data
-  for(i=0; i<m; i++) {
-    var f = s[i+3];
-    geneName[i] = f[1];
-    geneNameToIndex[f[1]] = i;
-    descr[i] = f[2];
-    x[i] = f.slice(4).map(parseFloat);
-  }
-
-  return { arrayName:arrayName, geneName:geneName,
-    geneNameToIndex:geneNameToIndex, descr:descr, x:x };
-}
+// x offsets of row labels
+rowLabelOffset = [0, 100, 150];
 
 // Draws a column of labels for the heatmap.
-function drawLabels(g, bounds, s, p) {
+// Args:
+//   g - graphics context
+//   bounds - the bounds at which to draw it
+//   s - list of list of strings to draw
+//   xOffset - x coordinates at which to draw them
+//   p - permutation of strings to draw
+function drawLabels(g, bounds, s, xOffset, p) {
   var labelFont = new goog.graphics.Font(15, 'Times');
   var fill = new goog.graphics.SolidFill('black');
 
+  // first, draw the rectangles
   for(i=0; i<numRows; i++) {
     g.drawRect(bounds.left, bounds.top + cellSize * i,
       bounds.width, cellSize, null, alternatingFill(i));
-    g.drawText(s[p[i]], bounds.left, bounds.top + cellSize * i,
-      bounds.width, cellSize, 'left', 'center', labelFont, null, fill);
   }
+
+  // then, draw the text
+  for(j=0; j<s.length; j++) {
+    var left1 = xOffset[j] + bounds.left;
+    var width1 = (j==s.length) ?
+      bounds.width - xOffset[s.length-1] :
+      xOffset[j+1] - xOffset[j];
+    var s1 = s[j];
+
+    for(i=0; i<numRows; i++) {
+      g.drawText(s1[p[i]], left1, bounds.top + cellSize * i,
+        width1, cellSize, 'left', 'center', labelFont, null, fill);
+    }
+  }
+
 }
 
 // Draws the array labels (along the top).
@@ -102,10 +102,10 @@ function drawClusters(g, a, p) {
 
   console.log("in drawClusters: p[0] =" + p[0]);
   bounds = new goog.math.Rect(0, 0,
-    1000, 2000);  // FIXME shouldn't be hardcoded
+    1200, 2000);   // FIXME shouldn't be hardcoded
 
   // where to put the actual heatmap
-  heatmapBounds = new goog.math.Rect(100, 150, 800, 1800);
+  heatmapBounds = new goog.math.Rect(300, 150, 900, 1800);
 
   // draw various labels
   drawArrayLabels(g, new goog.math.Rect(
@@ -114,7 +114,11 @@ function drawClusters(g, a, p) {
 
   labelBounds = new goog.math.Rect(
     bounds.left, heatmapBounds.top, heatmapBounds.left, numRows * cellSize);
-  drawLabels(g, labelBounds, a.geneName, p);
+// was:
+//  drawLabels(g, labelBounds, a.geneName, p);
+// FIXME formatting could be improved
+  drawLabels(g, labelBounds, [a.descr],
+    rowLabelOffset, p);
 
   // draw the heatmap
 //  heatmapBounds = new goog.math.Rect(
@@ -145,7 +149,7 @@ function setClustering(genes) {
   // FIXME: show an error if no gene names are legit
 
   // compute center of all selected genes
-  // XXX original version
+  // XXX for now, just using the first gene
   if (1) {
     xCenter = xStandardized[ geneIndex[0] ];
   }
@@ -218,7 +222,7 @@ function clusterBrowseInit() {
 
 console.log("in clusterBrowseInit()");
   // set up for drawing
-  graphics = goog.graphics.createGraphics('1200px', '2000px');
+  graphics = goog.graphics.createGraphics('1300px', '2000px');
   canvas = goog.dom.$('heatmap');
 
   uri = new goog.Uri(location.search);
@@ -228,9 +232,6 @@ console.log("in clusterBrowseInit()");
   geneField.value = genes;
 
   // read in the data, and standardize (mean-center) it
-// this should now simply be read in as JavaScript
-//  a = readCDT("cluster.cdt");
-
   xStandardized = a.x.map( vectorMath.standardize );
 
 console.log("standardized rows");
