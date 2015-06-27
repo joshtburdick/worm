@@ -11,12 +11,12 @@ cehm27	ceh-27 (+)
 cehm36m	ceh-36 (-)	
 cehm36p	ceh-36 (+)	
 cehm6	ceh-6 (+)	
-cnd1n1214	cnd-1 12/14 (-)	12/14
-cnd1n819	cnd-1 8/19 (-)	8/19
-cndm1_12_14	cnd-1 12/14 (+)	12/14
-cndm1m	cnd-1 1/4 (-)	1/4
-cndm1p1_4	cnd-1 1/4 (+)	1/4
-cndm1p8_19	cnd-1 8/19 (+)	8/19
+cnd1n1214	cnd-1 (-) rep. 1	12/14
+cnd1n819	cnd-1 (-) rep. 2	8/19
+cndm1_12_14	cnd-1 (+) rep. 1	12/14
+cndm1m	cnd-1 (-) rep. 3	1/4
+cndm1p1_4	cnd-1 (+) rep. 3	1/4
+cndm1p8_19	cnd-1 (+) rep. 2	8/19
 cndm1_singlets	cnd-1 singlets	
 cndm1_ungated	cnd-1 ungated	
 F21D5.9	F21D5.9 (+)	
@@ -51,12 +51,12 @@ N2_317_6hr	HS N2 6hr	3/17
 normalInput	normalInput	
 pal1n	pal-1 (-)	
 palm1	pal-1 (+)	
-pha4minus	pha-4 5/9 (-)	5/9
-pha4n91	pha-4 9/1 (-)	9/1
-pha4plus	pha-4 5/9 (+)	5/9
-pham4m	pha-4 12/9 (-)	12/9
-pham4p12_9	pha-4 12/9 (+)	12/9
-pham4p9_1	pha-4 9/1 (+)	9/1
+pha4minus	pha-4 (-) rep. 1	5/9
+pha4n91	pha-4 (-) rep. 2	9/1
+pha4plus	pha-4 (+) rep. 1	5/9
+pham4m	pha-4 (-) rep. 3	12/9
+pham4p12_9	pha-4 (+) rep. 3	12/9
+pham4p9_1	pha-4 (+) rep. 2	9/1
 pham4_singlets	pha-4 singlets	
 pham4_ungated	pha-4 ungated	
 pop1_1	RNAi pop-1	1

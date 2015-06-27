@@ -36,6 +36,6 @@ mapped.reads.facs = total.mapped[ grep("^(ges1_|lit1_|pop1_|HS|N2_)", names(tota
 
 # XXX for now, just including the reads from the FACS sorting
 read.stats = data.frame(mapped.reads.facs, stringsAsFactors=FALSE)
-write.table(read.stats, file="git/unmix/seq/quant/read_stats.tsv",
-  sep="\t", row.names=TRUE, col.names=NA)
+# write.table(read.stats, file="git/unmix/seq/quant/read_stats.tsv",
+#   sep="\t", row.names=TRUE, col.names=NA)
 
