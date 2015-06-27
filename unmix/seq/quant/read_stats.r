@@ -1,5 +1,9 @@
 # Statistics about total number of reads mapped.
 
+source("git/utils.r")
+
+experiment.names = read.tsv("git/unmix/seq/quant/experimentNames.tsv")
+
 # Total reads mapped for one set of samples.
 # Args:
 #   raw.coverage.file - file containing the raw coverage
@@ -35,7 +39,9 @@ total.mapped = c(
 mapped.reads.facs = total.mapped[ grep("^(ges1_|lit1_|pop1_|HS|N2_)", names(total.mapped), value=TRUE, invert=TRUE) ]
 
 # XXX for now, just including the reads from the FACS sorting
-read.stats = data.frame(mapped.reads.facs, stringsAsFactors=FALSE)
-# write.table(read.stats, file="git/unmix/seq/quant/read_stats.tsv",
-#   sep="\t", row.names=TRUE, col.names=NA)
+read.stats = data.frame(
+  experiment.name = experiment.names[names(mapped.reads.facs),"name"],
+  mapped.reads.facs, stringsAsFactors=FALSE)
+write.table(read.stats, file="git/unmix/seq/quant/read_stats.tsv",
+  sep="\t", row.names=TRUE, col.names=NA)
 

@@ -2,7 +2,7 @@
 
 source("git/utils.r")
 
-r = as.matrix(read.tsv("git/unmix/seq/quant/read_stats.tsv"))
+r = read.tsv("git/unmix/seq/quant/read_stats.tsv")$mapped.reads.facs
 
 cat("total reads =", sum(r), "\n")
 cat("mean reads per sample =", mean(r), "\n")
