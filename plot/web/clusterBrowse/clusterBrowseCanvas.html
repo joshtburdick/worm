@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -17,17 +17,17 @@
 </head>
 <body onload=" clusterBrowseInit()">
 Gene to center on: <input type="text" id="genes" value="pha-4" 
-onkeypress="if (event.keyCode==13) { updateClicked(); }" />
+onkeypress="if (event.keyCode==13) { updateClicked(); }" ></input>
 <!--
     Minimum expression: <input type="text" id="minExpr" value="FIXME not yet implemented" /> -->
     <input type="button" value="Update" id="update" onClick="updateClicked()" />
 <a href="http://wormbase.org" id="wormbaseLink">[Wormbase]</a>
 
-<div id="columnLabels" class="width:1100px; height:150px;">
-</div>
+<canvas id="columnLabels" class="width:1100px; height:150px;">
+</canvas>
 <div id="wrapper" class="tbl_container">
-<div id="heatmap" class="width:1100px; height:4000px;">
-</div>
+<canvas id="heatmap" width="1100" height="4000">
+</canvas>
 </div>
 
 </body>

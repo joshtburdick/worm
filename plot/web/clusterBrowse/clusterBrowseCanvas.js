@@ -28,6 +28,7 @@ clusterCenterIndex = 0;
 rowLabelOffset = [0, 100, 150];
 
 // Draws a column of labels for the heatmap.
+// Deprecated.
 // Args:
 //   g - graphics context
 //   bounds - the bounds at which to draw it
@@ -64,6 +65,10 @@ function drawLabels(g, bounds, s, xOffset, p) {
 function drawArrayLabels(g, bounds, arrayName) {
   var labelFont = new goog.graphics.Font(15, 'Times');
   var fill = new goog.graphics.SolidFill('black');
+  
+  var bounds = [300, 0, 200, 150];
+
+
 
   for(j=0; j<arrayName.length; j++) {
     g.drawRect(bounds.left + cellSize * j, bounds.top,
@@ -77,16 +82,26 @@ function drawArrayLabels(g, bounds, arrayName) {
 
 // Draws the column labels. Should only need to be called
 // once, when the page loads.
-function drawColumnLabels() {
+function drawColumnLabels(arrayNames) {
+  
+var g = document.getElementById('columnLabels').getContext('2d');
+  var bounds = [300, 0, 200, 150];
+console.log("arrayNames = " + arrayNames);
+  // loop through the labels
+  for(i=0; i<arrayNames.length; i++) {
 
-  // set up for drawing
-  graphics1 = goog.graphics.createGraphics('1300px', '150px');
-  canvas1 = goog.dom.$('columnLabels');
+    // first, draw the rectangles
+    g.fillStyle = i % 2 ? "#a0a0a0" : "#ffffff";
+    g.fillRect(bounds[0], bounds[1] + cellSize * i,
+      bounds[2], cellSize);
 
-  drawArrayLabels(graphics1, new goog.math.Rect(
-    300, 0, 200, 150), a.arrayName);
+    // then, draw the text
 
-  graphics1.render(canvas1);
+
+  }
+
+return;
+
 }
 
 // Draws a heatmap of the clusters.
@@ -94,6 +109,7 @@ function drawHeatmap(g, bounds, a, p) {
 
   // blue-black-yellow color gradient
   colorMapping = exprToColor(exprRange, [0,0,255], [0,0,0], [255,255,0]);
+
 
   var x0 = bounds.left;
   var y0 = bounds.top;
@@ -114,6 +130,7 @@ function drawHeatmap(g, bounds, a, p) {
 //   p - permutation of rows
 function drawClusters(g, a, p) {
 
+
   console.log("in drawClusters: p[0] =" + p[0]);
   bounds = new goog.math.Rect(0, 0,
     1060, 2000);   // FIXME shouldn't be hardcoded
@@ -121,10 +138,7 @@ function drawClusters(g, a, p) {
   // where to put the actual heatmap
   heatmapBounds = new goog.math.Rect(300, 0, 760, 1800);
 
-  // draw various labels
-  drawArrayLabels(g, new goog.math.Rect(
-    heatmapBounds.left, bounds.top, bounds.width, heatmapBounds.top),
-    a.arrayName);
+return;
 
   labelBounds = new goog.math.Rect(
     bounds.left, heatmapBounds.top, heatmapBounds.left, numRows * cellSize);
@@ -147,6 +161,11 @@ function drawClusters(g, a, p) {
 function setClustering(genes) {
   geneField.value = genes;
 
+  // update links
+  document.getElementById("wormbaseLink").href =
+    "http://www.wormbase.org/db/get?name=" + genes + ";class=Gene"
+  document.getElementById("wormbaseLink").text =
+    "[Wormbase on " + genes + "]";
   console.log("genes = " + genes);
 
   // look up gene names
@@ -196,17 +215,11 @@ console.log("after sort: p[0] = " + p[0]);
   // actually draw stuff, in that order
   drawClusters(graphics, a, p);
 
-//  graphics.render(canvas);
-
   // assuming all of the above worked, update the hash,
   // so that this is bookmarkable
 //  location.hash = geneName1.toString();
 
-  // update links
-  document.getElementById("wormbaseLink").href =
-    "http://www.wormbase.org/db/get?name=" + genes + ";class=Gene"
-  document.getElementById("wormbaseLink").text =
-    "[Wormbase on " + genes + "]";
+//  graphics.render(canvas);
 }
 
 // event handler for when a gene is clicked
@@ -226,15 +239,24 @@ console.log("loc = " + loc.toString());
 
   console.log("mouse clicked on " + a.geneName[ p[i] ]);
 
+  location.hash = a.geneName[ p[i] ];
+
 //  setClustering( a.geneName[ p[i] ] );
 
-  uri = new goog.Uri(location.search);
-  uri.setParameterValue("gene", a.geneName[ p[i] ] );
-  location.search = uri;
+// this is deprecated: this should just listen to the hash change event
+//  uri = new goog.Uri(location.search);
+//  uri.setParameterValue("gene", a.geneName[ p[i] ] );
+//  location.search = uri;
 }
 
+// Called when the hash changes; this 
+function hashChangeHandler() {
+console.log("hash is " + location.hash);
+  setClustering(location.hash.substring(1));
+}
 
 // This is initially called when the page loads.
+// It loads the data, sets up event handlers, and
 function clusterBrowseInit() {
   geneField = document.getElementById("genes");
   geneField.focus();
@@ -244,7 +266,7 @@ function clusterBrowseInit() {
 console.log("in clusterBrowseInit()");
 
   // draw the column labels
-  drawColumnLabels();
+  drawColumnLabels(a.arrayName);
 
   // set up for drawing
   graphics = goog.graphics.createGraphics('1060px', '2000px');
@@ -287,6 +309,9 @@ console.log("standardized rows");
   setClustering(genes);
 //  drawClusters(graphics, a);
 
+  // handler for when the "hash" part of the page changes
+  window.onhashchange = hashChangeHandler;
+
   // request mouse events (now that the ordering p is defined)
   goog.events.listen(canvas, goog.events.EventType.MOUSEUP,
     imageMouseUp);
@@ -301,15 +326,17 @@ console.log("standardized rows");
 );
 */
 
-  graphics.render(canvas);
+//  graphics.render(canvas);
 }
 
 // This should be called when the form's "update" button is clicked.
 function updateClicked() {
 
-  console.log("update clicked: genes = " + geneField.value);
-//  setClustering(geneField.value);
+  console.log("update clicked: genes = " + document.getElementById("genes").value);
 
+//  location.hash = geneField.value;
+  
+  // this is all deprecated
   // update the gene names in the text box; this, in turn,
   // will trigger going to the appropriate page
   uri = new goog.Uri(location.search);
