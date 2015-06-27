@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Test of SvgHeatmap</title>
+<style>
+
+.tbl_container { overflow-x:hidden; overflow-y:scroll; width:1100px; height:600px; }
+
+</style>
+<script src="SvgHeatmap.js"></script>
+<script>
+
+
+function initPage() {
+  var svg = document.getElementById("canvas");
+  var m = 100;
+  var n = 30;
+
+  var h = new SvgHeatmap(svg, m, n, 20);
+
+  var x = [];
+  for(i = 0; i < m; i++) {
+    x[i] = [];
+    for(j = 0; j < n; j++) {
+      x[i][j] = 2 * Math.sin((i*j) / 30);
+console.log(x[i][j]);
+    }
+    h.setRow(i, x[i]);
+  }
+}
+
+</script>
+
+</head>
+<body onload="initPage()">
+
+<svg id="canvas" width="500" height="1200"></svg>
+
+</div>
+
+</body>
+</html>
+
