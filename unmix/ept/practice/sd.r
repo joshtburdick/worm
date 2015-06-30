@@ -58,8 +58,8 @@ sd.test2 = function(m, n) {
 sd.sampling.test.1 = function(n) {
   # standard parameters of some random gamma distributions
   s = rbind(a = sample(c(1:10), n, replace=TRUE),
-#    b = sample(c(1:5), n, replace=TRUE))
-    b = rep(1, n))
+    b = sample(c(1:5), n, replace=TRUE))
+#    b = rep(1, n))
   print(s)
   mv.sd = sd.s2mv(s)
   print(mv.sd)
@@ -67,4 +67,5 @@ sd.sampling.test.1 = function(n) {
   print(mv.sampling)
   cat("\n")
 }
+# these are pretty convincingly different
 

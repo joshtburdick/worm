@@ -72,7 +72,7 @@ function SvgHeatmap(svg, m, n, cellSize) {
       var s = this.grid[i][j];
       var c1 = scaleColor(this.colorRange, x[j]);
       s.setAttributeNS(null, "fill", scaleColor(this.colorRange, x[j]));
-      s.setAttributeNS(null, "alt", x[j]);
+      s.setAttributeNS(null, "title", x[j]);
     }
   }
 };

@@ -1,21 +1,32 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
+<meta charset="utf-8">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Cluster browser (deprecated)</title>
-
-    <script src="../js/closure-library/closure/goog/base.js"></script>
-    <script src="../js/util.js"></script>
-    <script src="../js/vectorMath.js"></script>
-    <script src="clustering.js"></script>
-    <script src="clusterBrowse.js"></script>
-
+<title>Cluster browser</title>
+<script src="../js/util.js"></script>
+<script src="../js/vectorMath.js"></script>
+<script src="../js/SvgLabel.js"></script>
+<script src="../js/SvgHeatmap.js"></script>
+<script src="data.js"></script>
+<script src="clusterBrowse.js"></script>
 </head>
-<body onload=" showClusters()">
+<body onload="initPage()">
 
-<p id="clusterTable">There was a problem
-running the JavaScript code.</p>
+Gene to center on: <input type="text" id="genes" value="pha-4" 
+onkeypress="if (event.keyCode==13) { updateClicked(); }" />
 
+<input type="button" value="Update" id="update" onClick="updateClicked()" />
+<a href="http://wormbase.org" id="wormbaseLink">[Wormbase]</a>
+
+<br>
+
+<svg id="columnLabels" width="1500" height="600">
+</canvas>
+<div id="wrapper" class="tbl_container">
+<div id="heatmap" width="1100" height="4000">
+</canvas>
+</div>
 
 </body>
 </html>
+
