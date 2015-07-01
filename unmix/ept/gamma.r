@@ -62,7 +62,7 @@ gamma.cond.1 = function(x) {
   # compute Dirichlet moments
   a = dirichlet.s2mv(xs["a",])
 
-  # scale by the rate parameter of the Dirichlets
+  # scale by the rate parameter of the original gamma variables
   r = 1 / xs["b",]
   a1 = rbind(m = r * a["m",], v = r * r * a["v",])
 

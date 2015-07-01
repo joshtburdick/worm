@@ -97,7 +97,6 @@ plot.crossval.accuracy = function(unmix.f, m, r, test.set) {
     measured.enrich = log2.enrich(r[, tf[1] ], r[ , tf[2] ])
     predicted.enrich =
       as.vector(log2.enrich(mn[ tf[1] , ] %*% t(x), mn[ tf[2] , ] %*% t(x)))
-
     corr = cor(measured.enrich, predicted.enrich)
     lim = range(c(measured.enrich, predicted.enrich))
     plot(measured.enrich, predicted.enrich,

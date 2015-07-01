@@ -3,17 +3,23 @@
 // Wishlist:
 // - buttons changing colors on click
 
-
 svgns = "http://www.w3.org/2000/svg";
 xlns = "http://www.w3.org/1999/xlink";
 
-function SvgLabel(svg, n, rowHeight) {
+function SvgLabel(n, rowHeight) {
 
   // number of labels
   this.n = n;
 
   // height of each row
   this.rowHeight = rowHeight;
+
+  // the group node containing this
+  this.g = document.createElementNS(svgns, "g");
+  this.g.setAttributeNS(null, "x", 0);
+  this.g.setAttributeNS(null, "y", rowHeight * i);
+  this.g.setAttributeNS(null, "width", 1000);
+  this.g.setAttributeNS(null, "height", n * rowHeight);
 
   // the SVG Text objects (so as to be able to update them)
   this.svgText = [];
@@ -46,7 +52,7 @@ function SvgLabel(svg, n, rowHeight) {
     this.svgText[i] = t;
     this.svgLink[i] = link;
 
-    svg.appendChild(link);
+    this.g.appendChild(link);
   }
  
   // Sets the i'th text object.
