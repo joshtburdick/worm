@@ -49,7 +49,7 @@ function SvgHeatmap(svg, m, n, cellSize) {
 
       // add a grid square
       var r = document.createElementNS(svgns, "rect");
-      r.setAttributeNS(null, "x", this.cellSize * j);
+      r.setAttributeNS(null, "x", 150 + this.cellSize * j);
       r.setAttributeNS(null, "y", this.cellSize * i);
       r.setAttributeNS(null, "width", this.cellSize);
       r.setAttributeNS(null, "height", this.cellSize);
