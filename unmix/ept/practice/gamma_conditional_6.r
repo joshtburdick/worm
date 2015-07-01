@@ -139,6 +139,6 @@ abline(0,1)
 # oh, wait, now it does.
 # gamma.n2mv(gamma.cond.sampling(gamma.s2n(rbind(a=rep(1,3), b=rep(1,3))), t(c(1,1,1)), 1))
 
-test1()
+# test1()
 
 
