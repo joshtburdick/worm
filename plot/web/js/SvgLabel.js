@@ -6,7 +6,7 @@
 svgns = "http://www.w3.org/2000/svg";
 xlns = "http://www.w3.org/1999/xlink";
 
-function SvgLabel(n, rowHeight) {
+function SvgLabel(n, rowHeight, width) {
 
   // number of labels
   this.n = n;
@@ -17,9 +17,11 @@ function SvgLabel(n, rowHeight) {
   // the group node containing this
   this.g = document.createElementNS(svgns, "g");
   this.g.setAttributeNS(null, "x", 0);
-  this.g.setAttributeNS(null, "y", rowHeight * i);
-  this.g.setAttributeNS(null, "width", 1000);
+  this.g.setAttributeNS(null, "y", 0);
+  this.g.setAttributeNS(null, "width", width);
   this.g.setAttributeNS(null, "height", n * rowHeight);
+  this.g.setAttributeNS(null, "clip-path", "rect(0,0,"
+    + n * rowHeight + "," + width + ")");
 
   // the SVG Text objects (so as to be able to update them)
   this.svgText = [];
@@ -33,7 +35,7 @@ function SvgLabel(n, rowHeight) {
     var r = document.createElementNS(svgns, "rect");
     r.setAttributeNS(null, "x", 0);
     r.setAttributeNS(null, "y", this.rowHeight * i);
-    r.setAttributeNS(null, "width", 1000);
+    r.setAttributeNS(null, "width", width);
     r.setAttributeNS(null, "height", this.rowHeight);
     r.setAttributeNS(null, "fill", i % 2 ? "#fff" : "#bbb");
 
@@ -42,6 +44,8 @@ function SvgLabel(n, rowHeight) {
     t.setAttributeNS(null, "x", 0);
     // XXX there's probably a better way to set this location
     t.setAttributeNS(null, "y", this.rowHeight * (i + 0.75));
+    t.setAttributeNS(null, "clip-path",
+      "rect(0,0," + width + "," + this.rowHeight + ")");
 
     // the hyperlink
     var link = document.createElementNS(svgns, "a");

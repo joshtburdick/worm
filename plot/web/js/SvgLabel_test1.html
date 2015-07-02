@@ -15,8 +15,7 @@
 
 function initPage() {
   var svg = document.getElementById("canvas");
-  a = new SvgLabel(40, 20);
-  a.g.setAttributeNS(null, "width", 400);
+  a = new SvgLabel(40, 20, 50);
   var s = ["Marmoset", "Cat", "Capybara", "Dinoflagellate", "Moose"]
   for(i = 0; i < 5; i++) {
     a.setText(i, s[i]);

@@ -23,10 +23,9 @@ function scaleColor(range, x) {
 
 /* Constructs an SVG heatmap.
   Args:
-  svg - SVG object to add onto
   m, n - dimensions (rows & columns) of the grid (in cells)
   cellSize - size of each square (in pixels) */
-function SvgHeatmap(svg, m, n, cellSize) {
+function SvgHeatmap(m, n, cellSize) {
 
   // dimensions
   this.m = m;
@@ -35,7 +34,17 @@ function SvgHeatmap(svg, m, n, cellSize) {
   // size of each grid square
   this.cellSize = cellSize;
 
-  // save the grid, for future use
+  // number of labels
+  this.n = n;
+
+  // the group node containing this
+  this.g = document.createElementNS(svgns, "g");
+  this.g.setAttributeNS(null, "x", 0);
+  this.g.setAttributeNS(null, "y", 0);
+  this.g.setAttributeNS(null, "width", n * cellSize);
+  this.g.setAttributeNS(null, "height", m * cellSize);
+
+  // the grid of squares, saved for updating the display
   this.grid = [];
 
   // color range for the heatmap (currently fixed)
@@ -49,18 +58,18 @@ function SvgHeatmap(svg, m, n, cellSize) {
 
       // add a grid square
       var r = document.createElementNS(svgns, "rect");
-      r.setAttributeNS(null, "x", 150 + this.cellSize * j);
+      r.setAttributeNS(null, "x", this.cellSize * j);
       r.setAttributeNS(null, "y", this.cellSize * i);
       r.setAttributeNS(null, "width", this.cellSize);
       r.setAttributeNS(null, "height", this.cellSize);
       r.setAttributeNS(null, "fill", "white");
       r.setAttributeNS(null, "stroke", "black");
-      r.setAttributeNS(null, "stroke-width", "1");
+      r.setAttributeNS(null, "stroke-width", "0.2");
 
       // save for updating in the future
       this.grid[i][j] = r;
 
-      svg.appendChild(r);
+      this.g.appendChild(r);
     }
   }
  
