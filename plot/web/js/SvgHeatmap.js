@@ -79,8 +79,7 @@ function SvgHeatmap(m, n, cellSize) {
   this.setRow = function(i, x) {
     for(var j=0; j<this.n; j++) {
       var s = this.grid[i][j];
-      var c1 = scaleColor(this.colorRange, x[j]);
-      s.setAttributeNS(null, "fill", scaleColor(this.colorRange, x[j]));
+      s.setAttributeNS(null, "fill", scaleColor(this.colorRange, x[j] / 2));
       s.setAttributeNS(null, "title", Math.trunc(100 * x[j]) / 100);
     }
   }
