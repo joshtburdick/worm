@@ -3,6 +3,8 @@
 
 source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/practice/sd.r")
+source("git/unmix/ept/practice/gamma_conditional_6.r")
+source("git/unmix/ept/practice/gamma_conditional_numerical.r")
 
 # wrapper for this
 gca = function(x, A, b) {
@@ -24,16 +26,17 @@ gca1 = function(x, a, b) {
   # convert to moments
   m = gamma.n2mv(x)
 
-  # scale this (??? or not)
-  s = a
+  # scale this
+  s = b / a
   m["m",] = m["m",] / a
   m["v",] = m["v",] / (a*a)
 
   # approximate marginals, if those sum to 1
   #  r = sd.s2mv(gamma.mv2s(m))
-  r = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(m)))
+  #  r = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(m)))
+  r = gamma.cond.sum.numerical(gamma.mv2n(m))
 
-  # scale this
+  # undo scaling
   r["m",] = r["m",] * s
   r["v",] = r["v",] * (s*s)
 
@@ -51,7 +54,7 @@ gca1 = function(x, a, b) {
 #   term - the term approximations
 #   FIXME update stats?
 # XXX not working
-approx.region.gamma = function(A, b, num.iters=30) {
+approx.region.gamma = function(A, b, num.iters=20) {
 
   # approximating terms
   term = array(1, dim=c(2, ncol(A), nrow(A)))
@@ -70,10 +73,11 @@ approx.region.gamma = function(A, b, num.iters=30) {
     # compute message to each term
     for(i in 1:nrow(A)) {
       t1 = x - term[,,i]
+      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
 #      x1 = gca1(t1, A[i,], b[i])
-      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
-
-      term[,,i] = 1 * term[,,i] + 0.1 * (x1 - x)
+#      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
+      term[,,i] = 1 * term[,,i] + 1 * (x1 - x)
+#      term[,,i] = x1 - t1
     }
 
     # update posterior

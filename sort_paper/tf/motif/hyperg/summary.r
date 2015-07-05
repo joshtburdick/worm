@@ -13,6 +13,18 @@ system(paste0("mkdir -p ", output.dir))
 
 clustering.name = "hier.300.clusters"
 
+# Gets enrichments from de novo motif finding things.
+write.enrichment.summary = function(enrich.dir, output.dir) {
+  system(paste0("mkdir -p ", output.dir))
+
+  for(clustering in c("facs_vs_opposite_1", "hier.300.clusters")) {
+    enrich = NULL
+    load(paste0(enrich.dir, "/", clustering, ".Rdata"))
+    r = enrich.to.table(enrich)
+    write.tsv(r, paste0(output.dir, "/", clustering, ".tsv"))
+  }
+}
+
 # Gets all the Hughes motif enrichment.
 # This also filters motifs to be non-redundant (which shouldn't
 # be neccessary, admittedly.)
@@ -39,8 +51,7 @@ hughes.enrichments = function(enrich.dir, clustering) {
   enrich.list
 }
 
-
-if (TRUE) {
+if (FALSE) {
   enrich.list = hughes.enrichments(enrich.dir, "hier.300.clusters")
   r = enrich.to.table.many.1(enrich.list)
   write.tsv(r, file=gzfile(paste0(output.dir, "hughes/hier.300.clusters.tsv.gz")))
@@ -57,5 +68,11 @@ if (FALSE) {
   }
 }
 
-
+if (TRUE) {
+  b = "git/sort_paper/tf/motif/hyperg/allResults2/"
+  for (e in c("bp_1kb_cons0", "meme_1kb_cons0")) {
+    write.enrichment.summary(paste0(b, e),
+      paste0(output.dir, e))
+  }
+}
 

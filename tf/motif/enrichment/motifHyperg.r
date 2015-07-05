@@ -79,6 +79,7 @@ enrich.test.many.motifs = function(motif.dir, cl, motifs=NULL) {
       sum.by.cluster = function(x) {
         c(by(x, cl, sum))
       }
+browser()
       m.total = apply(motif.count, c(2:4), sum)
 
       r[motif.name,,"m.cluster",,,] =

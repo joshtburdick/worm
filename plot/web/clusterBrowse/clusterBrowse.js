@@ -107,7 +107,9 @@ function redraw() {
       "Wormbase on " + a.geneName[p[i]]);
 
     clusterLabel.setText(i, a.cluster[p[i]]);
-//    clusterLabel.setLink(i, "", "go to cluster " + a.cluster[i]);
+    clusterLabel.setLink(i,
+      "../clusters/hier.300.clusters/" + a.cluster[i] + ".html",
+      "go to cluster " + a.cluster[i]);
   }
 }
 

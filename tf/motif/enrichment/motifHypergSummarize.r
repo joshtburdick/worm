@@ -2,6 +2,7 @@
 
 source("git/utils.r")
 source("git/tf/motif/motifName.r")
+source("git/tf/motif/enrichment/motifHyperg.r")
 
 library(reshape2)
 
