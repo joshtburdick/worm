@@ -48,7 +48,7 @@ function SvgHeatmap(m, n, cellSize) {
   this.grid = [];
 
   // color range for the heatmap (currently fixed)
-  this.colorRange = [[0,0,255], [255,255,0]];
+  this.colorRange = [[0,195,255], [255,255,0]];
 
   // Adds the labels to the given SVG object.
   for(var i=0; i<m; i++) {

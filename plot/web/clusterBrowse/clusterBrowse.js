@@ -108,8 +108,8 @@ function redraw() {
 
     clusterLabel.setText(i, a.cluster[p[i]]);
     clusterLabel.setLink(i,
-      "../clusters/hier.300.clusters/" + a.cluster[i] + ".html",
-      "go to cluster " + a.cluster[i]);
+      "../clusters/hier.300.clusters/" + a.cluster[p[i]] + ".html",
+      "go to cluster " + a.cluster[p[i]]);
   }
 }
 
