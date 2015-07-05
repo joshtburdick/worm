@@ -1,20 +1,31 @@
-/* A cluster browser. */
+/* A cluster browser.
+TODO:
+20150705
+- After going to Wormbase, coming back requires pressing
+  "back" twice. Presumably linking by Wormbase ID would fix this.
+- Presumably, the heatmap should be scrolled to the top after
+  jumping to a gene (otherwise, it's confusing, because the gene
+  you jumped to isn't visible.)
+- should allow starting on an arbitrary gene (e.g. pha-4).
+*/
 
 var clusterBrowser = {};
 
+/* how many genes to show */
 clusterBrowser.numRows = 100;
 
-// indices of gnees to show
+/* indices of genes to show */
 clusterBrowser.p = [];
 
-// for testing: initialize this arbitrarily
-for(var i=0; i<100; i++)
-  clusterBrowser.p[i] = i + 1234;
+/* initialize this to "unsorted" */
+for(var i=0; i<a.x.length; i++)
+  clusterBrowser.p[i] = i;
 
 /* How each row is labelled. */
 clusterBrowser.rowLabel = [
-  {name:"gene", width:100},
-  {name:"description", width:300}
+  {name:"gene", width:100, colors:["#fff", "#eee"]},
+  {name:"description", width:300, colors:["#eee","#ddd"]},
+  {name:"cluster", width:40, colors:["#fff","#eee"]}
 ];
 
 
@@ -29,8 +40,9 @@ function initPage() {
   clusterBrowser.rowLabelSVG = [];
   var x = 0;
   for(var i=0; i<clusterBrowser.rowLabel.length; i++) {
-console.log("added " + i + ", x = " + x);
-    clusterBrowser.rowLabelSVG[i] = new SvgLabel(100, cellSize, 400);
+// console.log("added " + i + ", x = " + x);
+    clusterBrowser.rowLabelSVG[i] =
+      new SvgLabel(100, cellSize, 400, clusterBrowser.rowLabel[i].colors);
     var g = clusterBrowser.rowLabelSVG[i].g;
     g.setAttributeNS(null, "transform", "translate(" + x + ",0)");
     h.appendChild(g);
@@ -38,7 +50,8 @@ console.log("added " + i + ", x = " + x);
   }
 
   // then, add column labels across the top
-  columnLabelSVG = new SvgLabel(a.arrayName.length, cellSize, 200);
+  columnLabelSVG = new SvgLabel(a.arrayName.length, cellSize, 200,
+    ["#fff","#eee"]);
   var g = columnLabelSVG.g;
   for(var i=0; i<a.arrayName.length; i++)
     columnLabelSVG.setText(i, a.arrayName[i]);
@@ -52,11 +65,18 @@ console.log("added " + i + ", x = " + x);
   g.setAttributeNS(null, "transform", "translate(" + x + ",0)");
   h.appendChild(g);
 
+  // standardize (mean-center) the data
+  xStandardized = a.x.map( vectorMath.standardize );
+
+  // if there isn't a gene defined, go to pha-4
+  if (location.hash.length <= 1) {
+    location.hash = "pha-4";
+  }
+
   // draw the initial set of genes
   redraw();
 
-  // standardize (mean-center) the data
-  xStandardized = a.x.map( vectorMath.standardize );
+  window.onhashchange = setClustering;
 }
 
 /* Updates the heatmap based on the page hash location. */
@@ -69,27 +89,33 @@ function redraw() {
     h.setRow(i, a.x[ p[i] ]);
   }
 
-  // update row labels
+  // update row labels (and links)
   // XXX this shouldn't be hard-coded
   var nameLabel = clusterBrowser.rowLabelSVG[0];
   var descrLabel = clusterBrowser.rowLabelSVG[1];
+  var clusterLabel = clusterBrowser.rowLabelSVG[2];
 
   for(var i=0; i<clusterBrowser.numRows; i++) {
     nameLabel.setText(i, a.geneName[p[i]]);
+    nameLabel.setLink(i,
+      "#" + a.geneName[p[i]],
+      "recenter on " + a.geneName[p[i]]);
+
     descrLabel.setText(i, a.descr[p[i]]);
+    descrLabel.setLink(i,
+      "http://www.wormbase.org/db/get?name=" + a.geneName[p[i]] + ";class=Gene",
+      "Wormbase on " + a.geneName[p[i]]);
+
+    clusterLabel.setText(i, a.cluster[p[i]]);
+//    clusterLabel.setLink(i, "", "go to cluster " + a.cluster[i]);
   }
-
-
 }
 
 // Centers the clustering on a given gene (or genes; for now, just one gene)
-// Args:
-//   genes - a gene name, or a string of gene names separated by spaces
-function setClustering(genes) {
+function setClustering() {
 
-
-
-  geneField.value = genes;
+  // remove the initial #
+  genes = location.hash.substring(1);
 
   // look up gene names
   geneIndex = new Array();
@@ -101,6 +127,14 @@ function setClustering(genes) {
       geneName1.push( s[i] );
     }
   }
+
+  // if we didn't find a gene, return
+  if (geneIndex.length == 0) {
+    return;
+  }
+
+  // update the field
+  document.getElementById("genes").value = genes;
 
   // FIXME: show an error if no gene names are legit
   // compute center of all selected genes
@@ -119,27 +153,21 @@ console.log("before sort: p[0] = " + p[0]);
   // update the ordering, p
   // FIXME force the selected genes to be first (although presumably
   // they'll already be near the start)
-  goog.array.sort(p, function(i,j) {
+  p = p.sort(function(i,j) {
     return r[j] - r[i];
   } );
 console.log("after sort: p[0] = " + p[0]);
 
-  // actually draw stuff, in that order
-  drawClusters(graphics, a, p);
-
-  // assuming all of the above worked, update the hash,
-  // so that this is bookmarkable
-//  location.hash = geneName1.toString();
-
-//  graphics.render(canvas);
+  // redraw the genes, in that order
+  redraw();
 }
 
 /* If update is clicked, try to parse the gene in the gene field,
   and recenter on it. */
 function updateClicked() {
-
-
-
+  console.log("update clicked: field is " +
+    document.getElementById("genes").value);
+  location.hash = document.getElementById("genes").value;
 }
 
 

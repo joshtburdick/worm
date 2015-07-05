@@ -6,7 +6,7 @@
 svgns = "http://www.w3.org/2000/svg";
 xlns = "http://www.w3.org/1999/xlink";
 
-function SvgLabel(n, rowHeight, width) {
+function SvgLabel(n, rowHeight, width, colors) {
 
   // number of labels
   this.n = n;
@@ -37,7 +37,7 @@ function SvgLabel(n, rowHeight, width) {
     r.setAttributeNS(null, "y", this.rowHeight * i);
     r.setAttributeNS(null, "width", width);
     r.setAttributeNS(null, "height", this.rowHeight);
-    r.setAttributeNS(null, "fill", i % 2 ? "#fff" : "#bbb");
+    r.setAttributeNS(null, "fill", colors[ i % 2 ]);
 
     // the actual text
     var t = document.createElementNS(svgns, "text");
