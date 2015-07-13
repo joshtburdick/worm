@@ -1,5 +1,6 @@
 # Summary of expression for each cell.
 
+source("git/utils.r")
 source("git/data/worm/embryodb.r")
 
 movie.list = read.table("git/unmix/image/sort/movieList.tsv",
@@ -53,9 +54,13 @@ per.gene.summary = function(gene) {
 }
 
 r = NULL
-for(g in intersect(unique(movie.list$gene), "mls-2")) {
+for(g in unique(movie.list$gene)) {
   write.status(g)
   r = rbind(r, g = per.gene.summary(g))
 }
+rownames(r) = unique(movie.list$gene)
+rownames(r) = sub("ceh-26", "pros-1", rownames(r))
+r = r[ sort(rownames(r)) , ]
 
+write.tsv(r, "git/unmix/image/exprPerCell.tsv")
 
