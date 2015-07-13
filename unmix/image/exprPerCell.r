@@ -9,6 +9,10 @@ movie.list = read.table("git/unmix/image/sort/movieList.tsv",
 # XXX this should probably be in git
 load("git/unmix/unmix_comp/data/tree_utils.Rdata")
 
+# anatomy annotation of these
+tissues.per.cell = read.table("data/worm/TissuesPerCell.tsv",
+  sep="\t", quote="", header=TRUE, row.names=1, as.is=TRUE)
+
 # Sets each cell to the maximum along the lineage path.
 lineage.max = function(x) {
   # set each cell to max. of itself and parent
@@ -61,6 +65,13 @@ for(g in unique(movie.list$gene)) {
 rownames(r) = unique(movie.list$gene)
 rownames(r) = sub("ceh-26", "pros-1", rownames(r))
 r = r[ sort(rownames(r)) , ]
+r = round(r, digits=1)
+
+tissues.per.cell = tissues.per.cell[ colnames(r) , ]
+
+r = t(rbind(cell = tissues.per.cell$Cell,
+  tissue = tissues.per.cell$Tissue,
+  r))
 
 write.tsv(r, "git/unmix/image/exprPerCell.tsv")
 
