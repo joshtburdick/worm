@@ -11,7 +11,7 @@ source("git/unmix/ept/practice/gamma_conditional_6.r")
 #   x - where to evaluate the density
 # Returns: mean and variance, based on those points
 gamma.cond.sum.numerical.int.1 = function(g, h) {
-  knots = c(1:100000) / 100000
+  knots = c(1:10000) / 10000
   g = as.vector(g)
   h = as.vector(h)
   f = dgamma(knots, shape = g[1], rate = g[2], log = TRUE) +
@@ -19,6 +19,8 @@ gamma.cond.sum.numerical.int.1 = function(g, h) {
   f = f - max(f)
   w = exp(f)
   w = w / sum(w)
+  w[ is.na(w) ] = 0
+  w[ w < 1e-300 ] = 0
   x1 = sum(w * knots)
   x2 = sum(w * (knots^2))
   c(m = x1, v = x2 - x1^2)
@@ -48,7 +50,7 @@ gamma.cond.sum.numerical.1 = function(x) {
   g.other = gamma.mv2s(mv.other)
 
   for(j in 1:ncol(r)) {
-    r[,j] = gamma.cond.sum.numerical.int.2(g[,j], g.other[,j])
+    r[,j] = gamma.cond.sum.numerical.int.1(g[,j], g.other[,j])
   }
 
   r
@@ -104,7 +106,7 @@ if (FALSE) {
 # with sampling not mixing completely)
 
 # ... and tests of the scaled version
-if (TRUE) {
+if (FALSE) {
 
   gamma.cond.sum.numerical.t2 = function(x, a, b) {
     x.n = gamma.s2n(x)
@@ -119,14 +121,14 @@ if (TRUE) {
   }
   f = gamma.cond.sum.numerical.t2
   x = rbind(a=c(1,1,1), b=c(1,1,1))
-  f(x, t(c(1,1,1)), 1)
-  f(x, t(c(1,2,3)), 1)
+#  f(x, t(c(1,1,1)), 1)
+#  f(x, t(c(1,2,3)), 1)
   x = rbind(a=c(2,5,9), b=c(4,1,1))
   f(x, t(c(1,1,1)), 4)
   f(x, t(c(1,2,3)), 7)
 
-  x = rbind(a=sample(1:10, 3), b=sample(1:10, 3))
-  f(x, t(sample(1:10,3)), sample(1:5, 1))
+  x = rbind(a=sample(1:10, 10, replace=TRUE), b=sample(1:10, 10, replace=TRUE))
+  f(x, t(sample(1:10,10, replace=TRUE)), sample(1:5, 1))
 }
 
 

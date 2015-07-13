@@ -14,11 +14,6 @@ read.embryodb.dat.file = function(series, file.pattern="SCD") {
   annot.dir = embryodb.to.annot.dir(series)
 # cat("annot.dir =", annot.dir, "\n")
 
-  # XXX mind-bogglingly ugly hack
-  # shouldn't be needed, now that I'm using NFS
-#  annot.dir = sub("/gpfs/fs0/l/murr/twal/images/", "/gpfs/fs0/u/twal/images/", annot.dir)
-#  annot.dir = sub("/gpfs/fs0/l/murr/azach/images/", "/gpfs/fs0/u/azach/images/", annot.dir)
-
   file.name = list.files(paste(annot.dir, "/dats", sep=""), pattern=paste("^", file.pattern, sep=""))
   f = paste(annot.dir, "dats", file.name, sep="/")
 

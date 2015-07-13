@@ -22,6 +22,7 @@ gca = function(x, A, b) {
 #     all a != 0)
 # Returns: natural parameters of x | Ax = b
 # FIXME: compare this with sampling?
+# XXX deprecated; see gamma_conditional_numerical.r .
 gca1 = function(x, a, b) {
   # convert to moments
   m = gamma.n2mv(x)
@@ -34,7 +35,7 @@ gca1 = function(x, a, b) {
   # approximate marginals, if those sum to 1
   #  r = sd.s2mv(gamma.mv2s(m))
   #  r = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(m)))
-  r = gamma.cond.sum.numerical(gamma.mv2n(m))
+  r = gamma.cond.sum.numerical.1(gamma.mv2n(m))
 
   # undo scaling
   r["m",] = r["m",] * s
@@ -52,9 +53,11 @@ gca1 = function(x, a, b) {
 # Returns: list with elements
 #   x - the posterior
 #   term - the term approximations
+#   x.log - list of posterior approximations
 #   FIXME update stats?
-# XXX not working
-approx.region.gamma = function(A, b, num.iters=20) {
+# XXX not sure how well this is working
+approx.region.gamma = function(A, b, num.iters=40) {
+  x.log = list()
 
   # approximating terms
   term = array(1, dim=c(2, ncol(A), nrow(A)))
@@ -73,20 +76,20 @@ approx.region.gamma = function(A, b, num.iters=20) {
     # compute message to each term
     for(i in 1:nrow(A)) {
       t1 = x - term[,,i]
-      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
-#      x1 = gca1(t1, A[i,], b[i])
+#      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
+      x1 = gamma.cond.sum.numerical(t1, A[i,], b[i])
 #      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
-      term[,,i] = 1 * term[,,i] + 1 * (x1 - x)
+      term[,,i] = 1 * term[,,i] + 0.1 * (x1 - x)
 #      term[,,i] = x1 - t1
     }
 
     # update posterior
     x = prior + apply(term, c(1,2), sum)
-
+    x.log[[iter]] = x
 print(gamma.n2mv(x))
   }
 
-  list(x = x, term = term)
+  list(x = x, term = term, x.log = x.log)
 }
 
 # test of how this converges
