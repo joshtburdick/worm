@@ -154,8 +154,6 @@ plot.stacked = function(f, cluster.subset = NULL) {
   r = cbind(anatomy.m, e, cluster.m, e, go.m, e, motif.m, e, chip.m)
   colnames(r) = gsub("^e$", "", colnames(r))
 
-# browser()
-
   r[is.na(r)] = 0
   r[r > 1] = 1      # XXX deal with Infs
   cl = cl[ hclust(cor.dist(r))$order ]
