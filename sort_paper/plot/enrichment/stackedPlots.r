@@ -147,7 +147,12 @@ plot.stacked = function(f, cluster.subset = NULL) {
   chip.m = add.rows(chip.m, cl)
 
   # compute "row" ordering
-  r = cbind(anatomy.m, cbind(cluster.m, cbind(go.m, cbind(motif.m, chip.m))))
+#  r = cbind(anatomy.m, cbind(cluster.m, cbind(go.m, cbind(motif.m, chip.m))))
+
+  # XXX hack
+  e = 1e-100
+  r = cbind(anatomy.m, e, cluster.m, e, go.m, e, motif.m, e, chip.m)
+  colnames(r) = gsub("^e$", "", colnames(r))
 
 # browser()
 
@@ -184,10 +189,6 @@ plot.stacked = function(f, cluster.subset = NULL) {
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
   axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
-  # add grid lines
-  g = dim(r) - 1
-  abline(h = (c(0:g[2])-0.5) / g[2], lwd=0.1, col="#00000040")
-  abline(v = (c(0:g[1])-0.5) / g[1], lwd=0.1, col="#00000040")
 
   rownames1 = colnames(r)
 
@@ -207,6 +208,11 @@ plot.stacked = function(f, cluster.subset = NULL) {
     labels=sapply(ortho, italicize),
     las=2, cex.axis=0.3, line=1.5, tick=FALSE)
 
+  # add grid lines
+  g = dim(r) - 1
+  abline(h = (c(0:g[2])-0.5) / g[2], lwd=0.1, col="#00000040")
+  # vertical lines will be added later
+
   # color different portions of the graph, and label them
 #  rect(0, 0, 1, 1, border=NA,
 #    col=hsv(0, 0.8, 1, alpha=0.2))
@@ -218,6 +224,10 @@ plot.stacked = function(f, cluster.subset = NULL) {
       (nrow(r)+0.5)/nrow(r), (y[2]+0.5)/n1,
       border=hsv(0,0,0.6), lwd=0.2,      
       col=hsv(hue, 0.8, 1, alpha=0.15), xpd=TRUE)
+
+    for(x in (c(0:g[1])-0.5) / g[1]) {
+      lines(c(x, x), c(y[1]-0.5, y[2]+0.5)/n1, lwd=0.1, col="#00000040")
+    }
 
     text(-30/nrow(r), 0.5*(y[1]+y[2]) / ncol(r),
       labels=ylab,
