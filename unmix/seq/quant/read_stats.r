@@ -36,12 +36,16 @@ total.mapped = c(
     count.mapped("Murray092812_as.tsv.gz"))
 
 # subset of read stats for just the FACS-sorted experiments
-mapped.reads.facs = total.mapped[ grep("^(ges1_|lit1_|pop1_|HS|N2_)", names(total.mapped), value=TRUE, invert=TRUE) ]
+mapped.reads.facs = total.mapped[
+  grep("^(lowInput|normalInput|ges1_|lit1_|pop1_|HS|N2_)",
+  names(total.mapped), value=TRUE, invert=TRUE) ]
 
 # XXX for now, just including the reads from the FACS sorting
 read.stats = data.frame(
   experiment.name = experiment.names[names(mapped.reads.facs),"name"],
   mapped.reads.facs, stringsAsFactors=FALSE)
+colnames(read.stats) = c("Experiment", "Mapped reads")
+read.stats = read.stats[ order(read.stats$Experiment) , ]
 write.table(read.stats, file="git/unmix/seq/quant/read_stats.tsv",
-  sep="\t", row.names=TRUE, col.names=NA)
+  sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
 

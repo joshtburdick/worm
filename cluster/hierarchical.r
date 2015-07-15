@@ -8,7 +8,7 @@ library("ctc")
 source("git/utils.r")
 source("git/unmix/seq/cluster/writeClustersTreeView.r")
 
-system("mkdir -p git/cluster/hierarchical_check")
+system("mkdir -p git/cluster/hierarchical/")
 
 # Reads per million (not including the HS or RNAi data.)
 rpm = as.matrix(read.tsv("git/cluster/readsPerMillion.tsv"))

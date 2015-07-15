@@ -79,7 +79,7 @@ approx.region.gamma = function(A, b, num.iters=40) {
 #      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
       x1 = gamma.cond.sum.numerical(t1, A[i,], b[i])
 #      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
-      term[,,i] = 1 * term[,,i] + 0.1 * (x1 - x)
+      term[,,i] = 1 * term[,,i] + 0.25 * (x1 - x)
 #      term[,,i] = x1 - t1
     }
 

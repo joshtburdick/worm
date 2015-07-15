@@ -27,7 +27,7 @@ gamma.cond.sum.numerical.int.1 = function(g, h) {
 }
 
 # like gamma.cond.sum.numerical.int.1, but uses built-in integration.
-# FIXME not working
+# FIXME not working so well
 gamma.cond.sum.numerical.int.2 = function(g, h) {
   f = function(x) dgamma(x, shape = g[1], rate = g[2]) *
     dgamma(1 - x, shape = h[1], rate = h[2])
@@ -36,6 +36,14 @@ gamma.cond.sum.numerical.int.2 = function(g, h) {
   x2 = integrate(function(x) f(x) * (x^2) / x0, 0, 1)$value
 
   c(m = x1, v = x2 - x1^2)
+}
+
+# Attempt at using a grid of points, found from
+# maximizing the function using bisection.
+gamma.cond.sum.numerical.int.3 = function(g, h) {
+
+
+
 }
 
 # Moments of gamma-distributed vars, conditional on

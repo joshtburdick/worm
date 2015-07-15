@@ -25,7 +25,7 @@ for(var i=0; i<a.x.length; i++)
 clusterBrowser.rowLabel = [
   {name:"gene", width:100, colors:["#fff", "#eee"]},
   {name:"description", width:300, colors:["#eee","#ddd"]},
-  {name:"cluster", width:40, colors:["#fff","#eee"]}
+  {name:"cluster", width:80, colors:["#fff","#eee"]}
 ];
 
 
@@ -97,6 +97,7 @@ function redraw() {
 
   for(var i=0; i<clusterBrowser.numRows; i++) {
     nameLabel.setText(i, a.geneName[p[i]]);
+    // FIXME: italicize?
     nameLabel.setLink(i,
       "#" + a.geneName[p[i]],
       "recenter on " + a.geneName[p[i]]);

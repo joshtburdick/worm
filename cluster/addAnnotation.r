@@ -4,6 +4,8 @@ source("git/utils.r")
 
 source("git/data/worm/available_strains.r")
 
+source("git/sort_paper/plot/experimentRename.r")
+
 # motifs upstream of clusters
 motif.enrichment = as.vector(read.tsv(
   "git/cluster/motif/enrichOptimize/tmp_motif_hier_300.tsv"))
@@ -67,12 +69,19 @@ add.annotation = function(input.cdt, output.cdt, annotation) {
   a = matrix(nrow=length(g), ncol=length(annotation))
   rownames(a) = c(1,2,3,g[-c(1:3)])
   colnames(a) = names(annotation)
+
+  # rename some columns
+  r[1,] = prettify.read.ratio.columns(r[1,])
+
   # put names of annotation at top
   a[1,] = names(annotation)
   for(n in names(annotation)) {
     g1 = intersect(g, rownames(a))
     a[g1,n] = annotation[[n]][g1]
   }
+
+  # omit expression level and max, and add a blank column
+  r = cbind(r[,c(1:4,7:29)], NA, r[,30:44])
 
   r1 = cbind(r[,c(1:3)], a, r[,-c(1:3)])
 
@@ -92,8 +101,8 @@ add.annotation.to.clustering = function(cluster.dir) {
 
   annotation = list("Functional description" = func.descr,
     "Anatomy terms" = anatomy.by.gene,
-    "Motifs" = motifs.per.gene,
-    "ChIP" = chip.per.gene,
+#    "Motifs" = motifs.per.gene,
+#    "ChIP" = chip.per.gene,
     "Cluster" = cl,     # naming this "GROUP" seems to remove dendrogram
     "Strain" = wb.transgene.by.gene,
     "TransGenome" = tg)

@@ -6,6 +6,7 @@ source("git/data/name_convert.r")
 source("git/utils.r")
 source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 source("git/plot/web/html.r")
+source("git/sort_paper/plot/experimentRename.r")
 
 clustering.dir = "git/cluster/hierarchical/"
 output.dir = "git/sort_paper/plot/web/clusters"
@@ -337,6 +338,8 @@ chip.table = function(a) {
 # HTML for a formatted table of expression numbers.
 expr.table = function(x, cl) {
 
+  colnames(x) = prettify.read.ratio.columns(colnames(x))
+
 # add link out to WormBase
 #  x[,3] = sapply(x[,3],
 #    function(g) html.link(g,
@@ -347,7 +350,9 @@ expr.table = function(x, cl) {
   i = x[,3] %in% wb.gene.id[,2]
   wb.ids[i] = wb.gene.id[match(wb.ids[i], wb.gene.id[,2]), 1]  
 
-  x[,3] = html.link(x[,3],
+  # italicize gene names, and link to Wormbase
+  x[,3] = html.link(
+    ifelse(grepl("-", x[,3]), paste0("<i>" , x[,3], "</i>"), x[,3]),
     paste0("http://www.wormbase.org/db/get?name=", wb.ids, ";class=Gene"))
 
   for(j in 1:11) {
