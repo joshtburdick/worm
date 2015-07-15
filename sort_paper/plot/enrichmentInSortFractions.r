@@ -3,11 +3,13 @@
 
 source("git/plot/label_panel.r")
 source("git/utils.r")
+source("git/sort_paper/plot/experimentRename.r")
 
 # expression data
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
 
 r = read.tsv("git/cluster/readRatios.tsv")
+colnames(r) = prettify.read.ratio.columns(colnames(r))
 
 r.sort.only = r[,c(1:23)]
 rpm.facs = rpm[ , c(1:23,38:54,65:68) ]
@@ -42,18 +44,18 @@ pdf("git/sort_paper/plot/enrichmentInSortFractions.pdf",
   width=7, height=5)
 
 sort.marker.enrichment = sort(get.sort.marker.enrichment())
-sort.marker.enrichment =
+sort.marker.enrichment.1 =
   c(sort.marker.enrichment[1:5], NA,
     sort.marker.enrichment[6:17])
 
 par(mar=c(7,4,4,2)+0.1)
-x.axis.points = barplot(sort.marker.enrichment, space=0.5, las=2,
+x.axis.points = barplot(sort.marker.enrichment.1, space=0.5, las=2,
 #  main="Enrichment of sort marker\nin sorted fraction",
   ylab="Enrichment",
-  col=ifelse(names(sort.marker.enrichment) %in% promoter.fusion,
+  col=ifelse(names(sort.marker.enrichment.1) %in% promoter.fusion,
     "#c00000", "#80ff80"), cex.main=1.2,
     cex.axis=1.2, cex.lab=1.2, xaxt="n")
-axis(1, at=x.axis.points, labels = names(sort.marker.enrichment),
+axis(1, at=x.axis.points, labels = names(sort.marker.enrichment.1),
   las=2, lty=0, font=3)
 legend("topleft", c("promoter fusion", "protein fusion"),
   fill=c("#c00000", "#80ff80"))
