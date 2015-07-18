@@ -3,6 +3,21 @@
 
 source("git/utils.r")
 
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
+
+# for filtering motifs
+load("git/sort_paper/tf/motif/hughes/motifCluster.Rdata")
+motif.clustering = cutree(hughes.motif.cluster[["all"]], h=0.01)
+
+motif.ortholog.summary = sapply(orthologs.by.motif,
+  function(a) {
+    if (length(a) <= 21)
+      paste(a, collapse=" ")
+    else
+      paste(paste(a[1:20], collapse=" "),
+        "and", length(a) - 20, "others", collapse=" ")
+  })
+
 enrich = read.tsv(gzfile("git/sort_paper/tf/motif/hyperg/summary/hughes/hier.300.clusters.tsv.gz"))
 
 r = read.tsv(gzfile("git/cluster/motif/plot/distConservationWilcoxon.tsv.gz"))
@@ -18,6 +33,22 @@ a[,5] = -log10(a$dist.p.corr)
 colnames(a)[5] = "lp.dist"
 a[,7] = -log10(a$cons.p.corr)
 colnames(a)[7] = "lp.cons"
+
+a = a[ order(a$lp.corr, decreasing=TRUE) , ]
+
+# filter redundant motifs
+a = a[ !duplicated(paste(motif.clustering[ a$motif ], a$group)) , ]
+
+# add on motif annotation
+a$motif.name = motif.info[ a$motif, "motif.name" ]
+a$gene.or.ortholog = motif.info[ a$motif, "gene" ]
+m = a$motif %in% names(motif.ortholog.summary)
+a[m, "gene.or.ortholog"] = motif.ortholog.summary[ a[m,"motif"] ]
+a$gene.or.ortholog[ is.na(a$gene.or.ortholog) ] = ""
+
+# write out data used for plotting
+write.tsv(a,
+  "git/sort_paper/tf/motif/hyperg/enrichLocation/motifLocAndConservation.tsv")
 
 # Plots each of these four categories separately, compared
 # to motif enrichment.
@@ -61,7 +92,7 @@ plot.2 = function(coloring) {
   a$lp.corr.1 = pmin(a$lp.corr / 10, 1)
   a$lp.dist.1 = ifelse(a$dist.closer, a$lp.dist, -a$lp.dist)
   a$lp.cons.1 = ifelse(a$cons.higher, a$lp.cons, -a$lp.cons)
-# browser()
+
   plot(a$lp.dist.1, a$lp.cons.1, xlim=c(-305, 305),
     ylim=c(-40,40),
     xlab="Distance to TSS", ylab="Conservation",
@@ -79,7 +110,7 @@ plot.2 = function(coloring) {
     legend=c(expression(10^{-4}),
       expression(10^{-6}),
       expression(10^{-8}),
-      expression("" > 10^{-10})),
+      expression("" < 10^{-10})),
       col=coloring(c(2:5)/5), cex=0.7)
     mtext("Further", side=1, adj=0, line=2)
     mtext("Closer", side=1, adj=1, line=2)
