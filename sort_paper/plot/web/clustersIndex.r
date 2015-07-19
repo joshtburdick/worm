@@ -26,6 +26,7 @@ clustering.name = "hier.300.clusters"
 #   many of the given things were enriched, and a description.
 most.enriched = function(e, cl, column.name="group.name",
     pretty.print = function(a) a) {
+
   enriched.count = tapply(e[,column.name], e[,"cluster"], length)
   e = e[ order(e$p.corr) , ]
   e = e[ !duplicated(e$cluster) , ]
@@ -69,8 +70,8 @@ index.table = function() {
 
   # omit "Tissue"
   ao.enriched = ao.enriched[ ao.enriched$group.name != "Tissue" , ]
+  colnames(hyperg.motif)[2] = "cluster"  # need to rename this
 
-  colnames(hyperg.motif)[3] = "cluster"  # need to rename this
   motif.html = most.enriched(hyperg.motif, rownames(a),
     column.name = "motif", pretty.print = motif.name.format)
 
@@ -89,7 +90,7 @@ index.table = function() {
   a = cbind(a, data.frame(
     "Cluster"=tag("td", cluster.links),
     "Number of genes"=tag("td", gene.count),
-    "Mean expression<br>(RPM)"=tag("td", round(mean.max.rpm[ rownames(a) ], 1)),
+    "Mean expr. (RPM)"=tag("td", round(mean.max.rpm[ rownames(a) ], 1)),
     "Anatomy enriched"=tag("td", most.enriched(ao.enriched, rownames(a))),
 #    "Phenotype enriched"=tag("td", most.enriched(phenotype.enriched, rownames(x))),
     "Other expression cluster"=tag("td", most.enriched(cluster.enriched, rownames(a), column.name="group", pretty.print=cluster.name.format)),

@@ -4,7 +4,9 @@
 
 use strict;
 
-my $new_header = $eARGV[0];
+die if not (@ARGV == 3);
+
+my $new_header = $ARGV[0];
 my $input_dir = $ARGV[1];
 my $output_dir = $ARGV[2];
 
@@ -16,9 +18,7 @@ foreach (<$input_dir/*.bam>) {
 
   print "$a\n";
 
-  system("samtools reheader $new_header $input_dir/$a.bam > $output_dir/$a.bam");
-
-  system("samtools index $output_dir/$a.bam");
+  print("samtools reheader $new_header $input_dir/$a.bam > $output_dir/$a.bam");
+  print("samtools index $output_dir/$a.bam");
 }
-
 

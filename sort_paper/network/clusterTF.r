@@ -25,7 +25,8 @@ chip.enriched.all$factor = sub("_.*$", "", chip.enriched.all$experiment)
 x = read.table(paste0(clustering.dir, "/", clustering.name, "/cluster.cdt"),
   sep="\t", quote="", fill=TRUE, header=TRUE, check.names=FALSE, as.is=TRUE)
 x = x[ c(-1,-2) , ]
-for(j in c(12:51)) {
+x = x[ , -33 ]          # remove empty column
+for(j in c(10:47)) {
   x[ , j ] = as.numeric( x[ , j ])
 }
 
@@ -56,9 +57,6 @@ mean.max.rpm = tapply(max.rpm, x[,8], mean)
 i = tolower(chip.enriched.all$factor) %in% rownames(rr)
 chip.enriched.all$factor[i] = tolower( chip.enriched.all$factor[i] )
 chip.enriched.all$factor = sub("LIN-15B", "lin-15", chip.enriched.all$factor)
-
-# genes and orthologs
-motif.ortholog = read.tsv("git/tf/motif.ortholog.3.tsv")
 
 # Summary of per-cluster information.
 cluster.tf.table = function() {

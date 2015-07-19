@@ -30,7 +30,8 @@ system(paste0("mkdir -p ", output.dir, "/", clustering.name))
 x = read.table(paste0(clustering.dir, "/", clustering.name, "/cluster.cdt"),
   sep="\t", quote="", fill=TRUE, header=TRUE, check.names=FALSE, as.is=TRUE)
 x = x[ c(-1,-2) , ]
-for(j in c(12:51)) {
+x = x[ , c(-33) ]           # omit blank column
+for(j in c(10:47)) {
   x[ , j ] = as.numeric( x[ , j ])
 }
 
@@ -355,18 +356,18 @@ expr.table = function(x, cl) {
     ifelse(grepl("-", x[,3]), paste0("<i>" , x[,3], "</i>"), x[,3]),
     paste0("http://www.wormbase.org/db/get?name=", wb.ids, ";class=Gene"))
 
-  for(j in 1:11) {
+  for(j in 1:9) {
     x[,j] = sapply(x[,j], function(a) paste0("<td>", a, "</td>"))
   }
 
   # "colorize" the actual data
-  for(j in 12:51) {
+  for(j in 10:47) {
     x[,j] = sapply(x[,j], td.color)
   }
-  x = x[ , c(12:51, 3, 4) ]
+  x = x[ , c(10:47, 3, 4) ]
 
   col.names = colnames(x)
-  col.names[1:40] = sapply(col.names[1:40], rotate.text)
+  col.names[1:38] = sapply(col.names[1:38], rotate.text)
 
   table.header = paste(c("<thead><tr>",
     sapply(col.names, function(a) paste0("<th width=\"20px\" height=\"200px\">", a, "</th>")),
@@ -481,6 +482,4 @@ cat("\n")
 
 # write an index
 source("git/sort_paper/plot/web/clustersIndex.r")
-
-
 

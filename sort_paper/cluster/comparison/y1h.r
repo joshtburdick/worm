@@ -12,7 +12,6 @@ cluster.tf = cluster.tf[ order(cluster.tf$"Motif p") , ]
 cluster.tf = cluster.tf[ !duplicated(cluster.tf[ , c(1,2)]) , ]
 }
 
-
 # one of the clusterings
 cl = {
   cl1 = read.table("git/cluster/hierarchical/hier.300.clusters/clusters.tsv",
@@ -30,6 +29,18 @@ y1h$prey.name = rename.gene.name.vector(y1h$prey.ORF.name)
 y1h$bait.cl = cl[ y1h$bait.name ]
 y1h$prey.cl = cl[ y1h$prey.name ]
 y1h = y1h[ (!is.na(y1h$bait.cl)) & (!is.na(y1h$prey.cl)) , ]
+
+# simplified DBD names
+simplified.dbd = {
+  a = unique(c(y1h$bait.DBD, y1h$prey.DBD))
+  names(a) = a
+  for(tf.class in c("AT Hook", "bHLH", "HD", "HMG", "MYB",
+      "Paired Domain", "WH", "ZF"))
+    a[ grepl(paste0("^", tf.class), a) ] = tf.class
+  a
+}
+y1h$bait.DBD = simplified.dbd[ y1h$bait.DBD ]
+y1h$prey.DBD = simplified.dbd[ y1h$prey.DBD ]
 
 # for each row of this, see if it has a Y1H entry
 cluster.tf$has.y1h = paste(cluster.tf$TF, cluster.tf$Cluster) %in%
@@ -65,33 +76,41 @@ num.y1h = function(cluster.tf, y1h, p.cutoff) {
 }
 
 pdf("git/sort_paper/cluster/comparison/y1h_b.pdf",
-  width=8, height=12)
-par(mar=c(15,4,4,1)+0.1)
+  width=9, height=6)
+par(mar=c(5,10,1,1)+0.1)
 # par(mfrow=c(1,3))
 
 prey.dbd = table(y1h$prey.DBD)
 prey.dbd = prey.dbd[ prey.dbd >= 30 ]
 
-for(cutoff in c(2,3,4)) {
+for(cutoff in c(3)) {      # was c(2,3,4)) {
 
-  r = c("combined" = num.y1h(cluster.tf, y1h, cutoff))
+  r1 = num.y1h(cluster.tf, y1h, cutoff)
+  names(r1) = c("No Y1H interaction", "All")
 
+  r = NULL
   for(d in names(prey.dbd)) {
     print(d)
-    r = cbind(r, num.y1h(cluster.tf, y1h[ y1h$prey.DBD == d,], cutoff))
-    colnames(r)[ncol(r)] = d
+    r = c(r, num.y1h(cluster.tf, y1h[ y1h$prey.DBD == d,], cutoff)[2])
+    names(r)[length(r)] = d
   }
-  colnames(r)[1] = "combined"
-  r = r[ , order(r[2,], na.last=FALSE) ]
-  barplot(r, beside=TRUE, las=2, col=c("grey", "black"),
-    main=paste("(cutoff =", cutoff, ")"),
-    ylab="proportion significant")
-  legend("topleft",
-    legend=c("no Y1H", "with Y1H"),
-    fill=c("grey", "black"))
+  r[ is.na(r) ] = 0
+  r = r[ order(r) ]
+
+  r = c(r1["No Y1H interaction"], r, r1["All"])
+
+  n = names(r)
+  n[length(n)] = expression(bold("All"))
+
+  barplot(r, beside=TRUE, horiz=TRUE, las=1,
+    names.arg = n,
+    col=c("white", rep("grey", length(r)-2), "#777777"),
+#    main=paste("(cutoff =", cutoff, ")"),
+    xlab=expression("Proportion of Y1H arcs with motif enrichment < 10"^{-3}))
+#  legend("topleft",
+#    legend=c("no Y1H", "with Y1H"),
+#    fill=c("grey", "black"))
 }
-
-
 
 dev.off()
 

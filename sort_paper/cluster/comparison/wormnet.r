@@ -1,5 +1,6 @@
 # Comparison of clustering with Wormnet annotation.
 
+source("git/utils.r")
 source("git/data/worm/wormnet.r")
 
 arc.types = colnames(wormnet)[3:24]
@@ -12,6 +13,9 @@ cl = {
   names(cl) = cl1[,2]
   cl
 }
+
+# the read ratios
+x = read.tsv("git/cluster/readRatios.tsv")[,1:23]
 
 # only keep the overlapping gene names (the overlap seems small,
 # but then, the clustering doesn't include genes not expressed
@@ -54,10 +58,18 @@ compare.arc.clusters = function() {
   background.prob = sum(choose(n.cl, 2)) / (sum(n.cl)^2)
 
   for(arc.type in arc.types) {
+    s = w1[ !is.na(w1[,arc.type]) , "same.cluster" ]
+    a = chisq.test(c(sum(s), sum(!s)),
+      p=c(background.prob, 1-background.prob))
     r = rbind(r,
       data.frame(
         num.arcs = sum(!is.na(w1[,arc.type])),
-        p.same.cluster = signif(mean(w1[ !is.na(w1[,arc.type]), "same.cluster" ]), 2) ))
+        num.same.cluster = sum( s ),
+        p.same.cluster =
+          signif(mean(w1[ !is.na(w1[,arc.type]), "same.cluster" ]), 2),
+        chisq = as.numeric(a$statistic),
+        p = a$p.value
+     ))
   }
 
   rownames(r) = arc.types
@@ -65,9 +77,6 @@ compare.arc.clusters = function() {
   r$description = wormnet.evidence.type[ arc.types ]
   r
 }
-
-
-x = read.tsv("git/cluster/readRatios.tsv")[,1:23]
 
 
 # Comparison of enrichment of genetic interactions.
@@ -89,6 +98,56 @@ compare.genetic.interactions = function() {
     p.ce.gn.given.same.cluster = sum(w1.b[ w1.b[,"same.cluster"],"CE-GN"]) / num.same.cluster)
 }
 
+# Alternative version of this, which compares the number
+# overlapping with a background based on shuffling
+# (a la Walhout et al 2013).
+# Args:
+#   a - arcs, as a data frame with two columns
+#   cl - a clustering
+#   num.shuffles - number of times to sample this
+# Returns: vector with elements
+#   n.same.cluster - number of arcs in the same cluster 
+#   shuffled.mean - mean of that, for all shuffles
+#   n.shuffled.higher
+cluster.overlap.shuffle.1 = function(a, cl, num.shuffles=100) {
+  n.same.cluster = sum(cl[a[,1]] == cl[a[,2]])
+  r = rep(NA, num.shuffles)
+
+  for(i in 1:num.shuffles) {
+    if (i %% 100 == 0) {
+      write.status(i)
+    }
+    s = sample(cl)
+    names(s) = names(cl)
+    r[i] = sum(s[a[,1]] == s[a[,2]])
+  }
+  n.shuffled.higher = sum(r >= n.same.cluster)
+
+  data.frame(n.same.cluster = n.same.cluster,
+#    n.same.cluster.shuffled = r,
+    shuffled.mean = mean(r),
+    n.shuffled.higher = n.shuffled.higher,
+    p = (n.shuffled.higher + 1) / num.shuffles,
+    stringsAsFactors=FALSE)
+}
+
+# Checks the cluster overlap for each type of arc.
+cluster.overlap.shuffle = function(num.shuffles=10) {
+  r = NULL
+
+  for(arc.type in arc.types) {
+    cat(arc.type, "\n")
+    s = w1[ !is.na(w1[,arc.type]) , c("gene1","gene2") ]
+    r1 = cluster.overlap.shuffle.1(s, cl, num.shuffles)
+    r = rbind(r, r1)
+  }
+  rownames(r) = arc.types
+  r$p.corr = p.adjust(r$p, method="fdr")
+  r
+}
+
+# original version of this
+if (FALSE) {
 arc.cluster.counts = compare.arc.clusters()
 
 arc.cluster.counts[ 1:21 , ] =
@@ -96,13 +155,16 @@ arc.cluster.counts[ 1:21 , ] =
     order(arc.cluster.counts[1:21,2], decreasing=TRUE) , ]
 
 write.tsv(arc.cluster.counts, "git/sort_paper/cluster/comparison/wormnet.tsv")
+}
 
+if (FALSE) {
+ z = w1[ !is.na(w1$"SC-CX") , ]
+z1 = cluster.overlap.shuffle.1(z, cl, 20000)
 
+}
 
-# w1.b = w1
-# w1.b[ , c(3:24) ] = !is.na( w1.b[ , c(3:24) ] )
+wormnet.stats.shuffle = cluster.overlap.shuffle(10000)
 
-
-
-
+write.tsv(wormnet.stats.shuffle,
+  "git/sort_paper/cluster/comparison/wormnet_shuffle.tsv")
 
