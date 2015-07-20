@@ -4,7 +4,7 @@ source("git/utils.r")
 source("git/data/name_convert.r")
 
 # TF-cluster combined stats
-if (FALSE) {
+if (TRUE) {
 cluster.tf = read.tsv(gzfile("git/sort_paper/network/clusterTF.tsv.gz"))
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "TF-cluster corr." ]) , ]
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "Motif p" ]) , ]
@@ -75,42 +75,126 @@ num.y1h = function(cluster.tf, y1h, p.cutoff) {
     with.y1h = mean(lp1 >= cutoff))
 }
 
-pdf("git/sort_paper/cluster/comparison/y1h_b.pdf",
-  width=9, height=6)
-par(mar=c(5,10,1,1)+0.1)
-# par(mfrow=c(1,3))
+y1h.bargraph = function() {
+  pdf("git/sort_paper/cluster/comparison/y1h_b.pdf",
+    width=9, height=6)
+  par(mar=c(5,10,1,1)+0.1)
+  # par(mfrow=c(1,3))
 
-prey.dbd = table(y1h$prey.DBD)
-prey.dbd = prey.dbd[ prey.dbd >= 30 ]
+  prey.dbd = table(y1h$prey.DBD)
+  prey.dbd = prey.dbd[ prey.dbd >= 30 ]
 
-for(cutoff in c(3)) {      # was c(2,3,4)) {
+  for(cutoff in c(3)) {      # was c(2,3,4)) {
 
-  r1 = num.y1h(cluster.tf, y1h, cutoff)
-  names(r1) = c("No Y1H interaction", "All")
+    r1 = num.y1h(cluster.tf, y1h, cutoff)
+    names(r1) = c("No Y1H interaction", "All")
 
-  r = NULL
-  for(d in names(prey.dbd)) {
-    print(d)
-    r = c(r, num.y1h(cluster.tf, y1h[ y1h$prey.DBD == d,], cutoff)[2])
-    names(r)[length(r)] = d
+    r = NULL
+    for(d in names(prey.dbd)) {
+      print(d)
+      r = c(r, num.y1h(cluster.tf, y1h[ y1h$prey.DBD == d,], cutoff)[2])
+      names(r)[length(r)] = d
+    }
+    r[ is.na(r) ] = 0
+    r = r[ order(r) ]
+
+    r = c(r1["No Y1H interaction"], r, r1["All"])
+
+    n = names(r)
+    n[length(n)] = expression(bold("All Y1H"))
+
+    barplot(r, beside=TRUE, horiz=TRUE, las=1,
+      names.arg = n,
+      col=c("white", rep("grey", length(r)-2), "#777777"),
+  #    main=paste("(cutoff =", cutoff, ")"),
+      xlab=expression("Proportion of arcs with motif enrichment < 10"^{-3}))
+  #  legend("topleft",
+  #    legend=c("no Y1H", "with Y1H"),
+  #    fill=c("grey", "black"))
   }
-  r[ is.na(r) ] = 0
-  r = r[ order(r) ]
 
-  r = c(r1["No Y1H interaction"], r, r1["All"])
-
-  n = names(r)
-  n[length(n)] = expression(bold("All"))
-
-  barplot(r, beside=TRUE, horiz=TRUE, las=1,
-    names.arg = n,
-    col=c("white", rep("grey", length(r)-2), "#777777"),
-#    main=paste("(cutoff =", cutoff, ")"),
-    xlab=expression("Proportion of Y1H arcs with motif enrichment < 10"^{-3}))
-#  legend("topleft",
-#    legend=c("no Y1H", "with Y1H"),
-#    fill=c("grey", "black"))
+  dev.off()
 }
 
-dev.off()
+# Measures graph overlap, compared to shuffled versions of them.
+# Args:
+#   g1, g2 - two data frames, each with two columns, which are
+#     the arcs of directed graphs
+#   num.shuffles - number of times to shuffle the graph
+# Returns: list with
+#   overlap - the overlap
+#   shuffled.overlap - vector of the overlap (with shuffled graphs)
+#   p - the corresponding (uncorrected) p-value
+#   m1, m2 - the corresponding graphs (for debugging)
+graph.compare = function(g1, g2, num.shuffles=10000) {
+  # convert these all to characters
+  g1[,1] = as.character(g1[,1])
+  g1[,2] = as.character(g1[,2])
+  g2[,1] = as.character(g2[,1])
+  g2[,2] = as.character(g2[,2])
+
+  # convert these to matrices
+  a = union(g1[,1], g2[,1])
+  b = union(g1[,2], g2[,2])
+  m0 = matrix(FALSE, nrow=length(a), ncol=length(b))
+  rownames(m0) = a
+  colnames(m0) = b
+  m1 = m0
+  m1[ as.matrix(g1[,c(1,2)]) ] = TRUE
+  m2 = m0
+  m2[ as.matrix(g2[,c(1,2)]) ] = TRUE
+
+  # find original overlap
+  overlap = sum(m1 & m2)
+
+  # ... and shuffled overlap
+  shuffled.overlap = rep(NA, num.shuffles)
+  for(i in 1:num.shuffles) {
+    if (i %% 100 == 0)
+      write.status(i)
+    ms = m2[ sample(nrow(m2)) , ]
+    ms = ms[ , sample(ncol(m2)) ]
+    shuffled.overlap[ i ] = sum(m1 & ms)
+  }
+
+  list(overlap = overlap, shuffled.overlap = shuffled.overlap,
+    p = (sum(overlap < shuffled.overlap) + 1) / num.shuffles,
+    m1 = m1, m2 = m2)
+}
+
+# Compares the Y1H graph by shuffling.
+y1h.graph.compare = function() {
+
+  # prey DBDs to consider
+  prey.dbd = table(y1h$prey.DBD)
+  prey.dbd = prey.dbd[ prey.dbd >= 30 ]
+
+  ctf1 = cluster.tf[ cluster.tf$"Motif p" <= 1e-4 & cluster.tf$TF %in% y1h$"prey.name" ,
+    c("TF", "Cluster") ]
+
+  a = graph.compare(ctf1, y1h[ , c("prey.name", "bait.cl") ])
+  r = data.frame(prey.dbd = "All", overlap = a$overlap,
+    mean.shuffled.overlap = mean(a$shuffled.overlap), p = a$p, stringsAsFactors=FALSE)
+
+  for(d in names(prey.dbd)) {
+    print(d)
+# browser()
+    y1h.1 = y1h[ y1h$prey.DBD == d, c("prey.name", "bait.cl") ]
+    ctf.1 = ctf1[ ctf1$"TF" %in% y1h.1$"prey.name", ]
+    if(nrow(y1h.1) > 0 && nrow(ctf.1) > 0) {
+      a = graph.compare(ctf.1, y1h.1)
+      r1 = data.frame(prey.dbd = d, overlap = a$overlap,
+        mean.shuffled.overlap = mean(a$shuffled.overlap), p = a$p, stringsAsFactors=FALSE)
+      r = rbind(r, r1)
+    }
+  }
+  r$overlap.enrich = r$overlap / r$mean.shuffled.overlap
+  r$p.corr = p.adjust(r$p, method="fdr")
+  rownames(r) = r[ , 1 ]  
+  r[ , -1 ]
+}
+
+y1h.bargraph()
+
+write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle.tsv")
 
