@@ -4,7 +4,7 @@ source("git/utils.r")
 source("git/data/name_convert.r")
 
 # TF-cluster combined stats
-if (TRUE) {
+if (FALSE) {
 cluster.tf = read.tsv(gzfile("git/sort_paper/network/clusterTF.tsv.gz"))
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "TF-cluster corr." ]) , ]
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "Motif p" ]) , ]
@@ -71,8 +71,8 @@ num.y1h = function(cluster.tf, y1h, p.cutoff) {
     paste(y1h$prey.name, y1h$bait.cl)
   lp0 = -log10(a[!a$has.y1h,"Motif p"])
   lp1 = -log10(a[a$has.y1h,"Motif p"])
-  c(no.y1h = mean(lp0 >= cutoff),
-    with.y1h = mean(lp1 >= cutoff))
+  c(no.y1h = mean(lp0 >= p.cutoff),
+    with.y1h = mean(lp1 >= p.cutoff))
 }
 
 y1h.bargraph = function() {
@@ -107,7 +107,7 @@ y1h.bargraph = function() {
       names.arg = n,
       col=c("white", rep("grey", length(r)-2), "#777777"),
   #    main=paste("(cutoff =", cutoff, ")"),
-      xlab=expression("Proportion of arcs with motif enrichment < 10"^{-3}))
+      xlab=expression("Proportion of motif enrichments with a Y1H interaction"))
   #  legend("topleft",
   #    legend=c("no Y1H", "with Y1H"),
   #    fill=c("grey", "black"))
@@ -196,5 +196,5 @@ y1h.graph.compare = function() {
 
 y1h.bargraph()
 
-write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle.tsv")
+# write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle.tsv")
 
