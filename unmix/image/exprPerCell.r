@@ -5,6 +5,8 @@ source("git/data/worm/embryodb.r")
 
 movie.list = read.table("git/unmix/image/sort/movieList.tsv",
   sep="\t", header=TRUE, as.is=TRUE)
+# arbitrarily picking the first movie per gene
+movie.list = movie.list[ ! duplicated(movie.list$gene) , ]
 
 # XXX this should probably be in git
 load("git/unmix/unmix_comp/data/tree_utils.Rdata")
@@ -13,65 +15,36 @@ load("git/unmix/unmix_comp/data/tree_utils.Rdata")
 tissues.per.cell = read.table("data/worm/TissuesPerCell.tsv",
   sep="\t", quote="", header=TRUE, row.names=1, as.is=TRUE)
 
-# Sets each cell to the maximum along the lineage path.
-lineage.max = function(x) {
-  # set each cell to max. of itself and parent
-  lt = lin.triples
-  x1 = x
-  x1[ lt$daughter.1 ] =
-    pmax(x1[ lt$parent ], x1[ lt$daughter.1 ])
-  x1[ lt$daughter.2 ] =
-    pmax(x1[ lt$parent ], x1[ lt$daughter.2 ])
-
-  # if there was no change, we're done
-  if (all(x1 == x))
-    x1
-  else
-    # otherwise, make recursive call
-    lineage.max(x1)
-}
-
 # Summary of per-cell expression.
 # Args:
 #   series.name - name of the series
-# Returns: intensity of that marker for each gene
-per.cell.summary = function(series.name) {
-  scd = read.embryodb.dat.file(series.name)
-
-  per.cell = c(by(scd$blot, scd$cell,
-    function(x) as.numeric(quantile(x, 0.9))))
-  per.cell[ "P0" ] = 0
-  per.cell = per.cell[ lin.node.names ]
-
-  per.cell
-}
-
-# Averages the numbers for each gene.
-per.gene.summary = function(gene) {
-  x = 0
-  series = movie.list[ movie.list$gene == gene, "series" ]
-  n = length(series) 
-  for(s in series) {
-    x = x + per.cell.summary(s)
-  }
-  x / n
+# Returns: intensity of that marker for each cell
+series.summary = function(series.name) {
+  sca = read.embryodb.dat.file(series.name, file.pattern="SCA")
+  sca = sca[sca$cell %in% lin.node.names , ]
+  rownames(sca) = sca$cell
+  expr = sca[ lin.node.names, "blot" ]
+  names(expr) = lin.node.names
+  expr[ "P0" ] = 0
+  expr
 }
 
 r = NULL
-for(g in unique(movie.list$gene)) {
-  write.status(g)
-  r = rbind(r, g = per.gene.summary(g))
+for(i in 1:nrow(movie.list)) {
+  r = rbind(r, g = series.summary(movie.list[i,"series"]))
 }
-rownames(r) = unique(movie.list$gene)
+rownames(r) = movie.list$gene
 rownames(r) = sub("ceh-26", "pros-1", rownames(r))
 r = r[ sort(rownames(r)) , ]
-r = round(r, digits=1)
 
 tissues.per.cell = tissues.per.cell[ colnames(r) , ]
 
-r = t(rbind(cell = tissues.per.cell$Cell,
+r = data.frame(cell = tissues.per.cell$Cell,
   tissue = tissues.per.cell$Tissue,
-  r))
+  t(r), check.names = FALSE, stringsAsFactors = FALSE)
+
+r[ is.na(r$cell), "cell" ] = ""
+r[ is.na(r$tissue), "tissue" ] = ""
 
 write.tsv(r, "git/unmix/image/exprPerCell.tsv")
 
