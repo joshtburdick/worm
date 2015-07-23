@@ -20,14 +20,63 @@ setwd("../../../..")
 source("git/unmix/ept/beta.r")
 source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/practice/invgamma.r")
+source("git/unmix/ept/practice/sd.r")
 setwd(wd)
 setwd("../../../..")
 setwd("git/unmix/unmix_comp/src/")
 # print(getwd())
-source("sampling/cdaCpp.r")
+# source("sampling/cdaCpp.r")
 setwd(wd)
 
 @
+
+
+\section{Some test data}
+
+Before doing anything else, I define a tiny test data set, for these reasons:
+
+\begin{itemize}
+
+\item Any parameter tuning won't invalidate results on the real data. (Previously,
+I was subsetting to, e.g., the most highly expressed genes.)
+
+\item It may be easier to see if unmixing is working on a toy example.
+
+\item Speed is not the biggest concern.
+
+\end{itemize}
+
+Here, the sort matrix is A, and the expression is X.
+Note that since rows of A and X all add up to one, this is also
+the case for the rows of B (they are all ``row-stochastic.'')
+
+
+<<toy1,echo=TRUE>>=
+A = matrix(rgamma(40, shape=1, rate=1), nrow=4)
+A = A / apply(A, 1, sum)
+round(A, 2)[,1:5]
+X = matrix(rgamma(200, shape=1, rate=1), nrow=10)
+X = X / apply(X, 1, sum)
+B = A %*% X
+apply(A, 1, sum)
+apply(X, 1, sum)
+apply(B, 1, sum)
+@
+
+One definition of ``working'' would be: if we unmix using a perturbed prior for
+A (but using the {\em actual} sort matrix in simulating B), then the posterior
+estimate for A is closer to the actual A than the prior.
+
+\subsection{Distribution of AX}
+
+If we sample from A and X, we should be able to estimate the marginal distributions
+of AX by moment-matching...
+
+
+
+
+
+\section{EP, with an approximate sort matrix}
 
 So far, we've been treating the sort matrix $A$ as exactly known,
 which seems like a weak assumption. Therefore, we assume that
@@ -50,10 +99,6 @@ As a toy example of this, we can sample from the
 marginals with two constraints, compared to applying
 one constraint at a time. This is sort of like assuming
 the covariance is diagonal.
-
-
-
-
 
 If the system is fairly underdetermined, this seems like a
 reasonable approximation. Presumably, it will do worse
@@ -87,13 +132,11 @@ an inverse gamma distribution. If $A$'s shape is at least
 We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
 
 
-
 \subsection{Applying EP}
 
 We now (maybe) have a situation similar to that
-described by Minka: 
-
-
+described by Minka: several approximations which we can
+iteratively improve.
 
 
 
@@ -102,61 +145,8 @@ described by Minka:
 \subsection{Comparison with sampling}
 
 
-
-
 I don't have a strategy for sampling when there's noise
 in the sort matrix.
-
-
-
-\section{Another way of estimating marginals}
-
-
-To test this approach, we compare its marginals to those from
-sampling (at least on a toy problem.)
-
-First, we design a {\em very} toy problem:
-
-<<toy1,echo=TRUE>>=
-A = matrix(sample(0:5, 32, replace=TRUE), nrow=4)
-A
-x = sample(c(0,1,2,4,8), 8, replace=TRUE)
-x
-b = as.vector(A %*% x)
-b
-@
-
-
-
-<<sample1,echo=FALSE>>=
-x0 = x.infer["m",]
-x.sample = sample.cda(A, b, x0, 1e4, 10)
-@
-
-
-
-We compute marginals using this method.
-
-<<infer1,echo=TRUE>>=
-x.infer = approx.region.simplex.transform(A,b)
-round(x.infer,2)
-round(as.vector(A %*% x.infer["m",]), 2)
-@
-
-So, at least the mean matches the constraints.
-
-<<sample2,dev='pdf',fig.width=8,fig.height=4,echo=TRUE>>=
-x = rgamma(1e5, shape=1, scale=5)
-y = rgamma(1e5, shape=2, scale=3)
-par(mfrow=c(1,3))
-hist(x)
-hist(y)
-hist(x*y)
-@
-
-<<samplePlot1,dev='pdf',fig.width=8,fig.height=4,echo=FALSE>>=
-hist(rbeta(1e5, 1, 2))
-@
 
 
 \end{document}

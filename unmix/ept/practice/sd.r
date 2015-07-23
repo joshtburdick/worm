@@ -4,9 +4,6 @@
 source("git/unmix/ept/gamma.r")
 source("git/unmix/ept/moment.r")
 
-# for testing
-source("git/unmix/ept/practice/gamma_conditional_6.r")
-
 # Converts from SD parameters to marginal mean and variance.
 sd.s2mv = function(a) {
   mv = gamma.s2mv(a)
@@ -56,6 +53,11 @@ sd.test2 = function(m, n) {
 }
 
 sd.sampling.test.1 = function(n) {
+
+  # for testing
+  source("git/unmix/ept/practice/gamma_conditional_6.r")
+
+
   # standard parameters of some random gamma distributions
   s = rbind(a = sample(c(1:10), n, replace=TRUE),
     b = sample(c(1:5), n, replace=TRUE))

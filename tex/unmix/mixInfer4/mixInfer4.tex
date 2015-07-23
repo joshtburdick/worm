@@ -63,6 +63,72 @@
 
 
 
+
+\section{Some test data}
+
+Before doing anything else, I define a tiny test data set, for these reasons:
+
+\begin{itemize}
+
+\item Any parameter tuning won't invalidate results on the real data. (Previously,
+I was subsetting to, e.g., the most highly expressed genes.)
+
+\item It may be easier to see if unmixing is working on a toy example.
+
+\item Speed is not the biggest concern.
+
+\end{itemize}
+
+Here, the sort matrix is A, and the expression is X.
+Note that since rows of A and X all add up to one, this is also
+the case for the rows of B (they are all ``row-stochastic.'')
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{A} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rgamma}\hlstd{(}\hlnum{40}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{rate}\hlstd{=}\hlnum{1}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{4}\hlstd{)}
+\hlstd{A} \hlkwb{=} \hlstd{A} \hlopt{/} \hlkwd{apply}\hlstd{(A,} \hlnum{1}\hlstd{, sum)}
+\hlkwd{round}\hlstd{(A,} \hlnum{2}\hlstd{)[,}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+##      [,1] [,2] [,3] [,4] [,5]
+## [1,] 0.20 0.21 0.01 0.11 0.07
+## [2,] 0.09 0.05 0.26 0.06 0.04
+## [3,] 0.08 0.16 0.26 0.05 0.07
+## [4,] 0.08 0.13 0.03 0.05 0.19
+\end{verbatim}
+\begin{alltt}
+\hlstd{X} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rgamma}\hlstd{(}\hlnum{200}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{rate}\hlstd{=}\hlnum{1}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{10}\hlstd{)}
+\hlstd{X} \hlkwb{=} \hlstd{X} \hlopt{/} \hlkwd{apply}\hlstd{(X,} \hlnum{1}\hlstd{, sum)}
+\hlstd{B} \hlkwb{=} \hlstd{A} \hlopt{%*%} \hlstd{X}
+\hlkwd{apply}\hlstd{(A,} \hlnum{1}\hlstd{, sum)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 1 1 1
+\end{verbatim}
+\begin{alltt}
+\hlkwd{apply}\hlstd{(X,} \hlnum{1}\hlstd{, sum)}
+\end{alltt}
+\begin{verbatim}
+##  [1] 1 1 1 1 1 1 1 1 1 1
+\end{verbatim}
+\begin{alltt}
+\hlkwd{apply}\hlstd{(B,} \hlnum{1}\hlstd{, sum)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 1 1 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+One definition of ``working'' would be: if we unmix using a perturbed prior for
+A (but using the {\em actual} sort matrix in simulating B), then the posterior
+estimate for A is closer to the actual A than the prior.
+
+
+\section{EP, with an approximate sort matrix}
+
 So far, we've been treating the sort matrix $A$ as exactly known,
 which seems like a weak assumption. Therefore, we assume that
 its entries are drawn from a gamma distribution, and that
@@ -121,13 +187,11 @@ an inverse gamma distribution. If $A$'s shape is at least
 We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
 
 
-
 \subsection{Applying EP}
 
 We now (maybe) have a situation similar to that
-described by Minka: 
-
-
+described by Minka: several approximations which we can
+iteratively improve.
 
 
 
@@ -136,108 +200,8 @@ described by Minka:
 \subsection{Comparison with sampling}
 
 
-
-
 I don't have a strategy for sampling when there's noise
 in the sort matrix.
-
-
-
-\section{Another way of estimating marginals}
-
-
-To test this approach, we compare its marginals to those from
-sampling (at least on a toy problem.)
-
-First, we design a {\em very} toy problem:
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{A} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlnum{0}\hlopt{:}\hlnum{5}\hlstd{,} \hlnum{32}\hlstd{,} \hlkwc{replace}\hlstd{=}\hlnum{TRUE}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{4}\hlstd{)}
-\hlstd{A}
-\end{alltt}
-\begin{verbatim}
-##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8]
-## [1,]    2    3    1    2    5    0    2    4
-## [2,]    1    4    4    3    4    4    3    5
-## [3,]    4    5    0    2    3    4    5    0
-## [4,]    0    1    0    4    5    1    4    1
-\end{verbatim}
-\begin{alltt}
-\hlstd{x} \hlkwb{=} \hlkwd{sample}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{8}\hlstd{),} \hlnum{8}\hlstd{,} \hlkwc{replace}\hlstd{=}\hlnum{TRUE}\hlstd{)}
-\hlstd{x}
-\end{alltt}
-\begin{verbatim}
-## [1] 4 4 8 1 4 0 8 2
-\end{verbatim}
-\begin{alltt}
-\hlstd{b} \hlkwb{=} \hlkwd{as.vector}\hlstd{(A} \hlopt{%*%} \hlstd{x)}
-\hlstd{b}
-\end{alltt}
-\begin{verbatim}
-## [1]  74 105  90  62
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
-
-
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in eval(expr, envir, enclos): object 'x.infer' not found}}
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in cdaCppCore(A, b, x0, Z, num.samples, thinning): object 'x0' not found}}\end{kframe}
-\end{knitrout}
-
-
-
-We compute marginals using this method.
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{x.infer} \hlkwb{=} \hlkwd{approx.region.simplex.transform}\hlstd{(A,b)}
-\end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in eval(expr, envir, enclos): could not find function "{}approx.region.simplex.transform"{}}}\begin{alltt}
-\hlkwd{round}\hlstd{(x.infer,}\hlnum{2}\hlstd{)}
-\end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in eval(expr, envir, enclos): object 'x.infer' not found}}\begin{alltt}
-\hlkwd{round}\hlstd{(}\hlkwd{as.vector}\hlstd{(A} \hlopt{%*%} \hlstd{x.infer[}\hlstr{"m"}\hlstd{,]),} \hlnum{2}\hlstd{)}
-\end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in as.vector(A \%*\% x.infer["{}m"{}, ]): object 'x.infer' not found}}\end{kframe}
-\end{knitrout}
-
-So, at least the mean matches the constraints.
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{x} \hlkwb{=} \hlkwd{rgamma}\hlstd{(}\hlnum{1e5}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{scale}\hlstd{=}\hlnum{5}\hlstd{)}
-\hlstd{y} \hlkwb{=} \hlkwd{rgamma}\hlstd{(}\hlnum{1e5}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{scale}\hlstd{=}\hlnum{3}\hlstd{)}
-\hlkwd{par}\hlstd{(}\hlkwc{mfrow}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{3}\hlstd{))}
-\hlkwd{hist}\hlstd{(x)}
-\hlkwd{hist}\hlstd{(y)}
-\hlkwd{hist}\hlstd{(x}\hlopt{*}\hlstd{y)}
-\end{alltt}
-\end{kframe}
-\includegraphics[width=\maxwidth]{figure/sample2-1} 
-
-\end{knitrout}
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
-\includegraphics[width=\maxwidth]{figure/samplePlot1-1} 
-
-\end{knitrout}
 
 
 \end{document}

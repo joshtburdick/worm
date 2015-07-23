@@ -1,6 +1,10 @@
 \documentclass{article}
 \usepackage{bm}
+\usepackage{graphicx}
 \usepackage{hyperref}
+\graphicspath{
+{/home/jburdick/gcb/}
+}
 
 \newcommand{\funname}[1]{\texttt{#1}}
 
@@ -62,15 +66,23 @@ Y_i \sim \mathrm{SD}(\alpha_i, \beta_i)
 Since the gamma distributions are independent, and in the exponential family,
 the SD distribution is as well. This means we can multiply them easily, which
 is necessary to use them with EP. We can also approximate the distribution in
-which several of them are grouped together by adding the gamma distributions,
-and moment-matching.
+which several of them are grouped together, by adding the gamma distributions
+using moment-matching.
+
+Here are some examples of SD distributions. The top few are also Dirichlet;
+the last three reflect how SD distributions can be multiplied.
+
+
+\includegraphics[width=1\textwidth]{git/unmix/ept/practice/gamma_conditional_5.pdf}
+
 
 \subsection{Marginals}
 
 We will often need to convert from parameters to mean and variance.
 The marginal distributions of each component of a Dirichlet are Beta
-distributions, and so this is fairly easy.
-To find the mean and variance of one component, it suffices to find the
+distributions, and so this is fairly easy for a Dirichlet.
+
+For an SD distribution, to find the mean and variance of one component, it suffices to find the
 first and second moments of that component. In other words, for $m = $ 1 or 2,
 we need to find
 
