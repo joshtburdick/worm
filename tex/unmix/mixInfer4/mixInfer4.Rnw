@@ -1,0 +1,163 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\newcommand{\funname}[1]{\texttt{#1}}
+
+\title{Noise in the sort matrix}
+\author{Josh Burdick}
+
+\begin{document}
+
+\maketitle
+
+<<intro,echo=FALSE>>=
+library("MASS")
+wd = getwd()
+setwd("../../../..")
+# source("git/unmix/ept/practice/simplex_corner.r")
+source("git/unmix/ept/beta.r")
+source("git/unmix/ept/gamma.r")
+source("git/unmix/ept/practice/invgamma.r")
+setwd(wd)
+setwd("../../../..")
+setwd("git/unmix/unmix_comp/src/")
+# print(getwd())
+source("sampling/cdaCpp.r")
+setwd(wd)
+
+@
+
+So far, we've been treating the sort matrix $A$ as exactly known,
+which seems like a weak assumption. Therefore, we assume that
+its entries are drawn from a gamma distribution, and that
+we have a constraint as before.
+
+\begin{align*}
+A_{i,j} &\sim \mathrm{Gamma}(\alpha_{i,j},\beta_{i,j}) \\
+AX &= b
+\end{align*}
+
+If $A$ is known exactly, then I think I know how to approximate
+the mean and variance of $X$. However, I don't know how to
+modify that method if $A$ is approximate. Therefore, I'm
+trying to use EP again.
+
+\subsection{Breaking apart the constraint}
+
+As a toy example of this, we can sample from the
+marginals with two constraints, compared to applying
+one constraint at a time. This is sort of like assuming
+the covariance is diagonal.
+
+
+
+
+
+If the system is fairly underdetermined, this seems like a
+reasonable approximation. Presumably, it will do worse
+in a more determined situation (that is, if the number
+of sort fractions approaches the number of cells.) We
+ignore this for now.
+
+\subsection{Approximating one constraint}
+
+Having done this, we estimate the marginals for each
+constraint separately. We do this essentially by
+scaling the unit simplex (as I described earlier.)
+Without loss of generality, we can assume the constraint
+adds up to 1:
+
+\[
+A_1 X_1 + A_2 X_2 + ... + A_n X_n = 1
+\]
+
+One wrinkle is that $A$ is not known exactly.
+
+\begin{align*}
+A_i X_i &\sim \mathrm{Beta}(1, n-1) \\
+X_i &\sim {\mathrm{Beta}(1, n-1)}(\frac{1}{A_i})
+\end{align*}
+
+
+Since $A_i$ has a gamma distribution, $\frac{1}{A_i}$ has
+an inverse gamma distribution. If $A$'s shape is at least
+1, then we can find the mean and variance of $\frac{1}{A_i}$.
+We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
+
+
+
+\subsection{Applying EP}
+
+We now (maybe) have a situation similar to that
+described by Minka: 
+
+
+
+
+
+
+
+\subsection{Comparison with sampling}
+
+
+
+
+I don't have a strategy for sampling when there's noise
+in the sort matrix.
+
+
+
+\section{Another way of estimating marginals}
+
+
+To test this approach, we compare its marginals to those from
+sampling (at least on a toy problem.)
+
+First, we design a {\em very} toy problem:
+
+<<toy1,echo=TRUE>>=
+A = matrix(sample(0:5, 32, replace=TRUE), nrow=4)
+A
+x = sample(c(0,1,2,4,8), 8, replace=TRUE)
+x
+b = as.vector(A %*% x)
+b
+@
+
+
+
+<<sample1,echo=FALSE>>=
+x0 = x.infer["m",]
+x.sample = sample.cda(A, b, x0, 1e4, 10)
+@
+
+
+
+We compute marginals using this method.
+
+<<infer1,echo=TRUE>>=
+x.infer = approx.region.simplex.transform(A,b)
+round(x.infer,2)
+round(as.vector(A %*% x.infer["m",]), 2)
+@
+
+So, at least the mean matches the constraints.
+
+<<sample2,dev='pdf',fig.width=8,fig.height=4,echo=TRUE>>=
+x = rgamma(1e5, shape=1, scale=5)
+y = rgamma(1e5, shape=2, scale=3)
+par(mfrow=c(1,3))
+hist(x)
+hist(y)
+hist(x*y)
+@
+
+<<samplePlot1,dev='pdf',fig.width=8,fig.height=4,echo=FALSE>>=
+hist(rbeta(1e5, 1, 2))
+@
+
+
+\end{document}
+
