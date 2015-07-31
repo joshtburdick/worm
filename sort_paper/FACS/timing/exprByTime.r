@@ -174,9 +174,11 @@ on.off.c = "#0000ffb0"
   # cnd-1
   pdf("git/sort_paper/FACS/timing/exprByTime_cnd1.pdf",
     width=8, height=4.5)
-  par(mar=c(5,4,4,4) + 0.1)
+  par(mar=c(5,5.5,4,4) + 0.1)
 
-  plot.time.profile(r[,"cnd-1 8/19 (+)"], singlet.average, "")
+  plot.time.profile(r[,"cnd-1 8/19 (+)"], singlet.average, "",
+    ylab=expression(atop("Enrichment in cells",
+      "FACS-sorted by " * italic("cnd-1"))))
 
   p = sm(get.proportion.on("SCD20110731_RW10434_L1_smooth", 50, 1000))
   par(new=TRUE)
@@ -186,15 +188,18 @@ on.off.c = "#0000ffb0"
     xlim=range(td1$mean), ylim=c(-ymax, ymax), xaxt="n", yaxt="n",
     xlab="", ylab="")
   axis(4, at = c(0, 0.5, 1) * ymax, col=on.off.c, col.axis=on.off.c)
-  mtext("Proportion of expressing cells", col=on.off.c, side=4, line=2)
+  mtext(expression("Proportion of cells expressing " * italic("cnd-1")),
+    col=on.off.c, side=4, line=2.5)
   dev.off()
 
   # pros-1
   pdf("git/sort_paper/FACS/timing/exprByTime_pros1.pdf",
     width=8, height=4.5)
-  par(mar=c(5,4,4,4) + 0.1)
+  par(mar=c(5,5.5,4,4) + 0.1)
 
-  plot.time.profile(r[,"pros-1 (+)"], singlet.average, "")
+  plot.time.profile(r[,"pros-1 (+)"], singlet.average, "",
+    ylab=expression(atop("Enrichment in cells",
+      "FACS-sorted by " * italic("pros-1"))))
 
   p = sm(get.proportion.on("SCD20120426_JIM122_L2_smooth", 50, 1000))
   par(new=TRUE)
@@ -204,7 +209,8 @@ on.off.c = "#0000ffb0"
     xlim=range(td1$mean), ylim=c(-ymax, ymax), xaxt="n", yaxt="n",
     xlab="", ylab="")
   axis(4, at = c(0, 0.5, 1) * ymax, col=on.off.c, col.axis=on.off.c)
-  mtext("Proportion of expressing cells", col=on.off.c, side=4, line=2)
+  mtext(expression("Proportion of cells expressing " * italic("pros-1")),
+    col=on.off.c, side=4, line=2.5)
   dev.off()
 
 if (FALSE) {
@@ -223,4 +229,3 @@ if (FALSE) {
 plot.all.expr.by.time()
 temporal.stats[,] = p.adjust(temporal.stats, method="fdr")
 write.tsv(temporal.stats, "git/sort_paper/FACS/timing/sortingTemporalInfo.tsv")
-
