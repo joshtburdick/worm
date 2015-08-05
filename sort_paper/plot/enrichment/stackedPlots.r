@@ -97,7 +97,7 @@ draw.scale = function(dims, x) function(hue, y, max.p) {
 
 # For each motif, a concise list of potential orthologs
 # (prettyprinted).
-orthologs.by.motif.prettyprint = {
+ortholog.by.motif.prettyprint = {
 
   # Possibly italicizes a gene name, as an expression.
   format.gene = function(g) {
@@ -108,25 +108,43 @@ orthologs.by.motif.prettyprint = {
       as.expression(g)
   }
 
-  # Concatenates expressions.
+  # first, the name of whatever the motif was
+  a = list()
+  org.name.short = c("C.elegans" = "Ce", "D.melanogaster" = "Dm",
+    "H.sapiens" = "Hs", "M.musculus" = "Mm")
+  for(m in motif.info$motif.id) {
+    x = expression(1 * 2)
+    x[[1]][[2]] = (paste(org.name.short[ motif.info[ m, "species" ] ], " "))
+    x[[1]][[3]] = (motif.info[ m, "related.gene" ])
+    if (motif.info[m,"species"] == "D.melanogaster")
+      x[[1]][[3]] = italicize(motif.info[m,"related.gene"])[[1]]
+    if (motif.info[m,"species"] == "C.elegans" &&
+        grepl("^[a-z][a-z][a-z][a-z]?-[0-9][0-9]?[0-9]?",
+          ignore.case=FALSE, motif.info[m,"related.gene"]))
+      x[[1]][[3]] = italicize(motif.info[m,"related.gene"])[[1]]
+
+    a[[m]] = x
+  }
+
+  # Concatenates gene names
   expr.concat = function(s) {
-    if (length(s) == 0) {
-      return("")
-    }
-    x = expression("")
-    for(i in 1:length(s)) {
-      x1 = expression(1*2)
-      x1[[1]][[2]] = x
-      x1[[1]][[3]] = format.gene(s[i])[[1]]
-      x = x1
+    x = format.gene(s[1])
+
+    if (length(s) > 1) {
+      for(i in 2:length(s)) {
+        x1 = expression(1*" "*2)
+        x1[[1]][[2]][[2]] = x[[1]]
+        x1[[1]][[3]] = format.gene(s[i])[[1]]
+        x = x1
+      }
     }
     return(x)
   }
 
-  a = by(motif.ortholog$gene, motif.ortholog$motif.id,
-    function(g) {
-      g = unique(as.character(g))
+  for(m in names(a)) {
+    g = unique(as.character(motif.ortholog[ motif.ortholog$motif.id==m, "gene" ]))
 
+    if (length(g) > 0) {
       # slight reordering
       g = g[ order( !(g %in% c("pha-4"))) ]
 
@@ -134,12 +152,15 @@ orthologs.by.motif.prettyprint = {
       if (length(g) > 5) {
         g = c(g[1:4], paste("and", length(g)-4, "others"))
       }
-      return(paste(g, collapse=" "))
-#       return(expr.concat(g))
-    }
-  )
 
-  c(a, recursive=TRUE)
+      x1 = expression(1 * " (" * 2 * ")")
+      x1[[1]][[2]][[2]][[2]] = a[[m]][[1]]
+      x1[[1]][[2]][[3]] = expr.concat(g)[[1]] 
+      a[[m]] = x1    #    paste(g, collapse = " ")   
+    }
+  }
+
+  a   # c(a, recursive=TRUE)
 }
 
 # Plots one of these heatmaps.
@@ -275,9 +296,12 @@ if (FALSE) {
   # combined motif names and ortholog info
   m = rownames1 %in% names(ortholog.by.motif.prettyprint)
   rownames1[ m ] = ortholog.by.motif.prettyprint[ rownames1[ m ] ]
+# browser()
 
   # label rows
-  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
+  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
+    labels=as.expression(c(rownames1, recursive=TRUE)),
+    las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
   # label orthologs (currently disabled)
   if (FALSE) {
@@ -319,7 +343,7 @@ if (FALSE) {
     }
 
     # add on a p-value scale
-    draw.scale(dim(r), -22)(hue, y[1], max.p)
+    draw.scale(dim(r), -23.5)(hue, y[1], max.p)
   }
 
   color.columns(anatomy.m, 0, "Anatomy\nterms", 9)
@@ -327,7 +351,6 @@ if (FALSE) {
   color.columns(go.m, 0.4, "GO terms", 8)
   color.columns(motif.m, 0.6, "Motifs", 10)
   color.columns(chip.m, 0.8, "ChIP\nsignals", 5)
-
 
   # ??? return info needed by highlight.column() ?
 }
@@ -343,7 +366,7 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (FALSE) {
+if (TRUE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
