@@ -71,6 +71,77 @@ add.rows = function(a, rows) {
   b
 }
 
+# Draws a p-value scale.
+draw.scale = function(dims, x) function(hue, y, max.p) {
+  d = dims - 1
+
+#  image(c(x-1,x) / d[1],
+#    (y:(y+4)) / d[2],
+#    z = t(as.matrix(0:4/4)), add=TRUE, useRaster=FALSE,
+#    xaxs="n", yaxs="n", xpd=FALSE)
+  height = 7
+  n = 10
+  rect((x-1) / d[1], (y + c(0:(n-1)) * (height/n)) / d[2],
+    x / d[1], (y + c(1:n) * (height/n)) / d[2],
+    col = hsv(0,0,c(n:1)/n), lty=0, xpd=NA)
+  rect((x-1) / d[1], y / d[2],
+    x / d[1], (y + height) / d[2],
+    col = hsv(hue, 0.8, 1, alpha=0.15), lty=0, xpd=NA)
+
+  text(c(x+1, x+1) / d[1], c(y, y+height) / d[2],
+    labels=c(0, max.p), xpd=NA, cex=0.4)
+  text((x-2.5) / d[1], y / d[2],
+    labels=expression("  -log"[10] * " p"),
+    xpd=NA, cex=0.5, srt=90, adj=c(0,1))
+}
+
+# For each motif, a concise list of potential orthologs
+# (prettyprinted).
+orthologs.by.motif.prettyprint = {
+
+  # Possibly italicizes a gene name, as an expression.
+  format.gene = function(g) {
+    if (grepl("^[a-z][a-z][a-z][a-z]?-[0-9][0-9]?[0-9]?",
+        ignore.case=FALSE, g))
+      italicize(g)
+    else
+      as.expression(g)
+  }
+
+  # Concatenates expressions.
+  expr.concat = function(s) {
+    if (length(s) == 0) {
+      return("")
+    }
+    x = expression("")
+    for(i in 1:length(s)) {
+      x1 = expression(1*2)
+      x1[[1]][[2]] = x
+      x1[[1]][[3]] = format.gene(s[i])[[1]]
+      x = x1
+    }
+    return(x)
+  }
+
+  a = by(motif.ortholog$gene, motif.ortholog$motif.id,
+    function(g) {
+      g = unique(as.character(g))
+
+      # slight reordering
+      g = g[ order( !(g %in% c("pha-4"))) ]
+
+      # if there are many genes, summarize this
+      if (length(g) > 5) {
+        g = c(g[1:4], paste("and", length(g)-4, "others"))
+      }
+      return(paste(g, collapse=" "))
+#       return(expr.concat(g))
+    }
+  )
+
+  c(a, recursive=TRUE)
+}
+
 # Plots one of these heatmaps.
 # Args:
 #   f - name of file
@@ -89,7 +160,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
   f.chip = f
   f.motif = f
   if (f == "facs") {
-    f.chip = "facs_enrichmentVsOpposite_2"
+    f.chipb = "facs_enrichmentVsOpposite_2"
     f.motif = "facs_vs_opposite_1"
   }
 
@@ -187,9 +258,9 @@ plot.stacked = function(f, cluster.subset = NULL) {
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
   axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
-
   rownames1 = colnames(r)
 
+if (FALSE) {
   # orthology info
   ortho = rep("", length(rownames1))
   names(ortho) = rownames1
@@ -199,12 +270,21 @@ plot.stacked = function(f, cluster.subset = NULL) {
   # convert motif names to the relevant gene name
   m = rownames1 %in% names(motif.gene)
   rownames1[ m ] = motif.gene[ rownames1[m] ]
+}
 
-  # label rows, and then orthologs, further out
+  # combined motif names and ortholog info
+  m = rownames1 %in% names(ortholog.by.motif.prettyprint)
+  rownames1[ m ] = ortholog.by.motif.prettyprint[ rownames1[ m ] ]
+
+  # label rows
   axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1), labels=rownames1, las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
-  axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
-    labels=sapply(ortho, italicize),
-    las=2, cex.axis=0.3, line=1.5, tick=FALSE)
+
+  # label orthologs (currently disabled)
+  if (FALSE) {
+    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
+      labels=sapply(ortho, italicize),
+      las=2, cex.axis=0.3, line=1.5, tick=FALSE)
+  }
 
   # add grid lines
   g = dim(r) - 1
@@ -214,7 +294,7 @@ plot.stacked = function(f, cluster.subset = NULL) {
   # color different portions of the graph, and label them
 #  rect(0, 0, 1, 1, border=NA,
 #    col=hsv(0, 0.8, 1, alpha=0.2))
-  color.columns = function(m, hue, ylab) {
+  color.columns = function(m, hue, ylab, max.p) {
     colnames.to.color = colnames(m)
     y = range(which(colnames(r) %in% colnames.to.color)) - 1
     n1 = length(colnames(r))-1
@@ -232,18 +312,22 @@ plot.stacked = function(f, cluster.subset = NULL) {
       srt=90, xpd=TRUE, adj=0.5, cex=0.68)
 
     # XXX hack
-    if (ylab=="Possible orthologs") {
+    if (FALSE && ylab=="Possible orthologs") {
       text(-7/nrow(r), 0.5*(y[1]+y[2]) / ncol(r), 
         labels="Motifs",
         srt=90, xpd=TRUE, adj=0.5, cex=0.68)
     }
+
+    # add on a p-value scale
+    draw.scale(dim(r), -22)(hue, y[1], max.p)
   }
 
-  color.columns(anatomy.m, 0, "Anatomy\nterms")
-  color.columns(cluster.m, 0.2, "Expression\nclusters")
-  color.columns(go.m, 0.4, "GO terms")
-  color.columns(motif.m, 0.6, "Possible orthologs")
-  color.columns(chip.m, 0.8, "ChIP\nsignals")
+  color.columns(anatomy.m, 0, "Anatomy\nterms", 9)
+  color.columns(cluster.m, 0.2, "Expression\nclusters", 9)
+  color.columns(go.m, 0.4, "GO terms", 8)
+  color.columns(motif.m, 0.6, "Motifs", 10)
+  color.columns(chip.m, 0.8, "ChIP\nsignals", 5)
+
 
   # ??? return info needed by highlight.column() ?
 }
@@ -259,7 +343,7 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (TRUE) {
+if (FALSE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
