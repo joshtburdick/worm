@@ -35,7 +35,7 @@ gca1 = function(x, a, b) {
   # approximate marginals, if those sum to 1
   #  r = sd.s2mv(gamma.mv2s(m))
   #  r = gamma.n2mv(gamma.cond.sum1(gamma.mv2n(m)))
-  r = gamma.cond.sum.numerical.1(gamma.mv2n(m))
+  r = gamma.cond.sum.numerical.int.1(gamma.mv2n(m))
 
   # undo scaling
   r["m",] = r["m",] * s
@@ -56,7 +56,7 @@ gca1 = function(x, a, b) {
 #   x.log - list of posterior approximations
 #   FIXME update stats?
 # XXX not sure how well this is working
-approx.region.gamma = function(A, b, num.iters=40) {
+approx.region.gamma = function(A, b, num.iters=50) {
   x.log = list()
 
   # approximating terms
@@ -79,7 +79,7 @@ approx.region.gamma = function(A, b, num.iters=40) {
 #      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
       x1 = gamma.cond.sum.numerical(t1, A[i,], b[i])
 #      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
-      term[,,i] = 1 * term[,,i] + 0.25 * (x1 - x)
+      term[,,i] = 1 * term[,,i] + 0.2 * (x1 - x)
 #      term[,,i] = x1 - t1
     }
 
@@ -117,22 +117,27 @@ t2 = function() {
   }
 }
 
-
-
 # a small test
-A2 = matrix(c(1,1,0.1, 0.1,1,1), nrow=2, byrow=TRUE)
-# A2 = rbind(A2, 1-A2)
-# b2 = c(0.6, 0.8)
-# b2 = c(b2, 1-b2)
-# x2 = array(gamma.s2n(rbind(a=rep(1,6), b=rep(1,6))), dim=c(2,6,1))
-# dimnames(x2)[[1]] = c("e1", "e2")
+t3 = function() {
 
-x2 = c(1,1,1)
-b2 = as.vector(A2 %*% x2)
+  A2 = matrix(c(1,1,0.1, 0.1,1,1), nrow=2, byrow=TRUE)
+  # A2 = rbind(A2, 1-A2)
+  # b2 = c(0.6, 0.8)
+  # b2 = c(b2, 1-b2)
+  # x2 = array(gamma.s2n(rbind(a=rep(1,6), b=rep(1,6))), dim=c(2,6,1))
+  # dimnames(x2)[[1]] = c("e1", "e2")
 
+  x2 = c(1,1,1)
+  b2 = as.vector(A2 %*% x2)
+  approx.region.gamma(A2, b2)
+}
 
-# r2 = approx.region.gamma(A2, b2)
-
-
+t4 = function() {
+  A = matrix(sample(0:4, 400, replace=TRUE)+0.1, nrow=5)
+  x = rgamma(80, 0.5, 10)
+  b = A %*% x
+  r = approx.region.gamma(A, b)
+  list(A = A, x = x, b = b, r = r, y = gamma.n2mv(r$x)["m",])
+}
 
 

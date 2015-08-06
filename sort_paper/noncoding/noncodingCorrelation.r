@@ -92,24 +92,24 @@ for(i in 1:nrow(nearby.genes)) {
 anr.cor = nc.closest.gene[grep("anr-", nc.closest.gene$nc.gene),]
 linc.cor = nc.closest.gene[grep("linc-", nc.closest.gene$nc.gene),]
 
-pdf("git/sort_paper/noncoding/noncodingCorrelation.pdf", width=7, height=7)
-par(mfrow=c(2,2))
+pdf("git/sort_paper/noncoding/noncodingCorrelation.pdf", width=9, height=3)
+par(mfrow=c(1,3))
 
 hist(linc.cor$cor, breaks=20, xlim=c(-1,1), col="grey",
   main="lincRNA",
   xlab="Correlation with nearest gene")
 mtext(paste("mean =", signif(mean(linc.cor$cor, na.rm=TRUE), 2)),
   cex=0.8)
-label.panel("(B)")
+label.panel("B")
 cat("lincRNA Wilcoxon test of ", sum(!is.na(linc.cor$cor)), " genes corr. != 0 (two-sided) =",
   wilcox.test(linc.cor$cor)$p.value, "\n")
 
 hist(anr.cor$cor, breaks=20, xlim=c(-1,1), col="grey",
-  main="anrRNA",
+  main="ancRNA",
   xlab="Correlation with nearest gene")
 mtext(paste("mean =", signif(mean(anr.cor$cor, na.rm=TRUE), 2)),
   cex=0.8)
-label.panel("(C)")
+label.panel("C")
 cat("anrRNA Wilcoxon test of ", sum(!is.na(anr.cor$cor)), " genes corr. != 0 (two-sided) =",
   wilcox.test(anr.cor$cor)$p.value, "\n")
 
@@ -118,7 +118,7 @@ hist(nearby.genes$cor, breaks=40, xlim=c(-1,1), col="grey",
   xlab="Correlation with nearest gene")
 mtext(paste("mean =", signif(mean(nearby.genes$cor, na.rm=TRUE), 2)),
   cex=0.8)
-label.panel("(D)")
+label.panel("D")
 
 dev.off()
 

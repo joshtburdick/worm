@@ -93,10 +93,10 @@ the case for the rows of B (they are all ``row-stochastic.'')
 \end{alltt}
 \begin{verbatim}
 ##      [,1] [,2] [,3] [,4] [,5]
-## [1,] 0.20 0.21 0.01 0.11 0.07
-## [2,] 0.09 0.05 0.26 0.06 0.04
-## [3,] 0.08 0.16 0.26 0.05 0.07
-## [4,] 0.08 0.13 0.03 0.05 0.19
+## [1,] 0.13 0.16 0.05 0.22 0.13
+## [2,] 0.04 0.12 0.22 0.20 0.13
+## [3,] 0.06 0.11 0.12 0.10 0.16
+## [4,] 0.15 0.03 0.12 0.01 0.24
 \end{verbatim}
 \begin{alltt}
 \hlstd{X} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rgamma}\hlstd{(}\hlnum{200}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{rate}\hlstd{=}\hlnum{1}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{10}\hlstd{)}
@@ -126,6 +126,14 @@ One definition of ``working'' would be: if we unmix using a perturbed prior for
 A (but using the {\em actual} sort matrix in simulating B), then the posterior
 estimate for A is closer to the actual A than the prior.
 
+\subsection{Distribution of AX}
+
+If we sample from A and X, we should be able to estimate the marginal distributions
+of AX by moment-matching...
+
+
+
+
 
 \section{EP, with an approximate sort matrix}
 
@@ -150,10 +158,6 @@ As a toy example of this, we can sample from the
 marginals with two constraints, compared to applying
 one constraint at a time. This is sort of like assuming
 the covariance is diagonal.
-
-
-
-
 
 If the system is fairly underdetermined, this seems like a
 reasonable approximation. Presumably, it will do worse

@@ -343,7 +343,7 @@ if (FALSE) {
     }
 
     # add on a p-value scale
-    draw.scale(dim(r), -23.5)(hue, y[1], max.p)
+#    draw.scale(dim(r), -23.5)(hue, y[1], max.p)
   }
 
   color.columns(anatomy.m, 0, "Anatomy\nterms", 9)

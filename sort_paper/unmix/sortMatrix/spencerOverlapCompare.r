@@ -64,7 +64,7 @@ hist(facs.overlap, breaks=b, col="#ff0000a0",
   main="Pairs of markers used for flow sorting",
   xlab="Number of cells in overlap")
 hist(spencer.overlap, breaks=b, col="#ffff00a0",
-  main="Pairs of embryonic tissues\nfrom previous studies",
+  main="Pairs of embryonic tissues\nfrom Spencer et al. (2011)",
   xlab="Number of cells in overlap")
 # XXX
 x = expression("Wilcoxon p" * 1)

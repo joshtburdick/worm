@@ -13,10 +13,58 @@ scale.interval.to.unit = function(x, interval) {
 }
 
 # Various pretty-printing utilities.
+# Italicizes a string.
 italicize = function(x) {
   a = expression(italic(1))
   a[[1]][[2]] = x
   a
+}
+
+# Substitutes into an expression which is used as a "template",
+# to simplify printing things which aren't constants (working
+# around the lack of "quasiquote.")
+# Args:
+#   x - the expression
+#   a - a list of arguments. If a name occurs as a variable in
+#     the expression, its corresponding value will be substituted in.
+#     (If it's not an expression, it will be coerced to one.)
+# Returns: an expression, possibly modified.
+expr.subst = function(x, a) {
+
+# print(x)
+# print(as.character(x))
+# print(class(x))
+
+  # if it's a name, possibly substitute into it
+  if (class(x) == "name") {
+    x1 = as.character(x)
+    if (x1 %in% names(a)) {
+      a1 = a[[x1]]
+      if (class(a1) == "expression")
+        return(a1[[1]])
+      else
+        return(a1)
+    }
+    else {
+      return(x)   # different name, so don't substitute
+    }
+  }
+
+  # recursive calls, if this is an expression
+  if (class(x) == "expression") {
+    for(i in 1:length(x[[1]])) {
+      x[[1]][[i]] = expr.template(x[[1]][[i]], a)
+    }
+  }
+
+  # ... or a "call"
+  if (class(x) == "call") {
+    for(i in 1:length(x)) {
+      x[[i]] = expr.template(x[[i]], a)
+    }
+  }
+
+  x
 }
 
 # Formats a p-value, including converting smallish

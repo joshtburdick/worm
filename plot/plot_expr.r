@@ -175,6 +175,7 @@ plot.segments = function(r, main, root="P0",
   segments(cell.to.x[cells], time.1[cells], cell.to.x[cells], time.2[cells],
     col="#c0c0c0", xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
   a = lineage.triples(lin)
+  rownames(a) = a$parent
   segments(cell.to.x[a$daughter.1], time.1[a$daughter.1],
     cell.to.x[a$daughter.2], time.1[a$daughter.2],
     col="#c0c0c0", xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
@@ -183,6 +184,11 @@ plot.segments = function(r, main, root="P0",
   segments(cell.to.x[r$cell], r$time.1, cell.to.x[r$cell], r$time.2,
     col=r$col, xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
 
+  # also plot a connecting line to both children (in the same color)
+  # (this occasionally looks slightly odd)
+  segments(cell.to.x[ a[r$cell,"daughter.1"] ], r$time.2,
+    cell.to.x[ a[r$cell,"daughter.2"] ], r$time.2,
+    col=r$col, xlim=xlim, ylim=ylim, lwd=lwd, lend=2)
   if (is.null(int.n.to.label)) {
     return()
   }
