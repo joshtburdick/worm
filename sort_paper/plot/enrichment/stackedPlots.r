@@ -113,6 +113,24 @@ ortholog.by.motif.prettyprint = {
   org.name.short = c("C.elegans" = "Ce", "D.melanogaster" = "Dm",
     "H.sapiens" = "Hs", "M.musculus" = "Mm")
   for(m in motif.info$motif.id) {
+
+    org = org.name.short[ motif.info[m, "species" ] ]
+    related.gene = motif.info[ m, "related.gene" ]
+
+    # italicize gene name if it's Dm, or a known C.elegans gene
+    if (motif.info[m,"species"] == "D.melanogaster" ||
+      (motif.info[m,"species"] == "C.elegans" &&
+        grepl("^[a-z][a-z][a-z][a-z]?-[0-9][0-9]?[0-9]?",
+          ignore.case=FALSE, related.gene))) {
+      a[[m]] = expr.format(expression(bold(species) * " " * bolditalic(gene)),
+        list(species = org, gene = related.gene))
+    }
+    else {
+      a[[m]] = expr.format(expression(bold(species) * " " * bold(gene)),
+        list(species = org, gene = related.gene))
+    }
+
+if (FALSE) {
     x = expression(1 * 2)
     x[[1]][[2]] = (paste(org.name.short[ motif.info[ m, "species" ] ], " "))
     x[[1]][[3]] = (motif.info[ m, "related.gene" ])
@@ -122,8 +140,9 @@ ortholog.by.motif.prettyprint = {
         grepl("^[a-z][a-z][a-z][a-z]?-[0-9][0-9]?[0-9]?",
           ignore.case=FALSE, motif.info[m,"related.gene"]))
       x[[1]][[3]] = italicize(motif.info[m,"related.gene"])[[1]]
-
     a[[m]] = x
+}
+
   }
 
   # Concatenates gene names

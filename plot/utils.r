@@ -29,7 +29,7 @@ italicize = function(x) {
 #     the expression, its corresponding value will be substituted in.
 #     (If it's not an expression, it will be coerced to one.)
 # Returns: an expression, possibly modified.
-expr.subst = function(x, a) {
+expr.format = function(x, a) {
 
 # print(x)
 # print(as.character(x))
@@ -53,14 +53,14 @@ expr.subst = function(x, a) {
   # recursive calls, if this is an expression
   if (class(x) == "expression") {
     for(i in 1:length(x[[1]])) {
-      x[[1]][[i]] = expr.template(x[[1]][[i]], a)
+      x[[1]][[i]] = expr.format(x[[1]][[i]], a)
     }
   }
 
   # ... or a "call"
   if (class(x) == "call") {
     for(i in 1:length(x)) {
-      x[[i]] = expr.template(x[[i]], a)
+      x[[i]] = expr.format(x[[i]], a)
     }
   }
 
