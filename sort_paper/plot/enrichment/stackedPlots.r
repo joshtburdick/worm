@@ -360,18 +360,18 @@ if (FALSE) {
         labels="Motifs",
         srt=90, xpd=TRUE, adj=0.5, cex=0.68)
     }
-
-    # add on a p-value scale
-#    draw.scale(dim(r), -23.5)(hue, y[1], max.p)
   }
 
   color.columns(anatomy.m, 0, "Anatomy\nterms", 9)
   color.columns(cluster.m, 0.2, "Expression\nclusters", 9)
-  color.columns(go.m, 0.4, "GO terms", 8)
-  color.columns(motif.m, 0.6, "Motifs", 10)
+  color.columns(go.m, 0.4, "GO terms\n", 8)
+  color.columns(motif.m, 0.6, "Motifs\n", 10)
   color.columns(chip.m, 0.8, "ChIP\nsignals", 5)
 
   # ??? return info needed by highlight.column() ?
+
+  # add on a p-value scale
+  draw.scale(dim(r), -23.5)(0, -10, 10)
 }
 
 # Highlights one column of the graph.

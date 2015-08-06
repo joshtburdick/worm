@@ -63,8 +63,8 @@ plot.scatter = function(s1, s2) {
 }
 
 pdf("git/sort_paper/plot/pha4KnownPharyngealScatterplot.pdf",
-  width=5, height=5)
-
+  width=4, height=4)   # was 5x5
+par(mar=c(4,4,0.5,0.5)+0.1)
 plot.scatter(pha4.replicates[1], pha4.replicates[2])
 # plot.scatter(pha4.replicates[1], pha4.replicates[3])
 # plot.scatter(pha4.replicates[2], pha4.replicates[3])
