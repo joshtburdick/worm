@@ -2,10 +2,13 @@
 # for various motifs enriched upstream of clusters.
 
 source("git/utils.r")
+source("git/plot/utils.r")
+source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 
-output.dir = "git/cluster/motif/plot/distAndConservation/"
+output.dir = "git/cluster/motif/plot/distAndConservation2/"
 
-motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+# motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
+motif.gene.dir = "/media/jburdick/disk2/jburdick/distAndConservation/"
 
 # this will define which genes are in the cluster
 clusters = read.tsv(
@@ -26,6 +29,19 @@ dist.cons.wilcoxon$dist.p.corr =
   p.adjust(dist.cons.wilcoxon$dist.p, method="fdr")
 dist.cons.wilcoxon$cons.p.corr =
   p.adjust(dist.cons.wilcoxon$cons.p, method="fdr")
+
+# XXX hack to get the appropriate motif from whichever directory
+get.motif.filename = function(m) {
+  for(org in c("Ce", "Dm", "Hs", "Mm")) {
+    f = paste0(motif.gene.dir, org, "_1.02/", m,
+      "_upstreamMotifCons.tsv.gz")
+    if (file.exists(f))
+      return(f)
+  }
+
+  cat("\nfailed to find info for motif", m, "\n")
+  return(NA)
+}
 
 # Computes histogram counts "by hand". This avoids the issue
 # that "hist(..., plot=FALSE)" is finicky about where the
@@ -96,8 +112,8 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
 
   system(paste("mkdir -p", output.dir))
 
-  r = read.table(paste(motif.gene.dir, m, "_upstreamMotifCons.tsv.gz", sep=""),
-    as.is=TRUE)
+  r = read.table(get.motif.filename(m), as.is = TRUE)
+
   colnames(r) = c("region.chr", "region.a", "region.b", "gene", "score",
     "strand", "motif.chr", "motif.a", "motif.b", "motif.id",
 "motif.score", "motif.strand", "motif.cons")
@@ -128,8 +144,12 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
     par(mar=c(0,0,0,0) + 0.1)     # XXX
     plot(0,0, xlim=c(-1,1), ylim=c(0,5), type="n", bty="n",
       xaxt="n", yaxt="n", xlab="", ylab="")
-    text(0,3, paste("Motif", m, "near genes in cluster", cl), cex=2.5)
-#      text(0,0, "testing")
+
+    motif.name.1 = motif.info[m, "motif.name"]
+    if (motif.name.1 == "RFX3_1")
+      motif.name.1 = "RFX3"
+
+    text(0,3, paste(motif.name.1, "motif", "near genes in cluster", cl), cex=2.5)
     text(0,1, paste("Motif enrichment p =",
       signif(enrich.p, 2)), cex=1.5)
 
@@ -152,13 +172,16 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
 #    dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
-    mtext(paste("Wilcoxon p =", signif(a$dist.p.corr,2) ), cex=0.8)
+    mtext(expr.format(expression("Wilcoxon p " * p),
+      list(p = format.p(signif(a$dist.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
+
     hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
       main=s, xlab="Conservation (PhastCons)")
 #    cons.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="conservation", "p.fdr" ]
-    mtext(paste("Wilcoxon p =", signif(a$cons.p.corr,2)), cex=0.8)
+    mtext(expr.format(expression("Wilcoxon p " * p),
+      list(p = format.p(signif(a$cons.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
 
     # similarly, numbers for motifs in other clusters
     s = paste("Motif near genes not in cluster")
@@ -216,7 +239,7 @@ plot.some = function() {
 }
 
 if (TRUE) {
-
-  plot.some()
+  plot.one("M5775_1.02", "286")
+#  plot.some()
 }
 
