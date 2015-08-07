@@ -140,7 +140,7 @@ sort.fraction.anatomy.enrichment = function() {
 }
 
 # enrichment of genes in lineages
-if (TRUE) {
+if (FALSE) {
   le = read.tsv("git/sort_paper/unmix/lineageEnriched.tsv")
   r = hyperg.test.groups.many(gene.groups, le, num.genes)
   r$p[ is.nan(r$p) ] = 1
@@ -165,15 +165,15 @@ if (FALSE) {
 # baz["WBbt:0003991","ABalap_enriched",]
 
 # testing with one clustering
-if (FALSE) {
+if (TRUE) {
 cl1 = read.tsv(paste0("git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))
 colnames(cl1) = c("gene", "set")
 foo = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
 }
 
-# sort.fraction.anatomy.enrichment()
+sort.fraction.anatomy.enrichment()
 
-if (FALSE) {
+if (TRUE) {
   compute.cluster.enrichment()
 }
 
