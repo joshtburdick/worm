@@ -72,27 +72,35 @@ add.rows = function(a, rows) {
 }
 
 # Draws a p-value scale.
-draw.scale = function(dims, x) function(hue, y, max.p) {
+# Args:
+#   dims - size of the grid
+#   x, y - where to draw the scale
+#   hues - vector of colors
+#   max.ps - vector of maximum p values
+# Side effects: draws a scale.
+draw.scale = function(dims, x) function(y, hues, max.ps) {
   d = dims - 1
 
 #  image(c(x-1,x) / d[1],
 #    (y:(y+4)) / d[2],
 #    z = t(as.matrix(0:4/4)), add=TRUE, useRaster=FALSE,
 #    xaxs="n", yaxs="n", xpd=FALSE)
-  height = 7
+  height = 7     # XXX actually width
   n = 10
-  rect((x-1) / d[1], (y + c(0:(n-1)) * (height/n)) / d[2],
-    x / d[1], (y + c(1:n) * (height/n)) / d[2],
-    col = hsv(0,0,c(n:1)/n), lty=0, xpd=NA)
-  rect((x-1) / d[1], y / d[2],
-    x / d[1], (y + height) / d[2],
-    col = hsv(hue, 0.8, 1, alpha=0.15), lty=0, xpd=NA)
+  for(i in 1:length(hues)) {
+    rect((x + c(0:(n-1)) * (height/n)) / d[1], (y + i - 1) / d[2],
+      (x + c(1:n) * (height/n)) / d[1], (y + i) / d[2],
+      col = hsv(0,0,c((n-1):0)/(n-1)), lty=0, xpd=NA)
+    rect(x / d[1], (y+i-1) / d[2],
+      (x + height) / d[1], (y+i) / d[2],
+      col = hsv(hues[i], 0.8, 1, alpha=0.15), lty=0, xpd=NA)
 
-  text(c(x+1, x+1) / d[1], c(y, y+height) / d[2],
-    labels=c(0, max.p), xpd=NA, cex=0.4)
-  text((x-2.5) / d[1], y / d[2],
-    labels=expression("  -log"[10] * " p"),
-    xpd=NA, cex=0.5, srt=90, adj=c(0,1))
+    text(c(x-1, x+height+1) / d[1], c(y+i-0.5, y+i-0.5) / d[2],
+      labels=c(0, max.ps[i]), xpd=NA, cex=0.3)
+  }
+  text((x+height/2) / d[1], (y-1) / d[2], font=0,
+    labels=expression("-log"[10] * " p"),
+    xpd=NA, cex=0.4)
 }
 
 # For each motif, a concise list of potential orthologs
@@ -129,20 +137,6 @@ ortholog.by.motif.prettyprint = {
       a[[m]] = expr.format(expression(bold(species) * " " * bold(gene)),
         list(species = org, gene = related.gene))
     }
-
-if (FALSE) {
-    x = expression(1 * 2)
-    x[[1]][[2]] = (paste(org.name.short[ motif.info[ m, "species" ] ], " "))
-    x[[1]][[3]] = (motif.info[ m, "related.gene" ])
-    if (motif.info[m,"species"] == "D.melanogaster")
-      x[[1]][[3]] = italicize(motif.info[m,"related.gene"])[[1]]
-    if (motif.info[m,"species"] == "C.elegans" &&
-        grepl("^[a-z][a-z][a-z][a-z]?-[0-9][0-9]?[0-9]?",
-          ignore.case=FALSE, motif.info[m,"related.gene"]))
-      x[[1]][[3]] = italicize(motif.info[m,"related.gene"])[[1]]
-    a[[m]] = x
-}
-
   }
 
   # Concatenates gene names
@@ -371,7 +365,8 @@ if (FALSE) {
   # ??? return info needed by highlight.column() ?
 
   # add on a p-value scale
-  draw.scale(dim(r), -23.5)(0, -10, 10)
+  for(i in c(1:5))
+    draw.scale(dim(r), -23.5)(-10, c(0, 0.2, 0.4, 0.6, 0.8), c(9,9,8,10,5))
 }
 
 # Highlights one column of the graph.

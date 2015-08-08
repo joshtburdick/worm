@@ -112,11 +112,19 @@ rt.compare = function(s, dct.column) {
 plot.stats = function(r, main) {
   ylim = range(c(2, r$ddct - r$ddct.se, r$ddct + r$ddct.se))
   par(mar=c(8,6,2,0) + 0.1)
+  # utility to format names
+  format.name = function(n)
+    if (grepl("-", n))
+      expr.format(expression(bolditalic(a)), list(a=n))
+    else
+      as.expression(n)
+
   m = barplot(r$ddct, ylim=ylim,
-    names.arg = sapply(r$target, italicize),
+    names.arg = sapply(r$target, format.name),
     col=c(rep("#ff0000a0", 3), rep("#0000ffa0", 3)),
     space=1, las=2, yaxt="n", main=main)
-  mtext("          Relative expression", side=2, line=4.5) # XXX
+  mtext(expression("Expression (log"[2] * " fold change)"),
+    side=2, line=3) # XXX
   mtext(expression("   " * italic("daf-19") * " RNAi"),
     side = 1, line=6, adj=0, col="#ff0000c0")
   mtext(expression(italic("hlh-6") * " RNAi   "),
@@ -125,7 +133,7 @@ plot.stats = function(r, main) {
   arrows(m, r$ddct - r$ddct.se, m, r$ddct + r$ddct.se,
     length=0.06, angle=90, code=3, col="black", lwd=2)
   y = trunc(ylim)[1] : trunc(ylim)[2]
-  axis(2, at=y, labels = 2^y, las=1)
+  axis(2, at=y, labels = y, las=1)
 
   text(m, 1.1, sapply(r$p, format.p), srt=90, cex=0.8)
 }

@@ -81,7 +81,7 @@ format.p = function(p, include.equals.sign = FALSE) {
     s[[1]][[3]][[3]][[1]] = ceiling(log10(p))
   }
   else if (include.equals.sign) {
-    s = paste("=", s)
+    s = as.expression(paste("=", s))
   }
   s
 }

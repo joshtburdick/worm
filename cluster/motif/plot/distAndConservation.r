@@ -105,11 +105,6 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
   cl = as.character(a$group)
   enrich.p = a$p.corr
 
-  # XXX hack
-  if (m == "RFX2_DBD") {
-    enrich.p = 1e-46
-  }
-
   system(paste("mkdir -p", output.dir))
 
   r = read.table(get.motif.filename(m), as.is = TRUE)
@@ -133,12 +128,12 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
 #      png(paste(output.dir, "/", m, " ", cl, ".png", sep=""),
 #        width=1050, height=1200)
     pdf(paste(output.dir, "/", m, " ", cl, ".pdf", sep=""),
-      width=9, height=6)    # was "height=12"
+      width=7, height=6)    # was "height=12"
 
 #    mat = matrix(c(1,1,1,2,3,4,5,6,7,8,9,10,11,12,13), nrow=5, byrow=TRUE)
 #    layout(mat, heights=c(0.5,1,1,1))
     mat = matrix(c(1,1,1,2,3,4,5,6,7), nrow=3, byrow=TRUE)
-    layout(mat, heights=c(0.3,1,1))
+    layout(mat, heights=c(0.2,1,1), widths=c(0.15,1,1))
 
     # add labels
     par(mar=c(0,0,0,0) + 0.1)     # XXX
@@ -149,52 +144,71 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
     if (motif.name.1 == "RFX3_1")
       motif.name.1 = "RFX3"
 
-    text(0,3, paste(motif.name.1, "motif", "near genes in cluster", cl), cex=2.5)
-    text(0,1, paste("Motif enrichment p =",
-      signif(enrich.p, 2)), cex=1.5)
+    text(0,3, paste(motif.name.1, "motif", "near genes in cluster", cl), cex=2)
+#    text(0,1, paste("Motif enrichment p =",
+#      signif(enrich.p, 2)), cex=1.5)
+    text(0,1, expr.format(expression("Motif enrichment p " * p),
+      list(p = format.p(signif(enrich.p,2), include.equals.sign=FALSE))), cex=1.5)
 
-    par(mar=c(5,4,4,2)+0.1)
+    par(mar=c(5,4,4,1)+0.1)
 
     # par(mfrow=c(2,3))
     r0 = r[ !r$in.cluster , ]
     r1 = r[ r$in.cluster , ]
 
+    par(mar=c(0,0,0,0))
+    plot.new()
+
+    s = "" # paste("Motif near genes in cluster")
+
     # numbers for motifs near genes in clusters
-    s = paste("Motif near genes in cluster")
+if (FALSE) {
+
     plot(r1$upstream.dist, r1$motif.cons, col="#ff000040",
       xlim=c(-5000,0), ylim=c(0,1),
       pch=183, font=5, xaxt="n", yaxt="n",
       main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
     axis(1)
     axis(2)
+}
+    par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
     hist(r1$upstream.dist, col="#ff0000a0", xlim=c(-5000,0),
-      main=s, xlab="Location relative to TSS")
+      main=s, xlab="")
 #    dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
     mtext(expr.format(expression("Wilcoxon p " * p),
       list(p = format.p(signif(a$dist.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
-
+    mtext(expression(bold("Genes in cluster")),
+      side=2, line=5, cex=1, xpd=NA)
     hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
-      main=s, xlab="Conservation (PhastCons)")
+      main=s, xlab="")
 #    cons.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="conservation", "p.fdr" ]
     mtext(expr.format(expression("Wilcoxon p " * p),
       list(p = format.p(signif(a$cons.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
 
+    par(mar=c(0,0,0,0))
+    plot.new()
+
     # similarly, numbers for motifs in other clusters
-    s = paste("Motif near genes not in cluster")
+    s = "" # paste("Motif near genes not in cluster")
+if (FALSE) {
     plot(r0$upstream.dist, r0$motif.cons, col="#0000ff40",
       pch=183, font=5, xaxt="n", yaxt="n",
       xlim=c(-5000,0), ylim=c(0,1),
       main=s, xlab="Location relative to TSS", ylab="Conservation (PhastCons)")
     axis(1)
     axis(2)
+}
+    par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
     hist(r0$upstream.dist, col="#0000ffa0", xlim=c(-5000,0),
-      main=s, xlab="Location relative to TSS")
+      main=s, xlab=expression(bold("Location relative to transcript 5' end")))
+    mtext(expression(bold("Genes not in cluster")),
+      side=2, line=5, cex=1, xpd=NA)
     hist(r0$motif.cons, col="#0000ffa0", xlim=c(0, 1),
-      main=s, xlab="Conservation (PhastCons)")
+      main=s, xlab=expression(bold("Conservation (PhastCons)")))
 
     dev.off()
   }
