@@ -140,6 +140,7 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
     plot(0,0, xlim=c(-1,1), ylim=c(0,5), type="n", bty="n",
       xaxt="n", yaxt="n", xlab="", ylab="")
 
+print(motif.info[m,])
     motif.name.1 = motif.info[m, "motif.name"]
     if (motif.name.1 == "RFX3_1")
       motif.name.1 = "RFX3"
@@ -253,6 +254,12 @@ plot.some = function() {
 }
 
 if (TRUE) {
+  # conserved, and further away
+  plot.one("M2336_1.02", "284")
+  plot.one("M4567_1.02", "46")
+  plot.one("M1906_1.02", "245")
+
+  # conserved, and closer
   plot.one("M5775_1.02", "286")
 #  plot.some()
 }

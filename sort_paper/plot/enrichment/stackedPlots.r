@@ -45,6 +45,7 @@ gene.ontology.matrix = function(f) {
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
   r = r[ -log10(r$p.corr) >= p.cutoff & r$term.depth <= 4 , ]
   a = as.matrix(make.sparse.matrix(r$cluster, r$Term, -log10(r$p.corr))) / max.color.p
+browser()
   a = a[ , pick.top.few.columns(a, 2) ]
   a
 }
@@ -380,7 +381,7 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (TRUE) {
+if (FALSE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
@@ -409,8 +410,8 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=4.2, height=6.5)
-par(mar=c(5,10,0.1,0.1))
+  width=5.5, height=6.5)  # width was 4.2
+par(mar=c(5,10,0.1,8))
 plot.stacked("facs")
 mtext("Sort fraction", side=1, line=4, cex=0.68)
 dev.off()

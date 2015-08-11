@@ -1,6 +1,7 @@
 # Enrichment of genes corresponding to markers used for sorting.
 
 source("git/utils.r")
+source("git/sort_paper/plot/experimentRename.r")
 
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
 # rpm.facs = rpm[ , c(1:21,36:54,65:68) ]
@@ -25,19 +26,23 @@ enrich = r[ , pos.genes ] - r[ , neg.genes ]
 enrich.vs.singlet = r[ , pos.genes ] - singlet.average
 
 png("git/sort_paper/FACS/matchedVsSingletControl.png",
-  width=1200, height=1200)
+  width=1400, height=1400)
 par(mfrow=c(4,4))
+par(mar=c(5,5,4,4)+0.1)
 # XXX PDF file is huge
 # pdf("git/sort_paper/FACS/matchedVsSingletControl.pdf",
 #   width=7.5, height=10)
 # par(mfrow=c(3,2))
 
-for(j in colnames(enrich)) {
+fractions = setdiff(colnames(enrich), "pha-4 5/9 (+)")
+fractions = fractions[ order(prettify.read.ratio.columns(fractions)) ]
+for(j in fractions) {
   r = range(c(enrich[,j], enrich.vs.singlet[,j]))
   plot(enrich[,j], enrich.vs.singlet[,j],
-    main=j, xlab="Enrichment", ylab="Enrichment vs. singlets",
-    xlim=r, ylim=r,
-    pch=20, col="#00000080")
+    main=sub("\\(\\+\\) ", "", prettify.read.ratio.columns(j)),
+    xlab="Enrichment", ylab="Enrichment vs. singlets",
+    xlim=r, ylim=r, pch=20, cex=2, col="#00000040", lwd=2,
+    cex.axis=1.5, cex.lab=2, cex.main=2)
   abline(a=0, b=1, col="#00000080", lwd=2)
 }
 
