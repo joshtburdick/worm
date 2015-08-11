@@ -39,7 +39,7 @@ fractions = fractions[ order(prettify.read.ratio.columns(fractions)) ]
 for(j in fractions) {
   r = range(c(enrich[,j], enrich.vs.singlet[,j]))
   plot(enrich[,j], enrich.vs.singlet[,j],
-    main=sub("\\(\\+\\) ", "", prettify.read.ratio.columns(j)),
+    main=sub(" \\(\\+\\)", "", prettify.read.ratio.columns(j)),
     xlab="Enrichment", ylab="Enrichment vs. singlets",
     xlim=r, ylim=r, pch=20, cex=2, col="#00000040", lwd=2,
     cex.axis=1.5, cex.lab=2, cex.main=2)
