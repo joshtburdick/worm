@@ -17,6 +17,7 @@ td1 = gene.expr.time[ gene.expr.time$sd <= sd.cutoff , ]
 r = read.tsv("git/cluster/readsPerMillion.tsv")
 pseudocount = 3
 r = log2( as.matrix(r) + pseudocount )
+colnames(r) = prettify.read.ratio.columns(colnames(r))
 
 # the Spencer data
 load("data/expression/spencer.expr.Rdata")
@@ -31,6 +32,13 @@ singlet.average = (r[,"cnd-1 singlets"] + r[,"pha-4 singlets"]) / 2
 # Plots profile of enrichment.
 plot.time.profile = function(a, b, main, ylab="Enrichment") {
   write.status(main)
+
+  # XXX slight relabeling hack
+  if (main == "cnd−1 singlets vs ungated")
+    main = "singlets rep. 1 vs ungated"
+  if (main == "pha-4 singlets vs ungated")
+    main = "singlets rep. 2 vs ungated"
+
   plot(td1[,"mean"],
     a[ rownames(td1) ] - b[ rownames(td1) ],
     main = main, xlab = "Time (minutes)", ylab=ylab,
@@ -176,7 +184,7 @@ on.off.c = "#0000ffb0"
     width=8, height=4.5)
   par(mar=c(5,5.5,4,4) + 0.1)
 
-  plot.time.profile(r[,"cnd-1 8/19 (+)"], singlet.average, "",
+  plot.time.profile(r[,"cnd-1 rep. 1 (+)"], singlet.average, "",
     ylab=expression(atop("Enrichment in cells",
       "FACS-sorted by " * italic("cnd-1"))))
 
@@ -229,3 +237,4 @@ if (FALSE) {
 plot.all.expr.by.time()
 temporal.stats[,] = p.adjust(temporal.stats, method="fdr")
 write.tsv(temporal.stats, "git/sort_paper/FACS/timing/sortingTemporalInfo.tsv")
+
