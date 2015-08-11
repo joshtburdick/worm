@@ -77,11 +77,15 @@ compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
       w.dist = wilcox.test(r1$upstream.dist, r0$upstream.dist)
       a[i,"dist.U"] = w.dist$statistic
       a[i,"dist.closer"] = w.dist$statistic > 0.5 * nrow(r0) * nrow(r1)
+      a[i,"dist.effect.size"] = w.dist$statistic /
+        (as.numeric(nrow(r0)) * as.numeric(nrow(r1)))   # avoid overflow
       a[i,"dist.p"] = w.dist$p.value
 
       w.cons = wilcox.test(r1$motif.cons, r0$motif.cons)
       a[i,"cons.U"] = w.cons$statistic
       a[i,"cons.higher"] = w.cons$statistic > 0.5 * nrow(r0) * nrow(r1)
+      a[i,"cons.effect.size"] = w.cons$statistic /
+        (as.numeric(nrow(r0)) * as.numeric(nrow(r1)))  # again, avoid overflow
       a[i,"cons.p"] = w.cons$p.value
     }
 
