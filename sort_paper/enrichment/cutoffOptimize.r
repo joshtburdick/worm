@@ -1,8 +1,10 @@
 # Optimizes the pseudocount, and enrichment cutoff,
 # for considering genes "enriched" (or "depleted".)
 
-# note: this re-generates the "readRatios.tsv" table
-source("git/cluster/readRatios.r")
+source("git/utils.r")
+source("git/sort_paper/plot/experimentRename.r")
+
+readsPerMillion = read.tsv("git/cluster/readsPerMillion.tsv")
 
 # Computes enrichment, using some pseudocount.
 # Args:
@@ -18,8 +20,8 @@ enrichment = function(r, samples, pseudocount) {
   enrich = log2( pseudocount + r.pos ) - log2( pseudocount + r.neg )  
 }
 
-cnd1.samples = c("cnd-1 12/14", "cnd-1 1/4", "cnd-1 8/19")
-pha4.samples = c("pha-4 12/9", "pha-4 9/1", "pha-4 5/9")
+cnd1.samples = c("cnd-1 8/19", "cnd-1 12/14", "cnd-1 1/4")
+pha4.samples = c("pha-4 5/9", "pha-4 9/1", "pha-4 12/9")
 
 # Computes how often an enrichment is reproduced.
 # Args:
@@ -102,13 +104,14 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
 
         er = enrich.reproducibility(en[,i], en[,j])
 
-        plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n", main=main,
+        plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n",
+          main = if (i==1 && j == 2) main else "",
           xlab=paste(
             ifelse(depletion, "Depletion in", "Enrichment in"),
-            samples[i]),
+            prettify.read.ratio.columns(samples[i])),
           ylab=paste(
-            ifelse(depletion, "Fraction depleted in", "Fraction enriched in"), 
-            samples[j]))
+            ifelse(depletion, "Fraction depleted\nin", "Fraction enriched\nin"), 
+            prettify.read.ratio.columns(samples[j])))
 
         lines(er$x, er$y, col="#0000ffff")
         abline(v = 2, col="#00000080")
@@ -127,8 +130,9 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
 
 plot.separate.reproducibility.curves = function() {
 pdf("git/sort_paper/enrichment/cutoffOptimize.pdf",
-  width=6, height=8)
-par(mfrow=c(3,2))
+  width=8.5, height=12)
+par(mfcol=c(6,4))
+par(mar=c(4,5,4,1)+0.1)
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
   FALSE, "pha-4 enrichment")
 plot.enrichment.reproducibility(readsPerMillion, pha4.samples,
@@ -155,3 +159,4 @@ plot.enrichment.reproducibility.one.graph(readsPerMillion,
 }
 
 plot.separate.reproducibility.curves()
+

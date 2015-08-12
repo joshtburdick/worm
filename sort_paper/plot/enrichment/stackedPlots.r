@@ -45,7 +45,6 @@ gene.ontology.matrix = function(f) {
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
   r = r[ -log10(r$p.corr) >= p.cutoff & r$term.depth <= 4 , ]
   a = as.matrix(make.sparse.matrix(r$cluster, r$Term, -log10(r$p.corr))) / max.color.p
-browser()
   a = a[ , pick.top.few.columns(a, 2) ]
   a
 }
@@ -154,9 +153,9 @@ ortholog.by.motif.prettyprint = {
     }
     return(x)
   }
-
-  for(m in names(a)) {
-    g = unique(as.character(motif.ortholog[ motif.ortholog$motif.id==m, "gene" ]))
+#browser()
+  for(m2 in names(a)) {
+    g = unique(as.character(motif.ortholog[ motif.ortholog$motif.id==m2, "gene" ]))
 
     if (length(g) > 0) {
       # slight reordering
@@ -167,10 +166,15 @@ ortholog.by.motif.prettyprint = {
         g = c(g[1:4], paste("and", length(g)-4, "others"))
       }
 
+if(FALSE) {
       x1 = expression(1 * " (" * 2 * ")")
       x1[[1]][[2]][[2]][[2]] = a[[m]][[1]]
       x1[[1]][[2]][[3]] = expr.concat(g)[[1]] 
-      a[[m]] = x1    #    paste(g, collapse = " ")   
+      a[[m]] = x1    #    paste(g, collapse = " ")
+}
+
+      a[[m2]] = expr.format(expression(gene * " (" * orthologs * ")"),
+        list(gene = a[[m2]], orthologs = expr.concat(g)))
     }
   }
 
@@ -308,9 +312,9 @@ if (FALSE) {
 }
 
   # combined motif names and ortholog info
-  m = rownames1 %in% names(ortholog.by.motif.prettyprint)
-  rownames1[ m ] = ortholog.by.motif.prettyprint[ rownames1[ m ] ]
-# browser()
+#browser()
+  m1 = rownames1 %in% names(ortholog.by.motif.prettyprint)
+  rownames1[ m1 ] = ortholog.by.motif.prettyprint[ rownames1[ m1 ] ]
 
   # label rows
   axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
@@ -345,9 +349,9 @@ if (FALSE) {
       lines(c(x, x), c(y[1]-0.5, y[2]+0.5)/n1, lwd=0.1, col="#00000040")
     }
 
-    text(-30/nrow(r), 0.5*(y[1]+y[2]) / ncol(r),
+    text((nrow(r)+3)/nrow(r), 0.5*(y[1]+y[2]) / ncol(r),
       labels=ylab,
-      srt=90, xpd=TRUE, adj=0.5, cex=0.68)
+      srt=90, xpd=TRUE, adj=0.5, cex=0.65)
 
     # XXX hack
     if (FALSE && ylab=="Possible orthologs") {
@@ -367,7 +371,7 @@ if (FALSE) {
 
   # add on a p-value scale
   for(i in c(1:5))
-    draw.scale(dim(r), -23.5)(-10, c(0, 0.2, 0.4, 0.6, 0.8), c(9,9,8,10,5))
+    draw.scale(dim(r), -18)(-10, c(0, 0.2, 0.4, 0.6, 0.8), c(9,9,8,10,5))
 }
 
 # Highlights one column of the graph.
@@ -410,8 +414,8 @@ dev.off()
 
 # things enriched in FACS-sorted fractions
 pdf("git/sort_paper/plot/enrichment/stackedPlots/facs.pdf",
-  width=5.5, height=6.5)  # width was 4.2
-par(mar=c(5,10,0.1,8))
+  width=4, height=6.5)  # width was 4.2
+par(mar=c(5,8,0.1,2))
 plot.stacked("facs")
 mtext("Sort fraction", side=1, line=4, cex=0.68)
 dev.off()
