@@ -34,3 +34,11 @@ array.from.dimnames = function(dimnames) {
     dimnames = dimnames)
 }
 
+# Simple "named capture" function.
+# Args:
+#   s - a character vector
+#   pattern - a regexp
+# Returns: substring matching that pattern.
+regexp.capture = function(s, pattern)
+  regmatches(s, gregexpr(pattern, s))[[1]]
+

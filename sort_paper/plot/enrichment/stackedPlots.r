@@ -181,6 +181,20 @@ if(FALSE) {
   a   # c(a, recursive=TRUE)
 }
 
+italicize.sort.fractions = function(a) {
+  r = c()
+  for(i in 1:length(a)) {
+    f = sub("( enriched| depleted)", "", a[i])
+    ed = regexp.capture(a[i], "( enriched| depleted)")
+    if (f %in% c("F21D5.9", "singlets"))
+      r[i] = as.expression(a[i])
+    else
+      r[i] = expr.format(expression(italic(A) * B),
+        list(A = f, B = ed))
+  }
+  r
+}
+
 # Plots one of these heatmaps.
 # Args:
 #   f - name of file
@@ -211,6 +225,8 @@ plot.stacked = function(f, cluster.subset = NULL) {
   # filter rows of m to be non-redundant by motif gene name
   j = ! duplicated(motif.gene[colnames(motif.m)])
   motif.m = motif.m[ , j ]
+  # XXX hack: probably should cluster motifs more
+  motif.m = motif.m[ , colnames(motif.m) != "M0317_1.02" ]
   cat("reduced from", length(j), "to", sum(j), "rows\n")
 
   # possibly subset these
@@ -295,24 +311,17 @@ plot.stacked = function(f, cluster.subset = NULL) {
   }
 
   image(r, col=color.scale, xaxt="n", yaxt="n", bty="n", zlim=c(0,1))
-  axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=rownames(r), las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
+
+  group.names = rownames(r)
+  if (all(grepl("enriched|depleted", group.names)))
+    group.names = italicize.sort.fractions(group.names)
+
+  axis(1, at=(0:(dim(r)[1]-1)) / (dim(r)[1]-1), labels=group.names,
+    las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
 
   rownames1 = colnames(r)
 
-if (FALSE) {
-  # orthology info
-  ortho = rep("", length(rownames1))
-  names(ortho) = rownames1
-  m = rownames1 %in% names(ortholog.by.motif.small)
-  ortho[ rownames1[ m ] ] = ortholog.by.motif.small[ rownames1 [ m ] ]
-
-  # convert motif names to the relevant gene name
-  m = rownames1 %in% names(motif.gene)
-  rownames1[ m ] = motif.gene[ rownames1[m] ]
-}
-
   # combined motif names and ortholog info
-#browser()
   m1 = rownames1 %in% names(ortholog.by.motif.prettyprint)
   rownames1[ m1 ] = ortholog.by.motif.prettyprint[ rownames1[ m1 ] ]
 
@@ -320,13 +329,6 @@ if (FALSE) {
   axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
     labels=as.expression(c(rownames1, recursive=TRUE)),
     las=2, cex.axis=0.3, line=-0.9, tick=FALSE)
-
-  # label orthologs (currently disabled)
-  if (FALSE) {
-    axis(2, at=(0:(dim(r)[2]-1)) / (dim(r)[2]-1),
-      labels=sapply(ortho, italicize),
-      las=2, cex.axis=0.3, line=1.5, tick=FALSE)
-  }
 
   # add grid lines
   g = dim(r) - 1
@@ -353,12 +355,6 @@ if (FALSE) {
       labels=ylab,
       srt=90, xpd=TRUE, adj=0.5, cex=0.65)
 
-    # XXX hack
-    if (FALSE && ylab=="Possible orthologs") {
-      text(-7/nrow(r), 0.5*(y[1]+y[2]) / ncol(r), 
-        labels="Motifs",
-        srt=90, xpd=TRUE, adj=0.5, cex=0.68)
-    }
   }
 
   color.columns(anatomy.m, 0, "Anatomy\nterms", 9)
@@ -371,7 +367,7 @@ if (FALSE) {
 
   # add on a p-value scale
   for(i in c(1:5))
-    draw.scale(dim(r), -18)(-10, c(0, 0.2, 0.4, 0.6, 0.8), c(9,9,8,10,5))
+    draw.scale(dim(r), -12)(-10, c(0, 0.2, 0.4, 0.6, 0.8), c(9,9,8,10,5))
 }
 
 # Highlights one column of the graph.
@@ -385,12 +381,12 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (FALSE) {
+if (TRUE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
   width=3, height=6)
-par(mar=c(5,10,0.1,0.1))
+par(mar=c(4.7,7,0.1,2))
 ao = anatomy.info.matrix("hier.300.clusters", "anatomyEnrichment")
 wbc = anatomy.info.matrix("hier.300.clusters", "wormbaseCluster")
 # cl.subset = unique(c(rownames(ao), sort(rownames(wbc), decreasing=TRUE)[1:5]))
@@ -404,7 +400,7 @@ dev.off()
 # all of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf",
   width=21.5, height=24)
-par(mar=c(3,11,0.1,0.1))
+par(mar=c(4,11,0.1,2))
 
 plot.stacked("hier.300.clusters")
 
