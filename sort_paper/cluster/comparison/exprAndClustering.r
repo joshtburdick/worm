@@ -4,6 +4,7 @@
 source("git/utils.r")
 source("git/data/name_convert.r")
 source("git/plot/label_panel.r")
+source("git/plot/utils.r")
 
 # embryonic expression patterns
 emb.expr = read.tsv("~/data/image/exprCell.tsv")
@@ -73,8 +74,8 @@ label.panel(label)
   hist(r.same, breaks=40, col="#808080",
     xlim=c(-1,1), main=paste(main, "(same cluster)"),
     xlab="Correlation of expression across cells")
-  mtext(paste0("Wilcoxon p = ",
-    signif(2 * wilcox$p.value, 2)), side=3, cex=0.8)
+  mtext(expr.format(expression("Wilcoxon p " * p),
+    list(p = format.p(2 * wilcox$p.value))), side=3, cex=0.8)
   # XXX this isn't working
 #  e = expression("Wilcoxon p " * 1)
 #  e[[1]][[3]] = format.p(wilcox$p.value, include.equals=TRUE)
