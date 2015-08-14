@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[cm]{fullpage}
+
+\usepackage{pdfpages}
+
+\usepackage{hyperref}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+%% \usepackage[margin=10pt,justification=justified]{caption}
+
+
+\usepackage{graphicx}
+\usepackage[space]{grffile}
+\graphicspath{
+{/home/jburdick/gcb/}
+}
+
+\renewcommand{\thefigure}{S\arabic{figure}} 
+
+\begin{document}
+\pagenumbering{gobble}
+
+\begin{figure}
+
+\caption{Lineage tracing of images.}
+\end{figure}
+
+\clearpage
+\includepdf[pages={1-},scale=1]{writing/sort paper/trees/S1 Sort markers.pdf}
+\clearpage
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/FACS/matchedVsSingletControl.png}
+\caption{
+Comparison of enrichments relative to a singlet control, rather than the non-expressing (-) sample corresponding to a given expressing (+) experiment.}
+\end{figure}
+\clearpage
+
+
+\begin{figure}
+\caption{Enrichments in each experiment for genes determined to be time-specific from (The modENCODE Consortium 2010).}
+\end{figure}
+\clearpage
+
+\includepdf[pages={1-},scale=1]{git/sort_paper/FACS/timing/exprByTime.pdf}
+
+\clearpage
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/FACS/regress/facsRegress.pdf}
+\caption{
+Accuracy predicting the expression in ungated samples using only (+) and (-) samples, versus accuracy by combining the (+), (-), and singlet control samples.}
+\end{figure}
+\clearpage
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/unmix/pseudoinverseEnrichment/crossvalidationAccuracy.png}
+\caption{
+Unmixing cross-validation accuracy, comparing measured enrichment in
+each FACS experiment with predicted enrichment based on the other
+FACS experiments.}
+\end{figure}
+\clearpage
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/cluster/comparison/exprAndClustering.pdf}
+\caption{
+Correlation of expression patterns for genes in different clusters and the same cluster, for (A) 119 embryonic expression patterns from (Murray et al. 2012) and (B) 82 expression patterns from L1 stage larvae (Liu et al. 2009).
+}
+\end{figure}
+
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/cluster/annotation/tissueSpecificitySupplemental.pdf}
+\caption{Mean expression and mean absolute enrichments of clusters
+(as in Figure 4E), with all clusters labelled.
+}
+\end{figure}
+\clearpage
+
+
+\begin{figure}
+\includegraphics[width=\textwidth]
+{git/sort_paper/plot/enrichment/stackedPlots/hier.300.pdf}
+\caption{Annotation enrichment as in Figure 5, but for all clusters.
+}
+\end{figure}
+\clearpage
+
+\begin{figure}
+\includegraphics[height=0.9\textheight]
+{git/sort_paper/enrichment/cutoffOptimize.pdf}
+\caption{Reproducibility of enrichments, at different cutoffs.}
+\end{figure}
+\clearpage
+
+\end{document}
+
