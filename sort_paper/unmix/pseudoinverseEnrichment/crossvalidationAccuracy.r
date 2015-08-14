@@ -70,7 +70,7 @@ write.crossval.graphs.png = function() {
 
   a = plot.crossval.accuracy(m, r, single.fractions,
     c(single.fractions, "ceh-6 (+) hlh-16 (+)",
-      "ceh-6 (+) hlh-16 (-)", "ceh-6 (-) hlh-16 (+)")[1:5])
+      "ceh-6 (+) hlh-16 (-)", "ceh-6 (-) hlh-16 (+)"))
 
   dev.off()
 

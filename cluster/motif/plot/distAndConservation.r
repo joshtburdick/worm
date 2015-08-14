@@ -141,15 +141,27 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
       xaxt="n", yaxt="n", xlab="", ylab="")
 
 print(motif.info[m,])
-    motif.name.1 = motif.info[m, "motif.name"]
-    if (motif.name.1 == "RFX3_1")
-      motif.name.1 = "RFX3"
+    motif.name.1 = as.expression(motif.info[m, "motif.name"])
 
-    text(0,3, paste(motif.name.1, "motif", "near genes in cluster", cl), cex=2)
+    # XXX hacks
+    if (motif.info[m,"motif.name"] == "RFX3_1")
+      motif.name.1 = "RFX3"
+    if (m == "M2336_1.02")
+      motif.name.1 = expression(italic("eor-1"))
+
+#    if (m == "M1906_1.02")
+#      motif.name.1 = expression(italic("klf-2"))
+
+    text(0,3,
+      expr.format(expression(m * " motif near genes in cluster " * cl),
+        list(m=motif.name.1, cl=cl)), cex=2)
+ 
+#    text(0,3, paste(motif.name.1, "motif", "near genes in cluster", cl), cex=2)
+
 #    text(0,1, paste("Motif enrichment p =",
 #      signif(enrich.p, 2)), cex=1.5)
     text(0,1, expr.format(expression("Motif enrichment p " * p),
-      list(p = format.p(signif(enrich.p,2), include.equals.sign=FALSE))), cex=1.5)
+      list(p = format.p(signif(enrich.p,2), include.equals.sign=TRUE))), cex=1.5)
 
     par(mar=c(5,4,4,1)+0.1)
 
@@ -179,7 +191,7 @@ if (FALSE) {
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
     mtext(expr.format(expression("Wilcoxon p " * p),
-      list(p = format.p(signif(a$dist.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
+      list(p = format.p(signif(a$dist.p.corr,2), include.equals.sign=TRUE))), cex=0.8)
     mtext(expression(bold("Genes in cluster")),
       side=2, line=5, cex=1, xpd=NA)
     hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
@@ -188,7 +200,7 @@ if (FALSE) {
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="conservation", "p.fdr" ]
     mtext(expr.format(expression("Wilcoxon p " * p),
-      list(p = format.p(signif(a$cons.p.corr,2), include.equals.sign=FALSE))), cex=0.8)
+      list(p = format.p(signif(a$cons.p.corr,2), include.equals.sign=TRUE))), cex=0.8)
 
     par(mar=c(0,0,0,0))
     plot.new()

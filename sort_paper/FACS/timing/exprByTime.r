@@ -3,7 +3,9 @@
 
 source("git/utils.r")
 source("git/data/name_convert.r")
+source("git/plot/utils.r")
 
+source("git/sort_paper/plot/experimentRename.r")
 source("git/sort_paper/FACS/timing/proportionOnFromImaging.r")
 
 # genes expressed at particular times
@@ -31,13 +33,6 @@ singlet.average = (r[,"cnd-1 singlets"] + r[,"pha-4 singlets"]) / 2
 
 # Plots profile of enrichment.
 plot.time.profile = function(a, b, main, ylab="Enrichment") {
-  write.status(main)
-
-  # XXX slight relabeling hack
-  if (main == "cnd−1 singlets vs ungated")
-    main = "singlets rep. 1 vs ungated"
-  if (main == "pha-4 singlets vs ungated")
-    main = "singlets rep. 2 vs ungated"
 
   plot(td1[,"mean"],
     a[ rownames(td1) ] - b[ rownames(td1) ],
@@ -83,15 +78,25 @@ temporal.info.stats = function(x) {
       c(xs[c("early", "middle")], recursive=TRUE)))
 }
 
+# Hack to italicize gene names.
+italicize.gene.name = function(x) {
+  if (grepl("-", x))
+    expr.format(expression(italic(a)), list(a=x))
+  else
+    as.expression(x)
+}
+
 # Plots profile of enrichment, including storing stats about
 # differential enrichment.
 plot.time.profile.1 = function(a, b, main, ylab="Enrichment") {
-  write.status(main)
+  write.status(paste("[", main, "]"))
+
   plot(td1[,"mean"],
     a[ rownames(td1) ] - b[ rownames(td1) ],
-    main = main, xlab = "Time (minutes)", ylab=ylab,
+    xlab = "Time (minutes)", ylab=ylab,
     ylim=c(-5,5), xaxt="n", yaxt="n",
     pch=183, font=5, cex=1, col="#00000080")
+  mtext(main)
   axis(1)
   axis(2)
   abline(h = 0, col="#606060")
@@ -118,22 +123,25 @@ plot.all.expr.by.time = function() {
 
   for(s in samples) {
     plot.time.profile.1(r[,s], singlet.average,
-      paste(s, "vs singlets"))
+      expr.format(expression(s * " vs singlets"),
+        list(s=italicize.gene.name(s))))
   }
 
   # positive vs. negative
   for(s in samples) {
     neg = sub("\\(\\+\\)", "\\(\\-\\)", s)
     if (neg %in% colnames(r)) {
-      plot.time.profile.1(r[,s], r[,neg], paste(s, "vs", neg))
+      plot.time.profile.1(r[,s], r[,neg],
+        expr.format(expression(a * " vs " * b),
+          list(a=italicize.gene.name(s), b=italicize.gene.name(neg))))
     }
   }
 
   # singlet vs. ungated
   plot.time.profile.1(r[,"cnd-1 singlets"], r[,"cnd-1 ungated"],
-    "cnd-1 singlets vs ungated")
+    "singlets rep. 1 vs ungated")
   plot.time.profile.1(r[,"pha-4 singlets"], r[,"pha-4 ungated"],
-    "pha-4 singlets vs ungated")
+    "singlets rep. 2 vs ungated")
 
 if (FALSE) {
 
