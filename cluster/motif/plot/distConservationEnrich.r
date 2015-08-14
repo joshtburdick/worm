@@ -15,16 +15,20 @@ clusters = read.tsv(
 #   "git/sort_paper/tf/summary/motif/hier.300.clusters_merged.tsv.gz"))
 motif.enriched = read.tsv(gzfile(
   "git/sort_paper/tf/motif/hyperg/summary/hughes/hier.300.clusters.tsv.gz"))
+motif.enriched = motif.enriched[ motif.enriched$p.corr <= 0.05 , ]
 
 # sorting (to process most significant first)
 motif.enriched = motif.enriched[ order(motif.enriched$p.corr) , ]
 
 # only including most significant enrichments
-motif.enriched = motif.enriched[1:10,]
+# motif.enriched = motif.enriched[1:10000,]
 
-# data for histogram of amount of upstream conservation
-# upstream.cons.hist = read.tsv(gzfile(
-#   "git/tf/motif/conservation/cons_hist_WS220_5kb_upstream.tsv.gz"))
+# filter redundant motifs
+load("git/sort_paper/tf/motif/hughes/motifCluster.Rdata")
+motif.clustering = cutree(hughes.motif.cluster[["all"]], h=0.01)
+motif.enriched = motif.enriched[
+  ! duplicated(paste(motif.clustering[ motif.enriched$motif ],
+   motif.enriched$group)) , ]
 
 # XXX hack to get the appropriate motif from whichever directory
 get.motif.filename = function(m) {
@@ -39,10 +43,8 @@ get.motif.filename = function(m) {
   return(NA)
 }
 
-# Does a Mann-Whitney test for different distribution
-# of upstream distance and conservation, between genes
-# in the cluster, and outside the cluster.
-compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
+# Looks for enrichment of motif distance or conservation.
+compute.dist.conservation.proportion = function(motif.enriched, output.file) {
   # cutoffs
   dist.cutoff = -1000
   cons.cutoff = 0.5
@@ -113,7 +115,7 @@ compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
       a[i,"cons.p"] = t2$p.value
     }
 
-    if (i %% 5 == 0) {
+    if (i %% 100 == 0) {
       write.tsv(a, gzfile(output.file))
     }
   }
@@ -124,7 +126,7 @@ compute.dist.conservation.wilcoxon = function(motif.enriched, output.file) {
 }
 
 if (TRUE) {
-  compute.dist.conservation.wilcoxon(motif.enriched,
+  compute.dist.conservation.proportion(motif.enriched,
     "git/cluster/motif/plot/distConservationEnrich.tsv.gz")
 }
 

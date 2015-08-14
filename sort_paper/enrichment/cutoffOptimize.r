@@ -106,6 +106,7 @@ plot.enrichment.reproducibility = function(r, samples, depletion, main) {
 
         plot(1,1, xlim=c(0,5), ylim=c(0.5,1), type="n",
           main = if (i==1 && j == 2) main else "",
+          cex.main = 1.2,
           xlab=paste(
             ifelse(depletion, "Depletion in", "Enrichment in"),
             prettify.read.ratio.columns(samples[i])),

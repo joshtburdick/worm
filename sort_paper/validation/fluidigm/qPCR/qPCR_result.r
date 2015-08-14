@@ -125,9 +125,9 @@ plot.stats = function(r, main) {
     space=1, las=2, yaxt="n", main=main)
   mtext(expression("Expression (log"[2] * " fold change)"),
     side=2, line=3) # XXX
-  mtext(expression("   " * italic("daf-19") * " RNAi"),
+  mtext(expression(italic("daf-19(m86)")),
     side = 1, line=6, adj=0, col="#ff0000c0")
-  mtext(expression(italic("hlh-6") * " RNAi   "),
+  mtext(expression(italic("hlh-6(tm299)")),
     side = 1, line=6, adj=1, col="#0000ffc0")
 
   arrows(m, r$ddct - r$ddct.se, m, r$ddct + r$ddct.se,

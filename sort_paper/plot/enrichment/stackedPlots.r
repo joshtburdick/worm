@@ -385,7 +385,7 @@ if (TRUE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
-  width=3, height=6)
+  width=2.8, height=6)
 par(mar=c(4.7,7,0.1,2))
 ao = anatomy.info.matrix("hier.300.clusters", "anatomyEnrichment")
 wbc = anatomy.info.matrix("hier.300.clusters", "wormbaseCluster")

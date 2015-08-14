@@ -25,15 +25,17 @@ plot.crossval.accuracy = function(m, r, predict.set, test.set) {
     predicted.x.f = as.vector( m[a,] %*% t(x) )
     corr = cor(r[,a], predicted.x.f)
     lim = range(c(r[,a], predicted.x.f))
+
+    par(mar=c(4,4,4,2)+0.1)
     plot(r[,a], predicted.x.f,
       main=a, xlab="Measured enrichment", ylab="Predicted enrichment",
-      xlim=lim, ylim=lim,
+      xlim=lim, ylim=lim, cex.main=1.8, cex.lab=1.5, cex.lab=1.5,
       pch=183, font=5, cex=0.5, col="#00000080", xaxt="n", yaxt="n")
 
     # XXX this is just to get the axis labels in the same font
-    axis(1); axis(2) 
+    axis(1, cex.axis=1.5); axis(2, cex.axis=1.5) 
     mtext(paste("Correlation =", round(corr, 3)),
-      cex=0.75, line=0.5)
+      cex=0.85, line=0.1)
     abline(0, 1, col="#00000080")
     result[[a]] = list(predicted.x.f = predicted.x.f, corr = corr)
   }
@@ -48,7 +50,6 @@ write.crossval.graphs = function() {
   a = plot.crossval.accuracy(m, r, single.fractions,
     c(single.fractions, "ceh-6 (+) hlh-16 (+)",
       "ceh-6 (+) hlh-16 (-)", "ceh-6 (-) hlh-16 (+)"))
-
   dev.off()
 
   correlations = sapply(a, function(x) x$corr)
@@ -60,15 +61,16 @@ write.crossval.graphs = function() {
 
 # Same, but plots on one figure, as a png.
 write.crossval.graphs.png = function() {
-#  png(paste0(output.dir, "/crossvalidationAccuracy.png"),
-#    width=1000, height=800)
-  pdf(paste0(output.dir, "/crossvalidationAccuracy.pdf"),
-    width=14, height=12)
-  par(mfrow=c(4,5))
+  png(paste0(output.dir, "/crossvalidationAccuracy.png"),
+    width=800, height=1050)
+#    width=1000, height=800)   was 4x5, with these dimensions
+#  pdf(paste0(output.dir, "/crossvalidationAccuracy.pdf"),
+#    width=14, height=12)
+  par(mfrow=c(5,4))
 
   a = plot.crossval.accuracy(m, r, single.fractions,
     c(single.fractions, "ceh-6 (+) hlh-16 (+)",
-      "ceh-6 (+) hlh-16 (-)", "ceh-6 (-) hlh-16 (+)"))
+      "ceh-6 (+) hlh-16 (-)", "ceh-6 (-) hlh-16 (+)")[1:5])
 
   dev.off()
 
@@ -80,5 +82,5 @@ write.crossval.graphs.png = function() {
 }
 
 # write.crossval.graphs()
-# write.crossval.graphs.png()
+write.crossval.graphs.png()
 
