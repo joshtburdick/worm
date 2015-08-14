@@ -54,8 +54,12 @@ tf.cluster.cor = cor(t(cluster.means), t(rr[tf2,]))
 # reads per million (for computing average of maximum)
 rpm = read.tsv("git/cluster/readsPerMillion.tsv")
 rpm = rpm[ x[,3], !grepl("^(HS|RNAi)", colnames(rpm)) ]
+
+# maximum for each gene
 max.rpm = apply(rpm, 1, max)
-mean.max.rpm = tapply(max.rpm, x[,8], mean)
+
+# average of these maxima, per cluster
+mean.max.rpm = tapply(max.rpm, x[,6], mean)
 
 # enriched anatomy terms and other expression clusters
 ao.enriched = read.tsv(paste0(
