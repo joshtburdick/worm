@@ -43,8 +43,12 @@ gene.ontology.matrix = function(f) {
 
   r = read.table(file=paste0("git/sort_paper/enrichment/geneOntology/", f, ".tsv"),
     sep="\t", quote="", header=TRUE, row.names=1, check.names=FALSE, as.is=TRUE)
-  r = r[ -log10(r$p.corr) >= p.cutoff & r$term.depth <= 4 , ]
+  # XXX hack
+  r = r[ -log10(r$p.corr) >= p.cutoff &
+    ((r$term.depth <= 4) | (rownames(r) == "GO:0004222")), ]
   a = as.matrix(make.sparse.matrix(r$cluster, r$Term, -log10(r$p.corr))) / max.color.p
+
+  # XXX hack
   a = a[ , pick.top.few.columns(a, 2) ]
   a
 }
