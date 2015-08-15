@@ -70,7 +70,8 @@ abline(h=2, col="#00000060")
 
 dev.off()
 
-cat("mean enrichment, by whether something is a promoter fusion:\n")
-is.promoter.fusion = names(sort.marker.enrichment) %in% promoter.fusion
-print(by(sort.marker.enrichment, is.promoter.fusion, mean))
+cat("mean enrichment, by whether something is a promoter fusion (ignoring hlh-16):\n")
+sme1 = sort.marker.enrichment[ names(sort.marker.enrichment) != "hlh-16" ]
+is.promoter.fusion = names(sme1) %in% promoter.fusion
+print(by(sme1, is.promoter.fusion, mean))
 
