@@ -325,6 +325,9 @@ plot.stacked = function(f, cluster.subset = NULL) {
 
   rownames1 = colnames(r)
 
+  # XXX hack
+  rownames1 = gsub("\\[cgc5767\\]:", "", rownames1)
+
   # combined motif names and ortholog info
   m1 = rownames1 %in% names(ortholog.by.motif.prettyprint)
   rownames1[ m1 ] = ortholog.by.motif.prettyprint[ rownames1[ m1 ] ]
@@ -385,7 +388,7 @@ highlight.column = function(colnames, a, hue) {
 
 system(paste("mkdir -p git/sort_paper/plot/enrichment/stackedPlots"))
 
-if (TRUE) {
+if (FALSE) {
 
 # a subset of the clustering
 pdf("git/sort_paper/plot/enrichment/stackedPlots/hier.300.subset1.pdf",
