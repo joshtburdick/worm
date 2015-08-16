@@ -7,6 +7,7 @@ source("git/sort_paper/FACS/enrichedInFraction.r")
 
 # for background genes
 source("git/sort_paper/plot/numEnrichedInFractions.r")
+r.sort.only.averaged = as.matrix(r.sort.only.averaged)
 
 output.dir = "git/sort_paper/enrichment/geneOntology/"
 system(paste("mkdir -p", output.dir))
@@ -66,7 +67,7 @@ go.annotate.list = function(clusters) {
 
   if (!is.null(r)) {
     r$p.corr = p.adjust(r$Pvalue, method="fdr", n=num.tests)
-    r = r[ r$p.corr <= 0.05 , ]
+#    r = r[ r$p.corr <= 0.05 , ]
   }
 
   r
@@ -105,12 +106,13 @@ facs.enriched.go = function() {
 #   cutoff - an enrichment cutoff
 # Side effects: writes output (with the cutoff in the name)
 facs.enriched.go.looser = function(cutoff) {
-  r = go.annotate.list(facs.enriched.depleted)
+  ed = get.enriched.and.depleted(r.sort.only.averaged, cutoff)
+  r = go.annotate.list(ed)
   write.tsv(r, paste0(output.dir, "/facs_cutoff=", cutoff, ".tsv"))
-
 }
 
 # facs.enriched.go()
 # cluster.enriched.go()
 
-
+# facs.enriched.go.looser(1.585)   # which is about log2(3)
+facs.enriched.go.looser(1)
