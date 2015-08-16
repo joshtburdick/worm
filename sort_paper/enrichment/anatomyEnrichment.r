@@ -6,6 +6,7 @@ source("git/data/name_convert.r")
 source("git/sort_paper/enrichment/hyperg.r")
 
 source("git/sort_paper/FACS/enrichedInFraction.r")
+facs.enriched.depleted = get.enriched.and.depleted(r.sort.only.averaged, 1)
 
 load("git/data/wormbase/anatomy.ontology.group.Rdata")
 
@@ -42,8 +43,8 @@ gene.groups = rbind(ao.group, wb.cluster)
 # this number is from "git/sort_paper/plot/numEnrichedInFractions.r"
 num.genes = 15683
 
-system("mkdir -p git/sort_paper/enrichment/wormbaseCluster/")
-system("mkdir -p git/sort_paper/enrichment/anatomyEnrichment/")
+system("mkdir -p git/sort_paper/enrichment_cutoff1/wormbaseCluster/")
+system("mkdir -p git/sort_paper/enrichment_cutoff1/anatomyEnrichment/")
 
 # compute what's enriched in clusters (old, deprecated version)
 if (FALSE) {
@@ -131,11 +132,11 @@ sort.fraction.anatomy.enrichment = function() {
   colnames(cl1) = c("gene", "set")
 
   r = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
-  save(r, file=paste0("git/sort_paper/enrichment/anatomyEnrichment/",
+  save(r, file=paste0("git/sort_paper/enrichment_cutoff1/anatomyEnrichment/",
     "facs", ".Rdata"))
 
   r = hyperg.test.groups.many.faster(unique(wb.cluster), cl1, num.genes)
-  save(r, file=paste0("git/sort_paper/enrichment/wormbaseCluster/",
+  save(r, file=paste0("git/sort_paper/enrichment_cutoff1/wormbaseCluster/",
     "facs", ".Rdata"))
 }
 
@@ -165,7 +166,7 @@ if (FALSE) {
 # baz["WBbt:0003991","ABalap_enriched",]
 
 # testing with one clustering
-if (TRUE) {
+if (FALSE) {
 cl1 = read.tsv(paste0("git/cluster/hierarchical/hier.300.clusters/clusters.tsv"))
 colnames(cl1) = c("gene", "set")
 foo = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
@@ -173,7 +174,7 @@ foo = hyperg.test.groups.many.faster(unique(ao.group), cl1, num.genes)
 
 sort.fraction.anatomy.enrichment()
 
-if (TRUE) {
+if (FALSE) {
   compute.cluster.enrichment()
 }
 

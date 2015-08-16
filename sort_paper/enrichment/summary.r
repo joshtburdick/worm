@@ -58,7 +58,8 @@ summarize.enrich = function(a) {
 summarize.enrich.dir = function(in.dir, out.dir, annotate.f) {
   system(paste("mkdir -p", out.dir))
 
-  for(f in list.files("hier.300.clusters")) {    # in.dir)) {
+  for(f in list.files(in.dir)) {
+    # was "hier.300.clusters"
     write.status(f)
 
     output.name = sub(".Rdata$", "", f);
@@ -109,13 +110,13 @@ summarize.all = function() {
   write.tsv(a, paste0(out.dir, "wormbaseCluster.hier.300.clusters.tsv"))
 }
 
-if (FALSE) {
-summarize.enrich.dir("git/sort_paper/enrichment/anatomyEnrichment/",
-  "git/sort_paper/enrichment/summary/anatomyEnrichment/",
+if (TRUE) {
+summarize.enrich.dir("git/sort_paper/enrichment_cutoff1/anatomyEnrichment/",
+  "git/sort_paper/enrichment/summary_cutoff1/anatomyEnrichment/",
   function(a) anatomy.term.to.name[a])
 
-summarize.enrich.dir("git/sort_paper/enrichment/wormbaseCluster/",
-  "git/sort_paper/enrichment/summary/wormbaseCluster/",
+summarize.enrich.dir("git/sort_paper/enrichment_cutoff1/wormbaseCluster/",
+  "git/sort_paper/enrichment/summary_cutoff1/wormbaseCluster/",
   function(a) expr.cluster.name[a])
 }
 
@@ -123,5 +124,5 @@ summarize.enrich.dir("git/sort_paper/enrichment/wormbaseCluster/",
 #   "git/sort_paper/enrichment/summary/phenotype/",
 #   phenotype.annotate)
 
-summarize.all()
+# summarize.all()
 

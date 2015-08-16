@@ -1,5 +1,7 @@
 # Plot to estimate of how many clusters are "tissue-specific".
 
+library("VennDiagram")
+
 source("git/utils.r")
 
 cl = as.matrix(read.tsv(
@@ -70,11 +72,32 @@ text(log2(1+mean.max.rpm), cluster.tissue.spec,
 }
 dev.off()
 
-
 # number at various cutoffs
-tissue.spec = ((log2(1 + mean.max.rpm) >= 4) & (cluster.tissue.spec >= 0.2))
-cat("num with tissue spec. >= 0.2 and expr > 4 =",
-  sum(tissue.spec), "\n")
-cat("number of those annotated =", sum(tissue.spec & a[names(tissue.spec)]), "\n")
+expressed = log2(1 + mean.max.rpm) >= 4
+tissue.spec = cluster.tissue.spec >= 0.2
+expr.tissue.spec = expressed & tissue.spec
 
+cat("num with tissue spec. >= 0.2 and expr > 4 =",
+  sum(expr.tissue.spec), "\n")
+cat("number of those annotated =",
+  sum(expr.tissue.spec & a[names(expr.tissue.spec)]), "\n")
+
+# the Venn diagram
+pdf("git/sort_paper/cluster/annotation/vennDiagram.pdf",
+  width=6, height=5)
+
+# choose colors
+set.seed(43)
+h = runif(2)
+a1 = hsv(h, 1, 0.5)
+a2 = hsv(h, 1, 0.5)
+
+draw.pairwise.venn(sum(expressed), sum(tissue.spec), sum(expr.tissue.spec),
+  category = c("Expressed\n\n\n", "Tissue-specific\n\n\n"),
+  margin=0.5, lwd=0.5,
+  cat.fontfamily = rep("sans", 2),
+  cat.col = a1, fill = a2,
+  fontfamily = rep("sans", 3))
+
+dev.off()
 
