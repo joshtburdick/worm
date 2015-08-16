@@ -99,6 +99,17 @@ facs.enriched.go = function() {
   write.tsv(r, paste0(output.dir, "/facs.tsv"))
 }
 
+# Checks for GO annotation in FACS-sorted samples at a looser
+# threshold.
+# Args:
+#   cutoff - an enrichment cutoff
+# Side effects: writes output (with the cutoff in the name)
+facs.enriched.go.looser = function(cutoff) {
+  r = go.annotate.list(facs.enriched.depleted)
+  write.tsv(r, paste0(output.dir, "/facs_cutoff=", cutoff, ".tsv"))
+
+}
+
 # facs.enriched.go()
 # cluster.enriched.go()
 
