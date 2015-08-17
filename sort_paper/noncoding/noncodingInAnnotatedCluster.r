@@ -64,7 +64,14 @@ for(i in 1:nrow(a)) {
   }
 }
 
+# complete table
+a = merge(noncoding.cl, anatomy.annotated)
+
+a = a[ a$max.rpm >= 1 , ]
+a = a[ order(a$max.rpm, decreasing=TRUE) , ]
+a = a[ , c("non-coding gene", "max.rpm", "cluster", "group", "p.corr", "group.name") ]
+
 noncoding.anatomy.annotated = a
-write.tsv(noncoding.anatomy.annotated,
+write.tsv(a,
   "git/sort_paper/noncoding/noncodingInAnnotatedCluster.tsv")
 

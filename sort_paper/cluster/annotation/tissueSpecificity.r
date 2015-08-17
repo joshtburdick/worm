@@ -101,3 +101,9 @@ draw.pairwise.venn(sum(expressed), sum(tissue.spec), sum(expr.tissue.spec),
 
 dev.off()
 
+# table of cluster stats
+cluster.stats = data.frame(mean.max.rpm, cluster.tissue.spec, expr.tissue.spec)
+rownames(cluster.stats) = names(mean.max.rpm)
+write.tsv(cluster.stats,
+  "git/sort_paper/cluster/annotation/clusterTissueSpecificity.tsv")
+
