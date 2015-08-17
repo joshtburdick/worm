@@ -18,60 +18,57 @@ rpm = read.tsv("git/cluster/readsPerMillion.tsv")
 rpm = rpm[ , !grepl("^(HS|RNAi)", colnames(rpm)) ]
 max.rpm = apply(rpm, 1, max)
 
+# require at least this much expression of the actual non-coding gene
 noncoding.cl$max.rpm = max.rpm[ noncoding.cl$"non-coding gene" ]
+noncoding.cl = noncoding.cl[ noncoding.cl$max.rpm >= 1 , ]
 
 # clusters with some anatomy annotation enriched
 anatomy.annotated = read.tsv(
   "git/sort_paper/enrichment/clustersWithAnatomyAnnotation.tsv")
 
-a = merge(noncoding.cl, anatomy.annotated)
+# slight renaming
+for(i in 1:nrow(anatomy.annotated)) {
+  if (grepl("WBPaper00037950", anatomy.annotated[i,"group"])) {
+    name1 = gsub("WBPaper00037950:", "", anatomy.annotated[i,"group"])
+    name1 = gsub("-", " ", name1)
+    name1 = gsub("_", " ", name1)
+    name1 = sub(" (enriched|CoreEnriched|SelectivelyEnriched)", "", name1)
+    anatomy.annotated[i,"group.name"] = name1
+  }
+}
+anatomy.annotated = anatomy.annotated[ , c("cluster", "group", "group.name", "p.corr") ]
 
-a = a[ a$max.rpm >= 1 , ]
-a = a[ order(a$max.rpm, decreasing=TRUE) , ]
+# do an "outer join"
+a = merge(noncoding.cl, anatomy.annotated, all.x=TRUE)
+
+# for genes without an annotated cluster, require a minimum cluster
+# expression and tissue-specificity
+# a = a[ (!is.na(a$group)) || cluster.ts.stats[a$cluster, "expr.tissue.spec"] , ]
+
+# sort the table
+a = a[ order(is.na(a$group), a$max.rpm, decreasing=TRUE) , ]
 a = a[ , c("non-coding gene", "max.rpm", "cluster", "group", "p.corr", "group.name") ]
 
 # some stats on this
-cat(paste("num expressed anrRNAs with annotation =",
-  sum(a$max.rpm >= 1 & grepl("^anr-", a$"non-coding gene")), "\n"))
-cat(paste("num expressed lincRNAs with annotation =",
-  sum(a$max.rpm >= 1 & grepl("^linc-", a$"non-coding gene")), "\n"))
-cat(paste("num clusters containing non-coding genes =",
-  length(table(a$cluster)), "\n"))
+cat("num expressed anrRNAs with annotation =",
+  sum((!is.na(a$group)) & grepl("^anr-", a$"non-coding gene")), "\n")
+cat("num expressed lincRNAs with annotation =",
+  sum((!is.na(a$group)) & grepl("^linc-", a$"non-coding gene")), "\n")
+cat("num annotated clusters containing non-coding genes =",
+  sum(!is.na(a$group)), "\n")
 
 # noncoding genes in clusters which seem expressed and tissue-specific
-noncoding.unannotated =
-  noncoding.cl[ ! (noncoding.cl$cluster %in% a$cluster) , ]
-noncoding.unannotated =
-  noncoding.unannotated[ noncoding.unannotated$max.rpm >= 1,]
-noncoding.unannotated =
-  noncoding.unannotated[
-    cluster.ts.stats[ noncoding.unannotated$cluster , "expr.tissue.spec" ] , ]
-
+noncoding.unannotated = a[ is.na(a$group) , ]
 cat("num unannotated:",
   length(unique(noncoding.unannotated$"non-coding gene")),
   "ncRNAs in",
   length(unique(noncoding.unannotated$cluster)),
   "clusters\n")
 
-
-# slight renaming
-for(i in 1:nrow(a)) {
-  if (grepl("WBPaper00037950", a[i,"group"])) {
-    name1 = gsub("WBPaper00037950:", "", a[i,"group"])
-    name1 = gsub("-", " ", name1)
-    name1 = gsub("_", " ", name1)
-    a[i,"group.name"] = name1
-  }
-}
-
-# complete table
-a = merge(noncoding.cl, anatomy.annotated)
-
-a = a[ a$max.rpm >= 1 , ]
-a = a[ order(a$max.rpm, decreasing=TRUE) , ]
+# write out table
+a = a[ order(!is.na(a$group), a$max.rpm, decreasing=TRUE) , ]
 a = a[ , c("non-coding gene", "max.rpm", "cluster", "group", "p.corr", "group.name") ]
-
-noncoding.anatomy.annotated = a
+colnames(a) = c("Non-coding gene", "Max. RPM", "Cluster", "Anatomy ID", "Anatomy p", "Anatomy group")
 write.tsv(a,
   "git/sort_paper/noncoding/noncodingInAnnotatedCluster.tsv")
 
