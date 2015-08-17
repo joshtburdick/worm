@@ -54,8 +54,10 @@ cat("num expressed anrRNAs with annotation =",
   sum((!is.na(a$group)) & grepl("^anr-", a$"non-coding gene")), "\n")
 cat("num expressed lincRNAs with annotation =",
   sum((!is.na(a$group)) & grepl("^linc-", a$"non-coding gene")), "\n")
+annotated.group = a$group
+annotated.group = annotated.group[ !is.na(annotated.group) ]
 cat("num annotated clusters containing non-coding genes =",
-  sum(!is.na(a$group)), "\n")
+  length(unique(annotated.group)), "\n")
 
 # noncoding genes in clusters which seem expressed and tissue-specific
 noncoding.unannotated = a[ is.na(a$group) , ]
