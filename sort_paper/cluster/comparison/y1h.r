@@ -4,7 +4,7 @@ source("git/utils.r")
 source("git/data/name_convert.r")
 
 # TF-cluster combined stats
-if (FALSE) {
+if (TRUE) {
 cluster.tf = read.tsv(gzfile("git/sort_paper/network/clusterTF.tsv.gz"))
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "TF-cluster corr." ]) , ]
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "Motif p" ]) , ]
@@ -126,7 +126,7 @@ y1h.bargraph = function() {
 #   shuffled.overlap - vector of the overlap (with shuffled graphs)
 #   p - the corresponding (uncorrected) p-value
 #   m1, m2 - the corresponding graphs (for debugging)
-graph.compare = function(g1, g2, num.shuffles=10000) {
+graph.compare = function(g1, g2, num.shuffles=1000) {
   # convert these all to characters
   g1[,1] = as.character(g1[,1])
   g1[,2] = as.character(g1[,2])
@@ -172,6 +172,8 @@ y1h.graph.compare = function() {
   ctf1 = cluster.tf[ cluster.tf$"Motif p" <= 1e-4 & cluster.tf$TF %in% y1h$"prey.name" ,
     c("TF", "Cluster") ]
 
+browser()
+
   a = graph.compare(ctf1, y1h[ , c("prey.name", "bait.cl") ])
   r = data.frame(prey.dbd = "All", overlap = a$overlap,
     mean.shuffled.overlap = mean(a$shuffled.overlap), p = a$p, stringsAsFactors=FALSE)
@@ -194,7 +196,8 @@ y1h.graph.compare = function() {
   r[ , -1 ]
 }
 
-y1h.bargraph()
+# y1h.bargraph()
 
-# write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle.tsv")
+# write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle_1e5.tsv")
+
 
