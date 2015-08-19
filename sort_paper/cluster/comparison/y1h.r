@@ -4,7 +4,7 @@ source("git/utils.r")
 source("git/data/name_convert.r")
 
 # TF-cluster combined stats
-if (TRUE) {
+if (FALSE) {
 cluster.tf = read.tsv(gzfile("git/sort_paper/network/clusterTF.tsv.gz"))
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "TF-cluster corr." ]) , ]
 cluster.tf = cluster.tf[ !is.na(cluster.tf[ , "Motif p" ]) , ]
@@ -120,13 +120,17 @@ y1h.bargraph = function() {
 # Args:
 #   g1, g2 - two data frames, each with two columns, which are
 #     the arcs of directed graphs
+#   a.vertex, b.vertex - vectors of the "universe", of what
+#     arcs are possible. (This will presumably affect the results.)
 #   num.shuffles - number of times to shuffle the graph
 # Returns: list with
 #   overlap - the overlap
 #   shuffled.overlap - vector of the overlap (with shuffled graphs)
 #   p - the corresponding (uncorrected) p-value
 #   m1, m2 - the corresponding graphs (for debugging)
-graph.compare = function(g1, g2, num.shuffles=1000) {
+graph.compare = function(g1, g2, a.vertex, b.vertex,
+    num.shuffles=100000) {
+
   # convert these all to characters
   g1[,1] = as.character(g1[,1])
   g1[,2] = as.character(g1[,2])
@@ -134,11 +138,11 @@ graph.compare = function(g1, g2, num.shuffles=1000) {
   g2[,2] = as.character(g2[,2])
 
   # convert these to matrices
-  a = union(g1[,1], g2[,1])
-  b = union(g1[,2], g2[,2])
-  m0 = matrix(FALSE, nrow=length(a), ncol=length(b))
-  rownames(m0) = a
-  colnames(m0) = b
+#  a = union(g1[,1], g2[,1])
+#  b = union(g1[,2], g2[,2])
+  m0 = matrix(FALSE, nrow=length(a.vertex), ncol=length(b.vertex))
+  rownames(m0) = a.vertex
+  colnames(m0) = b.vertex
   m1 = m0
   m1[ as.matrix(g1[,c(1,2)]) ] = TRUE
   m2 = m0
@@ -172,9 +176,11 @@ y1h.graph.compare = function() {
   ctf1 = cluster.tf[ cluster.tf$"Motif p" <= 1e-4 & cluster.tf$TF %in% y1h$"prey.name" ,
     c("TF", "Cluster") ]
 
-browser()
+  # definition of what vertices are possible
+  a.vertex = union(ctf1[,1], y1h[,"prey.name"])
+  b.vertex = union(ctf1[,2], y1h[,"bait.cl"])
 
-  a = graph.compare(ctf1, y1h[ , c("prey.name", "bait.cl") ])
+  a = graph.compare(ctf1, y1h[ , c("prey.name", "bait.cl") ], a.vertex, b.vertex)
   r = data.frame(prey.dbd = "All", overlap = a$overlap,
     mean.shuffled.overlap = mean(a$shuffled.overlap), p = a$p, stringsAsFactors=FALSE)
 
@@ -184,7 +190,7 @@ browser()
     y1h.1 = y1h[ y1h$prey.DBD == d, c("prey.name", "bait.cl") ]
     ctf.1 = ctf1[ ctf1$"TF" %in% y1h.1$"prey.name", ]
     if(nrow(y1h.1) > 0 && nrow(ctf.1) > 0) {
-      a = graph.compare(ctf.1, y1h.1)
+      a = graph.compare(ctf.1, y1h.1, a.vertex, b.vertex)
       r1 = data.frame(prey.dbd = d, overlap = a$overlap,
         mean.shuffled.overlap = mean(a$shuffled.overlap), p = a$p, stringsAsFactors=FALSE)
       r = rbind(r, r1)
@@ -198,6 +204,6 @@ browser()
 
 # y1h.bargraph()
 
-# write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle_1e5.tsv")
+write.tsv(y1h.graph.compare(), "git/sort_paper/cluster/comparison/y1h_graph_shuffle_2_1e5.tsv")
 
 
