@@ -7,14 +7,11 @@ read.meme.file = function(f) {
   cat("reading", f, "\n")
 
   # XXX error checking is a little hokey
-#  system(paste("git/perl/motif/meme2TRANSFAC.pl ", f, " /var/tmp/meme.transfac.txt"))
-#  r = readPWMfile("/var/tmp/meme.transfac.txt")
   p = pipe(paste("git/perl/motif/meme2TRANSFAC.pl ", f), open="r")
   r = readPWMfile(p)
   close(p)
 
   number.columns = function(x) {
-# print(dim(x))
     colnames(x) = c(1:ncol(x))
     x
   }
