@@ -52,6 +52,8 @@ y2h$prey.m = gene.to.motif[ y2h$prey.g ]
 y2h$bait.m.canonical = canonical.motif[ y2h$bait.m ]
 y2h$prey.m.canonical = canonical.motif[ y2h$prey.m ]
 
+
+
 motif.pairs = y2h[ , c("bait.m.canonical", "prey.m.canonical") ]
 motif.pairs =
   motif.pairs[ (!is.na(motif.pairs[,1])) & (!is.na(motif.pairs[,2])) , ]
@@ -71,4 +73,14 @@ if (TRUE) {
   write.tsv(r,
     gzfile("git/sort_paper/tf/motif/hyperg/pairwise/y2hPairwise.tsv.gz"))
 }
+
+r$motif.dist.p.corr = p.adjust(r$motif.dist.p, method="fdr")
+
+# annotate with what the original Y2H interactions were
+colnames(r)[1] = "bait.m.canonical"
+colnames(r)[2] = "prey.m.canonical"
+r1 = r[ r$motif.dist.p.corr <= 0.1 , ]
+y2h.pairwise.annotated = merge(y2h, r1)
+write.tsv(y2h.pairwise.annotated,
+  "git/sort_paper/tf/motif/hyperg/pairwise/y2hPairwiseAnnotated.tsv")
 
