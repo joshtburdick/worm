@@ -60,7 +60,7 @@ motif.pairs =
 motif.pairs = unique(motif.pairs)
 
 r = NULL
-if (TRUE) {
+if (FALSE) {
   for(i in 1:nrow(motif.pairs)) {
     r = rbind(r,
       pairwise.motif.enrich(motif.pairs[i,1], motif.pairs[i,2]))
@@ -74,13 +74,20 @@ if (TRUE) {
     gzfile("git/sort_paper/tf/motif/hyperg/pairwise/y2hPairwise.tsv.gz"))
 }
 
+if (FALSE) {
+r$enrich.p.corr = p.adjust(r$enrich.p, method="fdr")
 r$motif.dist.p.corr = p.adjust(r$motif.dist.p, method="fdr")
 
 # annotate with what the original Y2H interactions were
 colnames(r)[1] = "bait.m.canonical"
 colnames(r)[2] = "prey.m.canonical"
-r1 = r[ r$motif.dist.p.corr <= 0.1 , ]
+r1 = r[ order(r$motif.dist.p.corr) , ]
+r1 = r1[1:1000,]
+
 y2h.pairwise.annotated = merge(y2h, r1)
+y2h.pairwise.annotated =
+  y2h.pairwise.annotated[ order(y2h.pairwise.annotated$motif.dist.p.corr) , ]
 write.tsv(y2h.pairwise.annotated,
   "git/sort_paper/tf/motif/hyperg/pairwise/y2hPairwiseAnnotated.tsv")
+}
 
