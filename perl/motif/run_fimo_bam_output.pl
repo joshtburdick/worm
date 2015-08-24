@@ -154,9 +154,8 @@ sub fimo_to_bedGraph {
 
     my $length = 1 + $end - $start;
 
-    # ??? why was I doing this?
-    # subtracting 2 from start, so this lines up with genomic sequence
-    # (was $start-2)
+    # ??? possibly use "$start - 2", so that this lines up
+    # exactly with genomic sequence in IGV
     print OUT join "\t", ($current_motif, $flag, $chr, $start,
       $mapq, $length . "M", "*", 0, 0, $site, "*\n");
   }
