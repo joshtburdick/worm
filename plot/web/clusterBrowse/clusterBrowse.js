@@ -23,11 +23,32 @@ for(var i=0; i<a.x.length; i++)
 
 /* How each row is labelled. */
 clusterBrowser.rowLabel = [
-  {name:"gene", width:100, colors:["#fff", "#eee"]},
+  {name:"gene", width:115, colors:["#fff", "#eee"]},
   {name:"description", width:300, colors:["#eee","#ddd"]},
-  {name:"cluster", width:80, colors:["#fff","#eee"]}
+  {name:"cluster", width:65, colors:["#fff","#eee"]}
 ];
 
+/* Adds descriptive labels to the columns. */
+function addColumnDescription(g) {
+  function addLabel(x, y, s) {
+    var t = document.createElementNS(svgns, "text");
+    t.setAttributeNS(null, "x", x);
+    t.setAttributeNS(null, "y", y);
+    t.setAttributeNS(null, "style", "font-weight: bold");
+    t.textContent = s;
+    g.appendChild(t);
+  }
+
+  var x = 0;
+  var y = g.getAttribute("height") - 5;
+  for(var i=0; i<clusterBrowser.rowLabel.length; i++) {
+    addLabel(x, y, clusterBrowser.rowLabel[i].name);
+    x += clusterBrowser.rowLabel[i].width;
+  }
+
+  addLabel(x+50, 30, "Expression in FACS-sorted cells");
+  addLabel(x+500, 30, "Timeseries expression");
+}
 
 /* Initializes the page: adds the relevant CSS. */
 function initPage() {
@@ -59,11 +80,14 @@ function initPage() {
     "rotate(270," + x + ",0) translate(" + (x-200) + ",0)");
   document.getElementById("columnLabels").appendChild(g);
 
-  // lastly, add the heatmap
+  // add the heatmap
   clusterBrowser.heatmapSVG = new SvgHeatmap(100, a.arrayName.length, cellSize);
   var g = clusterBrowser.heatmapSVG.g;
   g.setAttributeNS(null, "transform", "translate(" + x + ",0)");
   h.appendChild(g);
+
+  // add labels to the column labels
+  addColumnDescription(document.getElementById("columnLabels"));
 
   // standardize (mean-center) the data
   xStandardized = a.x.map( vectorMath.standardize );
@@ -81,6 +105,9 @@ function initPage() {
 
 /* Updates the heatmap based on the page hash location. */
 function redraw() {
+
+  // scroll the heatmap to the top
+  document.getElementById("wrapper").scrollTop = 0;
 
   // update the heatmap
   h = clusterBrowser.heatmapSVG;

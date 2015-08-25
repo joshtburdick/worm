@@ -9,7 +9,7 @@ open IN, "<../../../cluster//hierarchical/hier.300.clusters/cluster.cdt" || die;
 # get array names
 $_ = <IN>;
 my @a = split /\t/;
-my @arrayName = splice @a, 13;
+my @arrayName = splice @a, 9;
 
 # skip rest of header
 $_ = <IN>;
@@ -36,16 +36,24 @@ while (<IN>) {
 
   # convert strings that look like numbers to numbers
   # XXX which columns are numbers shouldn't be hard-coded
-  foreach my $j (13..(@a-1)) {
-    $a[$j] = $a[$j] + 0;
+  foreach my $j (9..(@a-1)) {
+    if ($a[$j] =~ /\d+/) {
+      $a[$j] = $a[$j] + 0;
+    }
+    else {
+      # these should be greyed out
+      # XXX the JSON module won't print out NaN;
+      # we'll hack around that later
+      $a[$j] = "__NaN__";
+    }
   }
 
   push @geneName, $a[2];
   push @description, $a[3];
-  push @cluster, $a[7];
-  $geneNameToIndex{$a[1]} = $i;
+  push @cluster, $a[5];
+  $geneNameToIndex{$a[2]} = $i;
 
-  @a = splice(@a, 13);
+  @a = splice(@a, 9);
   push @x, \@a;
 
   $i++;
@@ -59,5 +67,7 @@ my %h = ('arrayName' => \@arrayName,
   'geneNameToIndex' => \%geneNameToIndex);
 
 # print out @r, encoded as JSON
-print "a = " . encode_json(\%h) . ";\n";
+my $s = encode_json(\%h);
+$s =~ s/\"__NaN__\"/NaN/g;
+print "a = " . $s . ";\n";
 

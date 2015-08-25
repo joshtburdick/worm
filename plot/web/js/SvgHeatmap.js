@@ -16,6 +16,10 @@ function rgbToColor(r,g,b) {
 }
 
 function scaleColor(range, x) {
+  // if this is NaN, color this grey
+  if (isNaN(x))
+    return "#c0c0c0";
+
   r = x > 0 ? range[1] : range[0];
   x = Math.abs(x);
   return rgbToColor(r[0] * x, r[1] * x, r[2] * x);
@@ -36,6 +40,8 @@ function SvgHeatmap(m, n, cellSize) {
 
   // number of labels
   this.n = n;
+// print("n = " + n);
+// print("width =" + (n*cellSize);
 
   // the group node containing this
   this.g = document.createElementNS(svgns, "g");

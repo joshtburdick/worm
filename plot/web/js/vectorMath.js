@@ -29,8 +29,16 @@ vectorMath.meanAndStandardDeviation = function (x) {
 
 // Standardizes a vector (to have mean 0 and s.d. 1.)
 vectorMath.standardize = function (x) {
-  s = vectorMath.meanAndStandardDeviation(x);
-  return x.map(
+  // XXX first discarding the NAs. This is correct if
+  // they're all in a column, but not otherwise.
+  var x1 = new Array(x.length-1);
+  i = 0;
+  for(j=0; j<x.length; j++)
+    if (!isNaN(x[j]))
+      x1[i++] = x[j];
+
+  s = vectorMath.meanAndStandardDeviation(x1);
+  return x1.map(
     function(a) { return (a - s.mean) / s.stdDev; });
 }
 
