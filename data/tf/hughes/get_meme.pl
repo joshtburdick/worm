@@ -25,7 +25,8 @@ sub as_meme {
 
   my $w = @r;
 
-  # handle this special case
+  # handle this special case (caused by some motifs requiring
+  # a TRANSFAC license)
   if ($w < 1) {
     return "";
   }
@@ -65,8 +66,8 @@ END
   close OUT;
 }
 
-# translate_dir("~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/", "Ce_1.02.meme");
-translate_dir("~/gcb/data/tf/hughes/Dm_1.02/pwms_all_motifs/", "Dm_1.02.meme");
-translate_dir("~/gcb/data/tf/hughes/Hs_1.02/pwms_all_motifs/", "Hs_1.02.meme");
-translate_dir("~/gcb/data/tf/hughes/Mm_1.02/pwms_all_motifs/", "Mm_1.02.meme");
+translate_dir("~/gcb/data/tf/hughes/Ce_1.02/pwms_all_motifs/", "Ce_1.02.meme_test");
+# translate_dir("~/gcb/data/tf/hughes/Dm_1.02/pwms_all_motifs/", "Dm_1.02.meme");
+# translate_dir("~/gcb/data/tf/hughes/Hs_1.02/pwms_all_motifs/", "Hs_1.02.meme");
+# translate_dir("~/gcb/data/tf/hughes/Mm_1.02/pwms_all_motifs/", "Mm_1.02.meme");
 

@@ -1,10 +1,16 @@
 # R script to re-run, if not all, then at least
 # some of the analysis.
 
-source("git/unmix/seq/timing/deconvolved_embryo_ts.r")
-source("git/cluster/readRatios.r")
+# function to run a script (used to ensure that
+# we only use the side effects of the script.)
+run = function(script) {
+  system(paste0("R --no-save CMD BATCH ", script))
+}
 
-source("git/cluster/hierarchical.r")
+run("git/unmix/seq/timing/deconvolved_embryo_ts.r")
+run("git/cluster/readRatios.r")
+
+run("git/cluster/hierarchical.r")
 
 
 
