@@ -4,6 +4,7 @@
 source("git/utils.r")
 source("git/data/name_convert.r")
 source("git/plot/heatmap.r")
+source("git/plot/utils.r")
 
 # which cells are in which sort fraction / Spencer experiment
 source("git/sort_paper/unmix/sortMatrix.r")
@@ -132,7 +133,7 @@ if (FALSE) {
     col=c(rgb(0,128:0/128,0), rgb(0:128/128,0,0)))
 }
 
-par(mar=c(5,4,4,1)+0.1)
+par(mar=c(5,5,1,1)+0.1)
 plot(as.vector(a), as.vector(b),
   main="",
   xlab=expression("Enrichment of tissue " * (log[2] * " scale")),
@@ -143,10 +144,18 @@ plot(as.vector(a), as.vector(b),
 a1 = as.vector(a)
 b1 = as.vector(b)
 s = cor.test(a1, b1)
-m = lm(b1 ~ a1)
+
+p = pt(s$statistic, df=s$parameter, lower.tail=FALSE)
+
+# legend("bottomright",
+#   legend=paste("r =", round(s$estimate, 2)), bty="n")
+
 legend("bottomright",
-  legend=paste("r =", round(s$estimate, 2)), bty="n")
-# FIXME add p-value?
+  legend=expr.format(expression("r = " * r * ", " * italic("p") * p),
+    list(r = round(s$estimate, 2), p = format.p(p))))
+
+# add regression line
+m = lm(b1 ~ a1)
 abline(m, lwd=2, col="#00000040")
 dev.off()
 
