@@ -1,18 +1,5 @@
 # Utilities for incrementally computing things.
-
-
-
-# Does a capturing regexpr.
-capturing.regexpr = function(pattern, s) {
-
-  r = gregexpr(
-
-  if (r > 0) {
-    substr(s, r
-
-  }
-  else NA
-}
+# For now, doesn't automatically detect stale dependencies.
 
 # Ensures that a given file is present and up-to-date.
 #   If f ends in .r or .R, it's assumed to be an R script;
@@ -33,6 +20,9 @@ capturing.regexpr = function(pattern, s) {
 use = function(f) {
   # first, remove a filename suffix which "looks like" compression
   f1 = sub("\\.(bz|bz2|gz|lz|lzma|rz|sz|xz|z|Z)$", "", f)
+
+  
+
 
   # guess the script name (for now, only searching for ".r";
   # ".R" may be more standard)
@@ -61,14 +51,15 @@ use = function(f) {
 # Args:
 #   source.file - name of the file to scan
 # Returns: list of dependent files.
+# XXX not yet working
 get.dependencies = function(source.file) {
   # read all lines in file
   s = scan(source.file, sep="\n", what=list(""), quiet=TRUE)[[1]]
 
-> sapply(z, function(a) regexp.capture(a, "use\\(\"([^\"]+)\"\\)"))
+  f = sapply(z, function(a) regexp.capture(a, "use\\(\"([^\"]+)\"\\)"))
 
 
-
+  f
 
 }
 
