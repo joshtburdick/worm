@@ -131,13 +131,13 @@ for(facs in rownames(a))
   }
 
 pdf("git/sort_paper/FACS/spencerComparison/geneEnrichComparison.pdf",
-  width=5.5, height=5.5)
+  width=6, height=5.5)
 #  width=11, height=4)
 # par(mfrow=c(1,3))
 # par(mar=c(9,9.5,3,1)+0.1)
 
 tissues = sort(unique(gec$tissue))
-tissue.colors = hsv(c(1:length(tissues))/length(tissues), 0.8, 0.8)
+tissue.colors = hsv(c(1:length(tissues))/length(tissues), 0.8, 0.8, 0.8)
 names(tissue.colors) = tissues
 
 par(mar=c(5,5,1,1)+0.1)
@@ -148,6 +148,8 @@ plot(gec$tissue.enrich, gec$gene.enrich,
     (log[2] * " scale")),
   col = tissue.colors[ gec$tissue ],
   pch=20)
+legend("topleft", legend = tissues, col=tissue.colors,
+  cex=0.6, pch=20)
 
 s = cor.test(gec$tissue.enrich, gec$gene.enrich)
 # compute p more exactly, using t distribution
@@ -158,7 +160,7 @@ legend("bottomright",
     list(r = round(s$estimate, 2), p = format.p(p))))
 
 # add regression line
-m = lm(b1 ~ a1)
+m = lm(gec$gene.enrich ~ gec$tissue.enrich)
 abline(m, lwd=2, col="#00000040")
 
 dev.off()
