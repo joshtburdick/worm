@@ -86,3 +86,4 @@ is.promoter.fusion = names(sort.marker.enrichment) %in% promoter.fusion
 print(by(sort.marker.enrichment, is.promoter.fusion, median))
 cat("number which aren't, or are, promoter fusions\n")
 print(table(is.promoter.fusion))
+
