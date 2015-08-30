@@ -56,12 +56,23 @@ x.axis.points = barplot(sort.marker.enrichment.1, space=0.5, las=2,
   col=ifelse(names(sort.marker.enrichment.1) %in% promoter.fusion,
     "#c00000", "#80ff80"), cex.main=1.2,
     cex.axis=1.2, cex.lab=1.2, xaxt="n")
-#axis(1, at=x.axis.points, labels = names(sort.marker.enrichment.1),
-#  las=2, lty=0, font=3)
-markers.formatted = sapply(names(sort.marker.enrichment.1),
-  function (n) { if (grepl("-", n)) italicize(n) else n})
+# axis(1, at=x.axis.points, labels = names(sort.marker.enrichment.1),
+#   las=2, lty=0, font=3)
 
-axis(1, at=x.axis.points, labels = markers.formatted, las=2, lty=0)
+markers.formatted = lapply(names(sort.marker.enrichment.1),
+#  function (z) { if (TRUE) italicize(z) else z})
+  function(z) {
+    print(grepl("-", z))
+    if (grepl("-", z))
+      expr.format(expression(italic(s)), list(s = z))
+    else
+      z
+  })
+#    else
+#      z)
+axis(1, at=x.axis.points,
+  labels = as.expression(c(markers.formatted, recursive=TRUE)),
+  las=2, lty=0)
 
 legend("topleft", c("promoter fusion", "protein fusion"),
   fill=c("#c00000", "#80ff80"))
