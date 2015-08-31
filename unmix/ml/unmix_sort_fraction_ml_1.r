@@ -19,19 +19,23 @@ pos.linear.solve.1 = function(A, B, X) {
 
 # Estimates expression, and the sort matrix.
 # Args:
-#   m - sort matrix estimate (each row should sum to 1)
-#   r - read data, as proportions (each column should sum to 1)
+#   a.prior - prior on the sort matrix
+#   x.prior - prior on expression
+#   b - read.data, as proportions (each row should sum to 1)
 #   max.iters - maximum number of iterations to do
-#   save.x.history - whether to return all estimates of x
+#   save.hist - whether to save a history of estimates
 # Returns: list with elements:
-#   m - modified sort matrix
-#   x - mean of unmixed expression
-#   update.stats - how much m and x changed
-unmix.expr.and.sort.matrix.1 = function(m, r, max.iters=50, save.x.history=FALSE) {
+#   a - estimated sort matrix
+#   x - estimated expression
+#   update.stats - likelihood stats, and how much a and x changed
+unmix.expr.and.sort.matrix.1 =
+    function(a.prior, x.prior, b, max.iters=50, save.hist=FALSE) {
   update.stats = NULL
-  x.history = list()
+  h = list()
+
 #  x = pos.linear.solve(m, r, max.iters=5, normalize="rows")$X
 #  x = 0
+
   x0 = matrix(1, nrow=ncol(m), ncol=ncol(r))
   x = pos.linear.solve.1(m, r, x0)  
 

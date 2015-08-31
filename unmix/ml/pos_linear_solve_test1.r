@@ -56,4 +56,5 @@ X4 = matrix(rgamma(10, shape=1, scale=1), nrow=2)
 B4 = A4 %*% X4
 r4 = pos.linear.solve(A4, B4)
 
+# these often are similar to ldei(), but not always
 

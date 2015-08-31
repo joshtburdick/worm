@@ -12,7 +12,7 @@ run("git/cluster/readRatios.r")
 
 run("git/cluster/hierarchical.r")
 
-
+if (FALSE) {
 
 source("git/data/wormbase/anatomy.ontology.group.r")
 source("git/data/wormbase/expr.cluster.r")
@@ -43,6 +43,5 @@ source("git/cluster/motif/plot/distConservationWilcoxon.r")
 source("git/sort_paper/tf/motif/hyperg/numEnriched/clusteringComparison.r")
 source("git/sort_paper/tf/motif/hyperg/numEnriched/numEnrichedInClustering.r")
 
-
-
+}
 
