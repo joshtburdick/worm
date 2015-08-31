@@ -22,13 +22,32 @@ rename.genes = function(g) {
   # alter some of the clone-based gene names
   g = sub("_", ".", g)
 
+  # some more hard-coded renaming
+
+  # mostly for the larval expression dataset
+  g = sub("^eft-3$", "eef-1A.1", g)
+  g = sub("^elt-5$", "egl-18", g)
+  g = sub("^his-7.2$", "his-7", g)
+  g = sub("^hlh-1SD$", "hlh-1", g)
+  g = sub("^hsp-3A2$", "hsp-3", g)
+  g = sub("^jun-1b$", "jun-1", g)
+  g = sub("^lin-1SD", "lin-1", g)
+  g = sub("^pha-4I", "pha-4", g)
+  g = sub("^phi-7$", "D1081.8", g)
+  g = sub("^ref-2a$", "ref-2", g)
+  g = sub("^ztf-12$", "sup-37", g)
+
+  # ... and for the embryonic expression
+  g = sub("^ceh-26$", "pros-1", g)
+  g = sub("^tag-185$", "pbrm-1", g)
+
   g
 }
 
 rownames(larval.expr) = rename.genes(rownames(larval.expr))
+rownames(emb.expr) = rename.genes(rownames(emb.expr))
 
 emb.expr = rename.gene.names(emb.expr)
-rownames(emb.expr) = sub("ceh-26", "pros-1", rownames(emb.expr))
 larval.expr = rename.gene.names(larval.expr)
 
 emb.r = cor(t(emb.expr))
