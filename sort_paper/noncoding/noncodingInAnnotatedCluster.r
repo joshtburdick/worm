@@ -61,11 +61,14 @@ cat("num annotated clusters containing non-coding genes =",
 
 # noncoding genes in clusters which seem expressed and tissue-specific
 noncoding.unannotated = a[ is.na(a$group) , ]
+nu.genes = unique(noncoding.unannotated$"non-coding gene")
 cat("num unannotated:",
-  length(unique(noncoding.unannotated$"non-coding gene")),
+  length(nu.genes),
   "ncRNAs in",
   length(unique(noncoding.unannotated$cluster)),
-  "clusters\n")
+  "clusters (",
+  sum(grepl("anr", nu.genes)), " anr-, ",
+  sum(grepl("linc", nu.genes)), " linc-)\n")
 
 # write out table
 a = a[ order(!is.na(a$group), a$max.rpm, decreasing=TRUE) , ]
