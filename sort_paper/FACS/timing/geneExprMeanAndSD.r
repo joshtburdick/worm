@@ -11,9 +11,9 @@ cat("0.25 quantile of s.d. =", sd.cutoff, "\n")
 pdf("git/sort_paper/FACS/timing/geneExprMeanAndSD.pdf",
   width=6, height=6)
 smoothScatter(gene.expr.time$mean, gene.expr.time$sd,
-  main="Time when genes are expressed",
-  xlab="mean of time expressed (minutes)",
-  ylab="s.d. of time expressed (minutes)")
+#  main="Time when genes are expressed",
+  xlab="Mean of time expressed (minutes)",
+  ylab="Standard deviation of time expressed (minutes)")
 abline(h=sd.cutoff, col = "#00000080")
 dev.off()
 
