@@ -30,11 +30,13 @@ pos.linear.solve.1 = function(A, B, X) {
 #   update.stats - likelihood stats, and how much a and x changed
 unmix.expr.and.sort.matrix.1 =
     function(a.prior, x.prior, b, max.iters=50, save.hist=FALSE) {
+
+  # these track convergence (or lack thereof)
   update.stats = NULL
   h = list()
 
-#  x = pos.linear.solve(m, r, max.iters=5, normalize="rows")$X
-#  x = 0
+  # initialize estimates to the mean
+  a = a.prior$a / a.prior$b
 
   x0 = matrix(1, nrow=ncol(m), ncol=ncol(r))
   x = pos.linear.solve.1(m, r, x0)  

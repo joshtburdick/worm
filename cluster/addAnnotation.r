@@ -6,6 +6,8 @@ source("git/data/worm/available_strains.r")
 
 source("git/sort_paper/plot/experimentRename.r")
 
+# omitting motif annotation
+if (FALSE) {
 # motifs upstream of clusters
 motif.enrichment = as.vector(read.tsv(
   "git/cluster/motif/enrichOptimize/tmp_motif_hier_300.tsv"))
@@ -18,6 +20,7 @@ chip.per.gene = {
   chip.per.gene = r[,1]
   names(chip.per.gene) = rownames(r)
   chip.per.gene
+}
 }
 
 # Get list of genes which have TransgenOme clones
@@ -80,8 +83,8 @@ add.annotation = function(input.cdt, output.cdt, annotation) {
     a[g1,n] = annotation[[n]][g1]
   }
 
-  # omit expression level and max, and add a blank column
-  r = cbind(r[,c(1:4,7:29)], NA, r[,30:44])
+  # columns to include, including a blank column
+  r = cbind(r[,c(1:29)], NA, r[,30:44])
 
   r1 = cbind(r[,c(1:3)], a, r[,-c(1:3)])
 
@@ -110,7 +113,8 @@ add.annotation.to.clustering = function(cluster.dir) {
   add.annotation(paste0(cluster.dir, "/clusterUnannotated.cdt"),
     paste0(cluster.dir, "/cluster.cdt"),
     annotation)
-
+  system(paste0("cp ", cluster.dir, "/clusterUnannotated.gtr ",
+    cluster.dir, "/cluster.gtr"))
 }
 
 add.annotation.to.clustering("git/cluster/hierarchical/hier.300.clusters/")

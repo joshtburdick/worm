@@ -3,7 +3,7 @@
 source("git/utils.r")
 
 wb.transgene = read.table(gzfile(
-  "git/data/worm/Wormbase_strain_drives_transgene.tsv.gz"),
+  "data/worm/Wormbase_strain_drives_transgene.tsv.gz"),
   sep="\t", as.is=TRUE)
 colnames(wb.transgene) =
   c("name", "reporter", "gene", "strain", "method")
