@@ -12,22 +12,22 @@
 
 \maketitle
 
-<<intro,echo=FALSE>>=
+<<intro,echo=FALSE,cache=FALSE>>=
+opts_chunk$set(cache=TRUE, autodep=TRUE)
 library("MASS")
 wd = getwd()
 setwd("../../../..")
-# source("git/unmix/ept/practice/simplex_corner.r")
-source("git/unmix/ept/beta.r")
-source("git/unmix/ept/gamma.r")
-source("git/unmix/ept/practice/invgamma.r")
-source("git/unmix/ept/practice/sd.r")
-setwd(wd)
-setwd("../../../..")
+source("git/utils.r")
+source("git/unmix/ml/unmix_sort_fraction_ml_1.r")
+source("git/unmix/ml/sampleData1.r")
+
 setwd("git/unmix/unmix_comp/src/")
 # print(getwd())
 # source("sampling/cdaCpp.r")
 setwd(wd)
 
+# allow caching
+opts_chunk$set(cache=TRUE, autodep=TRUE)
 @
 
 
@@ -51,16 +51,11 @@ Note that since rows of A and X all add up to one, this is also
 the case for the rows of B (they are all ``row-stochastic.'')
 
 
-<<toy1,echo=TRUE>>=
-A = matrix(rgamma(40, shape=1, rate=1), nrow=4)
-A = A / apply(A, 1, sum)
-round(A, 2)[,1:5]
-X = matrix(rgamma(200, shape=1, rate=1), nrow=10)
-X = X / apply(X, 1, sum)
-B = A %*% X
-apply(A, 1, sum)
-apply(X, 1, sum)
-apply(B, 1, sum)
+<<sum1,echo=TRUE>>=
+apply(sd0$a, 1, sum)
+apply(sd0$x, 1, sum)
+apply(sd0$b, 1, sum)
+
 @
 
 One definition of ``working'' would be: if we unmix using a perturbed prior for
@@ -77,6 +72,8 @@ of AX by moment-matching...
 
 
 \section{EP, with an approximate sort matrix}
+
+FIXME this should probably be in a different document.
 
 So far, we've been treating the sort matrix $A$ as exactly known,
 which seems like a weak assumption. Therefore, we assume that

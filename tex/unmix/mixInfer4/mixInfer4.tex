@@ -87,37 +87,22 @@ the case for the rows of B (they are all ``row-stochastic.'')
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{A} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rgamma}\hlstd{(}\hlnum{40}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{rate}\hlstd{=}\hlnum{1}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{4}\hlstd{)}
-\hlstd{A} \hlkwb{=} \hlstd{A} \hlopt{/} \hlkwd{apply}\hlstd{(A,} \hlnum{1}\hlstd{, sum)}
-\hlkwd{round}\hlstd{(A,} \hlnum{2}\hlstd{)[,}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{]}
+\hlkwd{apply}\hlstd{(sd0}\hlopt{$}\hlstd{a,} \hlnum{1}\hlstd{, sum)}
 \end{alltt}
 \begin{verbatim}
-##      [,1] [,2] [,3] [,4] [,5]
-## [1,] 0.19 0.03 0.01 0.17 0.23
-## [2,] 0.10 0.29 0.01 0.00 0.19
-## [3,] 0.14 0.01 0.36 0.01 0.02
-## [4,] 0.08 0.01 0.13 0.30 0.06
+## [1] 1 1
 \end{verbatim}
 \begin{alltt}
-\hlstd{X} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rgamma}\hlstd{(}\hlnum{200}\hlstd{,} \hlkwc{shape}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{rate}\hlstd{=}\hlnum{1}\hlstd{),} \hlkwc{nrow}\hlstd{=}\hlnum{10}\hlstd{)}
-\hlstd{X} \hlkwb{=} \hlstd{X} \hlopt{/} \hlkwd{apply}\hlstd{(X,} \hlnum{1}\hlstd{, sum)}
-\hlstd{B} \hlkwb{=} \hlstd{A} \hlopt{%*%} \hlstd{X}
-\hlkwd{apply}\hlstd{(A,} \hlnum{1}\hlstd{, sum)}
+\hlkwd{apply}\hlstd{(sd0}\hlopt{$}\hlstd{x,} \hlnum{1}\hlstd{, sum)}
 \end{alltt}
 \begin{verbatim}
-## [1] 1 1 1 1
+## [1] 1 1 1 1 1
 \end{verbatim}
 \begin{alltt}
-\hlkwd{apply}\hlstd{(X,} \hlnum{1}\hlstd{, sum)}
+\hlkwd{apply}\hlstd{(sd0}\hlopt{$}\hlstd{b,} \hlnum{1}\hlstd{, sum)}
 \end{alltt}
 \begin{verbatim}
-##  [1] 1 1 1 1 1 1 1 1 1 1
-\end{verbatim}
-\begin{alltt}
-\hlkwd{apply}\hlstd{(B,} \hlnum{1}\hlstd{, sum)}
-\end{alltt}
-\begin{verbatim}
-## [1] 1 1 1 1
+## [1] 1 1
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -136,6 +121,8 @@ of AX by moment-matching...
 
 
 \section{EP, with an approximate sort matrix}
+
+FIXME this should probably be in a different document.
 
 So far, we've been treating the sort matrix $A$ as exactly known,
 which seems like a weak assumption. Therefore, we assume that
