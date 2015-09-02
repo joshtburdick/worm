@@ -94,21 +94,3 @@ write.status(paste(update.stats.1, collapse=" "))
   list(a = a, x = x, update.stats = update.stats, history = h)
 }
 
-# Constructs priors, based on a sort matrix.
-# Args:
-#   a - the sort matrix mean
-#   num.genes - number of genes (for setting size of x's prior)
-#   a.alpha, x.alpha - average parameters for each prior
-#     (larger = "pointier")
-# Returns: priors. The prior for a will be centered at its mean,
-#   while the prior for x will be symmetric.
-prior.1 = function(a, num.genes, a.alpha, x.alpha) {
-  x.dim = c(ncol(a), num.genes)
-  list(a.prior = list(
-      a = a.alpha * ncol(a) * a, b = array(1, dim=dim(a))),
-    x.prior = list(
-      a = array(x.alpha, dim=x.dim), b = array(1, dim=x.dim)))
-}
-
-
-
