@@ -91,12 +91,20 @@ plot.it.orig = function() {
   dev.off()
 }
 
+# Plots one set of heatmap entries.
+# Args:
+#   m - the matrix
+#   hue - the color in which to plot it
+#   italicize - if TRUE, things that look like gene names
+#     will be italicized
 plot.one = function(m, hue, italicize=FALSE) {
 
   h = hclust(cor.dist(m))
   m1 = m[h$order,]
 
   rowLabels = rownames(m1)
+
+  # FIXME this is buggy, and also shouldn't italicize clone names
   if (italicize)
     rowLabels = sapply(rowLabels, italicize)
 

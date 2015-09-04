@@ -26,6 +26,8 @@ moment2mv = function(a) list(m = a$x1, v = a$x2 - (a$x1^2))
 pos.linear.solve.1 = function(A, B, X) {
   X1 = lin.constraint(A, B)(X)
   X = move.pos(X, X1) + 1e-20
+#  X = X1
+#  X[ X < 1e-20 ] = 1e-20
   X
 }
 
@@ -36,7 +38,7 @@ norm.rows = function(a) a / apply(a, 1, sum)
 # Args:
 #   p - a gamma prior
 #   x - a data point
-# Returns: mean and variance of posterior.
+# Returns: mean of posterior.
 gamma.update = function(p, x) {
   a = mv2moment(gamma.s2mv(p))
   b = list(x1 = (a$x1 + x) / 2, x2 = (a$x2 + x^2) / 2)
@@ -55,26 +57,25 @@ gamma.update = function(p, x) {
 #   x - estimated expression
 #   update.stats - likelihood stats, and how much a and x changed
 unmix.expr.and.sort.matrix.1 =
-    function(a.prior, x.prior, b, max.iters=50, save.hist=TRUE) {
+    function(a.prior, x.prior, b, max.iters=50, save.hist=FALSE) {
 
   # these track several measures of how good the solution is
   update.stats = NULL
   h = list()
 
   # initialize estimates to the means of the priors
-  # (the constraint will admittedly be way off, initially)
+  # (the constraint will admittedly initially be way off)
   a = gamma.s2mv(a.prior)$m
   x = gamma.s2mv(x.prior)$m
 
   for(iter in 1:max.iters) {
-
     # update expression
     x1 = pos.linear.solve.1(a, b, x)
-    x2 = gamma.update(x.prior, t(norm.rows(t(x1))))$m
+    x2 = norm.rows(gamma.update(x.prior, x1))
 
     # update sort matrix
-    a1 = pos.linear.solve(t(x2), t(b), a)
-    a2 = gamma.update(a.prior, norm.rows(a1))$m
+    a1 = t(pos.linear.solve.1(t(x2), t(b), t(a)))
+    a2 = norm.rows(gamma.update(a.prior, a1))
 
     # save updates
     x = x2

@@ -61,7 +61,12 @@
 
 \maketitle
 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in source("{}git/unmix/ml/unmix\_sort\_fraction\_ml\_1.r"{}): git/unmix/ml/unmix\_sort\_fraction\_ml\_1.r:80:5: unexpected symbol\\\#\# 79:\ \ \ \  \# save updates\\\#\# 80:\ \ \ \  x\\\#\#\ \ \ \ \ \ \ \  \textasciicircum{}}}\end{kframe}
+\end{knitrout}
 
 
 \section{Some test data}
@@ -110,6 +115,18 @@ the case for the rows of B (they are all ``row-stochastic.'')
 One definition of ``working'' would be: if we unmix using a perturbed prior for
 A (but using the {\em actual} sort matrix in simulating B), then the posterior
 estimate for A is closer to the actual A than the prior.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{p} \hlkwb{=} \hlkwd{prior.1}\hlstd{(sd0,} \hlnum{10}\hlstd{,} \hlnum{2}\hlstd{)}
+\hlcom{# r = unmix.expr.and.sort.matrix.1(p$a.prior, p$x.prior, sd0$b, max.iters=5)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
 
 \subsection{Distribution of AX}
 
@@ -183,7 +200,6 @@ We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
 We now (maybe) have a situation similar to that
 described by Minka: several approximations which we can
 iteratively improve.
-
 
 
 

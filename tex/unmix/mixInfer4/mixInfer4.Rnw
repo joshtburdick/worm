@@ -27,7 +27,7 @@ setwd("git/unmix/unmix_comp/src/")
 setwd(wd)
 
 # allow caching
-opts_chunk$set(cache=TRUE, autodep=TRUE)
+opts_chunk$set(cache=FALSE, autodep=TRUE)
 @
 
 
@@ -55,12 +55,19 @@ the case for the rows of B (they are all ``row-stochastic.'')
 apply(sd0$a, 1, sum)
 apply(sd0$x, 1, sum)
 apply(sd0$b, 1, sum)
-
 @
 
 One definition of ``working'' would be: if we unmix using a perturbed prior for
 A (but using the {\em actual} sort matrix in simulating B), then the posterior
 estimate for A is closer to the actual A than the prior.
+
+<<run1,echo=TRUE>>=
+p = prior.1(sd0, 10, 2)
+# r = unmix.expr.and.sort.matrix.1(p$a.prior, p$x.prior, sd0$b, max.iters=5)
+@
+
+
+
 
 \subsection{Distribution of AX}
 
@@ -134,7 +141,6 @@ We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
 We now (maybe) have a situation similar to that
 described by Minka: several approximations which we can
 iteratively improve.
-
 
 
 
