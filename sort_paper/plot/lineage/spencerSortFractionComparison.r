@@ -51,14 +51,13 @@ tissues.per.cell.1[ tissues.per.cell.1 == "Nervous" ] = "Neuron"
 tissues.per.cell.1[ tissues.per.cell.1 == "Epidermis" ] = "Hypodermis"
 
 tissue.to.color = NULL
-tissue.to.color["Death"] = "pink"
-tissue.to.color["Epidermis"] = "lightblue"
+tissue.to.color["Hypodermis"] = "lightblue"
 tissue.to.color["Glia"] = "orange"
 tissue.to.color["Intestine"] = "darkgreen"
 tissue.to.color["Muscle"] = "magenta"
 tissue.to.color["Neuron"] = "blue"
 tissue.to.color["Pharynx"] = "green"
-
+tissue.to.color["Death"] = "pink"
 
 cell.tissue.colors = tissue.to.color[ tissues.per.cell.1 ]
 names(cell.tissue.colors) = lin.node.names
@@ -103,8 +102,7 @@ plot.tissue.colors = function(x) {
   b = as.matrix(a[ colors.leaf ])
   rownames(b) = colnames(m1)
 
- browser()
-  image(b, x=c(0:671), y=c(0,1),
+  image(b, x=c(0:671), y=c(0,1), bty="n",
     xlim=c(0,671), ylim=c(0,1), xlab="", ylab="",
     useRaster=TRUE, xaxt="n", yaxt="n", col=names(a))
 }
@@ -118,8 +116,12 @@ plot.tissue.colors = function(x) {
 #     will be italicized
 plot.one = function(m, hue, italicize=FALSE) {
 
+  # sort the rows by clustering
   h = hclust(cor.dist(m))
   m1 = m[h$order,]
+
+  # tack on a blank row at the top of image (= bottom of matrix)
+  m1 = rbind(m1, " " = NA)  
 
   rowLabels1 = rownames(m1)
 
@@ -137,7 +139,7 @@ plot.one = function(m, hue, italicize=FALSE) {
   }
 
   par(mar=c(0,16,0,0.1))
-  image(t(m1), useRaster=TRUE,
+  image(t(m1), useRaster=TRUE, bty="n",
     xaxt="n", yaxt="n", zlim=c(0,1), col=hsv(hue, 1, 0:128/128))
   n = nrow(m1)-1
   axis(2, at=(0:n)/n,
@@ -148,9 +150,9 @@ plot.one = function(m, hue, italicize=FALSE) {
 # Plots these separately.
 plot.separately = function() {
   pdf("git/sort_paper/plot/lineage/spencerSortFractionComparison.pdf",
-    width=11, height=5)
+    width=11, height=7)
 
-  layout(matrix(1:3, nrow=3), heights=c(1,1.7,0.1))
+  layout(matrix(1:4, nrow=4), heights=c(1,0.1,1.8,1.4))
 
   # show the lineage
   par(mar=c(0,16,0,0.1))
@@ -167,18 +169,15 @@ plot.separately = function() {
   plot.segments.per.cell(cell.tissue.colors, main="", root="P0", times=c(0,339),
       lwd=1.5, yaxt="n", int.n.to.label=lin.12.cell, add=TRUE)
 
-  # XXX hack to draw legend outside the plot region (omitting for now)
-if (FALSE) {
-  legend(-100,50, legend=names(tissue.to.color), fill=tissue.to.color,
-    bty="n", xpd=NA, cex=1.4)
-}
-
-  plot.one(m.leaf, 0, italicize=TRUE)
-# omitting Spencer for now
-#  plot.one(spencer.m.leaf, 1/6)
+  # XXX hack to draw legend outside the plot region
+  legend(-130,20, legend=names(tissue.to.color), fill=tissue.to.color,
+    bty="n", xpd=NA, cex=1.6)
 
   plot.tissue.colors()
-
+  plot.one(m.leaf, 0, italicize=TRUE)
+  mtext("FACS-sorted cells", side=2, line=14, cex=1.2)
+  plot.one(spencer.m.leaf, 1/6)
+  mtext("Spencer et al (2011)", side=2, line=14, cex=1.2)
   dev.off()
 }
 
