@@ -48,6 +48,7 @@ tissues.per.cell.1 = sapply(lin.node.names,
 # various tweaks and simplifications
 tissues.per.cell.1[ tissues.per.cell.1 == "Arcade" ] = "Pharynx"
 tissues.per.cell.1[ tissues.per.cell.1 == "Nervous" ] = "Neuron"
+tissues.per.cell.1[ tissues.per.cell.1 == "Epidermis" ] = "Hypodermis"
 
 tissue.to.color = NULL
 tissue.to.color["Death"] = "pink"
@@ -91,6 +92,24 @@ plot.it.orig = function() {
   dev.off()
 }
 
+# Plots tissues as a color bar.
+plot.tissue.colors = function(x) {
+  tissues.leaf = tissues.per.cell.1[ colnames(m1) ]
+  colors.leaf = tissue.to.color[ tissues.leaf ]
+  colors.leaf[ is.na(colors.leaf) ] = "grey"
+  names(colors.leaf) = colnames(m1)
+  a = c(1:length(unique(colors.leaf)))
+  names(a) = unique(colors.leaf)
+  b = as.matrix(a[ colors.leaf ])
+  rownames(b) = colnames(m1)
+
+ browser()
+  image(b, x=c(0:671), y=c(0,1),
+    xlim=c(0,671), ylim=c(0,1), xlab="", ylab="",
+    useRaster=TRUE, xaxt="n", yaxt="n", col=names(a))
+}
+
+
 # Plots one set of heatmap entries.
 # Args:
 #   m - the matrix
@@ -102,26 +121,36 @@ plot.one = function(m, hue, italicize=FALSE) {
   h = hclust(cor.dist(m))
   m1 = m[h$order,]
 
-  rowLabels = rownames(m1)
+  rowLabels1 = rownames(m1)
 
-  # FIXME this is buggy, and also shouldn't italicize clone names
-  if (italicize)
-    rowLabels = sapply(rowLabels, italicize)
+  # possibly italicize things which look like gene names
+  if (italicize) {
+    rowLabels1 = lapply(rowLabels1,
+    #  function (z) { if (TRUE) italicize(z) else z})
+      function(z) {
+        print(grepl("-", z))
+        if (grepl("-", z))
+          expr.format(expression(italic(s)), list(s = z))
+        else
+          z
+      })
+  }
 
   par(mar=c(0,16,0,0.1))
   image(t(m1), useRaster=TRUE,
     xaxt="n", yaxt="n", zlim=c(0,1), col=hsv(hue, 1, 0:128/128))
   n = nrow(m1)-1
-  axis(2, at=(0:n)/n, labels=rowLabels, cex.axis=1.39,
+  axis(2, at=(0:n)/n,
+    labels=as.expression(c(rowLabels1, recursive=TRUE)), cex.axis=1.39,
     line=0, tick=FALSE, las=2)
 }
 
 # Plots these separately.
 plot.separately = function() {
   pdf("git/sort_paper/plot/lineage/spencerSortFractionComparison.pdf",
-    width=11, height=7)
+    width=11, height=5)
 
-  layout(matrix(1:3, nrow=3), heights=c(1,1.7,1.3))
+  layout(matrix(1:3, nrow=3), heights=c(1,1.7,0.1))
 
   # show the lineage
   par(mar=c(0,16,0,0.1))
@@ -131,15 +160,25 @@ plot.separately = function() {
   names(a) = lin.node.names
   par(new=TRUE)
   par(mar=c(0,16,0,0.1))
+
+  # XXX not coloring this by lineage
+  cell.tissue.colors[ 1:length(cell.tissue.colors) ] = "darkgrey"
+
   plot.segments.per.cell(cell.tissue.colors, main="", root="P0", times=c(0,339),
       lwd=1.5, yaxt="n", int.n.to.label=lin.12.cell, add=TRUE)
 
-  # XXX hack to draw legend outside the plot region
+  # XXX hack to draw legend outside the plot region (omitting for now)
+if (FALSE) {
   legend(-100,50, legend=names(tissue.to.color), fill=tissue.to.color,
     bty="n", xpd=NA, cex=1.4)
+}
 
   plot.one(m.leaf, 0, italicize=TRUE)
-  plot.one(spencer.m.leaf, 1/6)
+# omitting Spencer for now
+#  plot.one(spencer.m.leaf, 1/6)
+
+  plot.tissue.colors()
+
   dev.off()
 }
 

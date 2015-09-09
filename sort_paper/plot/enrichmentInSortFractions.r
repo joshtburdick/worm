@@ -68,8 +68,7 @@ markers.formatted = lapply(names(sort.marker.enrichment.1),
     else
       z
   })
-#    else
-#      z)
+
 axis(1, at=x.axis.points,
   labels = as.expression(c(markers.formatted, recursive=TRUE)),
   las=2, lty=0)
