@@ -79,8 +79,14 @@ expr.tissue.spec = expressed & tissue.spec
 
 cat("num with tissue spec. >= 0.2 and expr > 4 =",
   sum(expr.tissue.spec), "\n")
+
+cat("proportion of annotated TS above cutoff = ",
+  sum(a & expr.tissue.spec), " / ", sum(a), " (",
+  round(100 * sum(a & expr.tissue.spec) / sum(a), 2), "%)\n")
+
 cat("number of those annotated =",
-  sum(expr.tissue.spec & a[names(expr.tissue.spec)]), "\n")
+  sum(expr.tissue.spec & a[names(expr.tissue.spec)]),
+ "\n")
 
 # the Venn diagram
 pdf("git/sort_paper/cluster/annotation/vennDiagram.pdf",
