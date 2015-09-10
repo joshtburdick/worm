@@ -177,7 +177,7 @@ plot.separately = function() {
   plot.one(m.leaf, 0, italicize=TRUE)
   mtext("FACS-sorted cells", side=2, line=14, cex=1.2)
   plot.one(spencer.m.leaf, 1/6)
-  mtext("Spencer et al (2011)", side=2, line=14, cex=1.2)
+  mtext("Spencer et al. (2011)", side=2, line=14, cex=1.2)
   dev.off()
 }
 
