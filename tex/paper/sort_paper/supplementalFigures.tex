@@ -10,7 +10,7 @@
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 
-%% \usepackage[margin=10pt,justification=justified]{caption}
+\usepackage[margin=10pt,justification=justified]{caption}
 
 
 \usepackage{graphicx}
@@ -22,7 +22,7 @@
 \renewcommand{\thefigure}{S\arabic{figure}} 
 
 \begin{document}
-\pagenumbering{gobble}
+%% \pagenumbering{gobble}
 
 \begin{figure}
 
@@ -31,7 +31,7 @@ measured by lineage tracing.}
 \end{figure}
 
 \clearpage
-\includepdf[pages={1-},scale=1]{writing/sort paper/trees/S1 Sort markers.pdf}
+\includepdf[pages={1-},scale=1,offset=-2in 0in,pagecommand={\thispagestyle{plain}}]{writing/sort paper/trees/S1 Sort markers.pdf}
 \clearpage
 
 \begin{figure}
@@ -62,7 +62,7 @@ time-specific genes from (The modENCODE Consortium 2010).}
 \end{figure}
 \clearpage
 
-\includepdf[pages={1-5},scale=1]{git/sort_paper/FACS/timing/exprByTime.pdf}
+\includepdf[pages={1-5},scale=1,pagecommand={\thispagestyle{plain}}]{git/sort_paper/FACS/timing/exprByTime.pdf}
 
 \clearpage
 
@@ -77,7 +77,7 @@ singlet control samples ($y$ axis).}
 \clearpage
 
 \begin{figure}
-\includegraphics[width=\textwidth]
+\includegraphics[width=0.95\textwidth]
 {git/sort_paper/unmix/pseudoinverseEnrichment/crossvalidationAccuracy.png}
 \caption{
 Unmixing cross-validation accuracy. For each sort marker $s$, the $x$ axis
