@@ -15,17 +15,18 @@
 \usepackage{graphicx}
 \usepackage[space]{grffile}
 \graphicspath{
-{/home/jburdick/gcb/writing/sort paper/20150326/figures/}
+{/home/jburdick/gcb/writing/sort paper/20150831/figure/}
 }
 %% NB: PDFs should be version <= 1.4 .
 \begin{document}
 %% \pagenumbering{gobble}
 
 \begin{figure}
-\includegraphics[height=0.9\textheight]{Figure1.1.pdf}
+\includegraphics[height=0.9\textheight]{Figure1.2.pdf}
 \caption{Experimental strategy.
-(A) Summary: we FACS sort embryonic cells, based on expression of markers with known expression patterns, and measure expression in cells expressing (or not expressing) a particular marker with RNA-seq. Genes expressed in similar sets of cells are enriched in a similar set of samples.
-(B) Expression patterns of cells used for sorting (shown in red), and in Spencer et al. (2011), shown in yellow. Cell fates are shown in the colored bar at the
+(A) Summary: we FACS sort embryonic cells, based on expression of markers with known expression patterns, and measure expression in cells expressing (or not expressing) a particular marker using RNA-seq. Genes expressed in similar sets of cells are enriched in a similar set of samples.
+(B) Expression patterns of cells used for sorting (shown in red), and in Spencer
+et al. (2011), shown in yellow. Cell fates are shown in the colored bar at the
 top.
 (C) Expression pattern of {\em unc-130} (one of the markers used for sorting) in the Abpl sublineage, with cell fates colored as in (B).
 (D) Comparison of overlap of groups of cells used for sorting in this paper, with similar overlap for the groups of cells used in Spencer et al. (2011).
@@ -34,52 +35,61 @@ top.
 \clearpage
 
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure2.pdf}
+\includegraphics[height=0.87\textheight,trim=0cm 3cm 0cm 0cm,clip=TRUE]{Figure2.pdf}
 \caption{
 Data quality of expression measurements of FACS-sorted cells.
+(A) Enrichment of genes in two replicates of sorting by a {\em pha-4} reporter. Known pharyngeal genes defined as early or late embryonic in Gaudet et al. (2004) are shown in red and blue, respectively. (B) Enrichment of mRNAs corresponding to markers used for sorting. Promoter fusions are shown in red, while protein fusions are shown in green. (C) Comparison of number of cells in a sorted fraction with the number of genes enriched (red) or depleted (blue). (D) Number of genes enriched or depleted in different numbers of sorted fractions. (E) Enrichment of time-specific genes in cells sorted by {\em cnd-1}. The proportion of the total cells expressing the {\em cnd-1} reporter is shown in blue. (F) Same as (E), except for cells sorted using a {\em pros-1} reporter.
 }
 \end{figure}
 \clearpage
 
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure3.2.pdf}
+\includegraphics[height=0.95\textheight]{Figure3.3.pdf}
 \caption{
-Annotation of FACS-sorted cells
+Annotation of FACS-sorted cells. Enrichment of ChIP peaks, motifs, GO terms, expression clusters, and anatomy terms associated with genes enriched in each sort fraction. Selected {\em pha-4 (+)} and {\em mir-57 (+)} enrichments mentioned in the text
+are boxed in red and blue, respectively.
 }
 \end{figure}
 \clearpage
 
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure4.2.pdf}
+\includegraphics[height=0.9\textheight]{Figure4.4.pdf}
 \caption{
 Clustering of enrichment.
+(A) Average enrichment for genes grouped into 300 clusters. The timeseries data is from (The modENCODE Consortium 2010). (B) MSa lineage, showing expression of {\em pha-4} (red) and {\em pros-1} (green); yellow indicates overlap. Pharyngeal gland cells are shown as red rectangles. (C) Cluster 52, enriched with genes known to be expressed in pharyngeal gland cells. (D) Cluster 286, enriched with genes known to be expressed in ciliated neurons. (E) Mean expression, and mean absolute enrichement, for each cluster. Clusters with known enriched anatomy annotation are shown in red; selected clusters are labeled. (F) Overlap of expressed and tissue-specific clusters.
 }
 \end{figure}
 \clearpage
 
-
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure5.2.pdf}
+\includegraphics[height=0.95\textheight]{Figure5.3.pdf}
 \caption{
 Annotation of clusters.
+(A) Enrichment (analogously to Figure 1) of ChIP signals, TF motifs, GO terms, expression clusters, and anatomy terms associated with genes in clusters. (B) Expression pattern of {\em hlh-6} and {\em nhr-56}
+ in comma-stage embryos, measured by RNA-FISH. (C) Expression pattern of {\em hlh-6} and {\em ceh-53} in a three-fold embryo, measured by RNA-FISH.
 }
 \end{figure}
 \clearpage
 
-
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure6.3.pdf}
-\caption{
-Predicted regulatory relationships.
+\includegraphics[height=0.92\textheight,trim=0cm 3cm 0cm 0cm,clip=TRUE]{Figure6.4.pdf}
+\caption{Predicted regulatory relationships.
+(A) Enrichment of RFX2 motif upstream of genes in cluster 286. (B) Enrichment of an
+{\em eor-1} motif upstream of genes in cluster 284. (C) Significance of motifs being more or less conserved, or nearer or further from the TSS (darker dots show cases when
+at least one of these was significant.) (D) Expression of known ({\em che-13} and
+{\em phat-5}) and predicted targets of {\em daf-19} and {\em hlh-6}, when either of
+those TFs is mutated.
+(E) Enrichment of co-clustered genes in WormNet (Lee et al. 2010) annotations. (F) Enrichment of TF-cluster pairs in Y1H data from Reece-Hoyes et al. (2013).
 }
 \end{figure}
 \clearpage
 
-
 \begin{figure}
-\includegraphics[height=0.95\textheight]{Figure7.1.pdf}
+\includegraphics[height=0.95\textheight]{Figure7.3.pdf}
 \caption{
 Non-coding RNAs.
+(A) Cluster containing {\em linc-25}, {\em linc-36}
+ and genes with known neural expression patterns. (B-D) Correlation of (B) ancRNAs, (C) lincRNAs, and (D) all pairs of genes with their nearest neighboring gene.
 }
 \end{figure}
 \clearpage
