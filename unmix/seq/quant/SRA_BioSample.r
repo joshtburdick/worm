@@ -48,11 +48,11 @@ r = data.frame(
   "tissue" = paste(exp.name$name, "FACS-sorted cells"),
   "collected_by" = "Travis Walton",
   "collection_date" = exp.name$coll.date,
+  "genotype" = "",
   stringsAsFactors=FALSE)
+r = r[ order(r$"collection_date", r$"sample_title") , ]
 
-
-
-
-
-
+write.table(r, file="git/unmix/seq/quant/SRA_BioSample.tsv",
+  sep="\t", na="", row.names=FALSE, col.names=TRUE, quote=FALSE)
+# strain and genotype need to be filled in by hand
 
