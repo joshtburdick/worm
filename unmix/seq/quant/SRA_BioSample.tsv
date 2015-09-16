@@ -1,6 +1,6 @@
 sample_name	sample_title	organism	strain	dev_stage	sex	tissue	collected_by	collection_date	genotype
-lowInput	lowInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	lowInput FACS-sorted cells	Travis Walton	20110922	PHA-4::GFP
-normalInput	normalInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	normalInput FACS-sorted cells	Travis Walton	20110922	PHA-4::GFP
+lowInput	lowInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	lowInput ungated cells	Travis Walton	20110922	PHA-4::GFP
+normalInput	normalInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	normalInput ungated cells	Travis Walton	20110922	PHA-4::GFP
 pha-4_minus_rep_1	pha-4 (-) rep. 1	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (-) rep. 1 FACS-sorted cells	Travis Walton	20110922	PHA-4::GFP
 pha-4_plus_rep_1	pha-4 (+) rep. 1	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (+) rep. 1 FACS-sorted cells	Travis Walton	20110922	PHA-4::GFP
 ceh-27_plus	ceh-27 (+)	C. elegans	JIM100	mixed-stage embryo	hermaphrodite	ceh-27 (+) FACS-sorted cells	Travis Walton	20120509	CEH-27p::mCherry
