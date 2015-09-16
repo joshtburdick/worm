@@ -1,0 +1,63 @@
+# Metadata for the read files in the SRA submission.
+
+source("git/utils.r")
+
+s = read.tsv("git/unmix/seq/quant/SRA_BioSample.tsv")
+
+e = read.tsv("git/unmix/seq/quant/experimentNames1.tsv")
+e = e[ ! grepl("^(HS |RNAi)", e$name) , ]
+
+# create identifiers which avoid some potentially
+# problematic characters (such as "(+-)")
+id = e$name
+id = gsub("\\.", "", id)
+id = gsub("F21D59", "F21D5.9", id)   # XXX
+id = gsub("\\(\\+\\)", "plus", id)
+id = gsub("\\(\\-\\)", "minus", id)
+id = gsub(" ", "_", id)
+e$id = id
+
+# the sample names, as submitted to the SRA
+e$sample_name = sub("_rep_[0-9]", "", e$id)
+e$sample_name[ e$sample_name=="lowInput" ] = "pha-4_ungated"
+e$sample_name[ e$sample_name=="normalInput" ] = "pha-4_ungated"
+
+# mapping from sample name to SRA sample ID
+samn = {
+  samn1 = read.tsv("git/unmix/seq/quant/BioSampleObjects.tsv")
+  samn = rownames(samn1)
+  names(samn) = samn1[,1]
+  samn
+}
+
+
+# which experiments were newer (paired-end and amplified)
+i = !(e$id %in% c("lowInput", "normalInput",
+  "pha-4_plus_rep_1", "pha-4_minus_rep_1"))
+
+r = data.frame(bioproject_accession = "PRJNA295677",
+  sample_name = samn[ e$sample_name ],
+  library_ID = e$id,
+#  title = "RNA-Seq of FACS-sorted embryonic C. elegans cells",
+  library_strategy = "RNA-Seq",
+  library_source = "TRANSCRIPTOMIC",
+  library_selection = ifelse(i, "other", "RANDOM"),
+  library_layout = ifelse(i, "Paired-end", "Single"),
+
+  platform = "ABI_SOLID",
+  instrument_model = "AB 5500xl Genetic Analyzer",
+  design_description = ifelse(i,
+    "Embryonic cells were FACS-sorted by marker expression and amplified using the aRNA protocol",
+    "Embryonic cells were FACS-sorted by marker expression"),
+  filetype = "BAM",
+  # these will be filled in later
+  filename = "", filename2 = "", filename3 = "",
+  check.names=FALSE, stringsAsFactors=FALSE)
+
+# fill in names of files
+
+
+
+
+
+
