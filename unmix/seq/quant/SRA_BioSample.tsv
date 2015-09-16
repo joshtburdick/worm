@@ -1,45 +1,35 @@
 sample_name	sample_title	organism	strain	dev_stage	sex	tissue	collected_by	collection_date	genotype
-lowInput	lowInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	lowInput ungated cells	Travis Walton	2011-09-22	PHA-4::GFP
-normalInput	normalInput	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	normalInput ungated cells	Travis Walton	2011-09-22	PHA-4::GFP
-pha-4_minus_rep_1	pha-4 (-) rep. 1	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (-) rep. 1 FACS-sorted cells	Travis Walton	2011-09-22	PHA-4::GFP
-pha-4_plus_rep_1	pha-4 (+) rep. 1	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (+) rep. 1 FACS-sorted cells	Travis Walton	2011-09-22	PHA-4::GFP
-ceh-27_plus	ceh-27 (+)	C. elegans	JIM100	mixed-stage embryo	hermaphrodite	ceh-27 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-27p::mCherry
-ceh-36_minus	ceh-36 (-)	C. elegans	JIM057	mixed-stage embryo	hermaphrodite	ceh-36 (-) FACS-sorted cells	Travis Walton	2012-05-09	CEH-36p::mCherry
-ceh-36_plus	ceh-36 (+)	C. elegans	JIM057	mixed-stage embryo	hermaphrodite	ceh-36 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-36p::mCherry
-ceh-6_plus	ceh-6 (+)	C. elegans	JIM097	mixed-stage embryo	hermaphrodite	ceh-6 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-6::GFP
-cnd-1_plus_rep_1	cnd-1 (+) rep. 1	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (+) rep. 1 FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-cnd-1_plus_rep_2	cnd-1 (+) rep. 2	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (+) rep. 2 FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-cnd-1_minus_rep_3	cnd-1 (-) rep. 3	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (-) rep. 3 FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-cnd-1_plus_rep_3	cnd-1 (+) rep. 3	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (+) rep. 3 FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-cnd-1_singlets	cnd-1 singlets	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 singlets FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-cnd-1_ungated	cnd-1 ungated	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 ungated FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
-F21D5.9_plus	F21D5.9 (+)	C. elegans	JIM095	mixed-stage embryo	hermaphrodite	F21D5.9 (+) FACS-sorted cells	Travis Walton	2012-05-09	F21D5.9p::Wcherry
-hlh-16_plus	hlh-16 (+)	C. elegans	JIM106	mixed-stage embryo	hermaphrodite	hlh-16 (+) FACS-sorted cells	Travis Walton	2012-05-09	HLH-16p::mCherry
-irx-1_plus	irx-1 (+)	C. elegans	RW10719	mixed-stage embryo	hermaphrodite	irx-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	IRX-1p::Wcherry
-mir-57_plus	mir-57 (+)	C. elegans	JIM049	mixed-stage embryo	hermaphrodite	mir-57 (+) FACS-sorted cells	Travis Walton	2012-05-09	MIR-57p::mCherry
-mls-2_plus	mls-2 (+)	C. elegans	UP1619	mixed-stage embryo	hermaphrodite	mls-2 (+) FACS-sorted cells	Travis Walton	2012-05-09	MLS-2::GFP
-pal-1_plus	pal-1 (+)	C. elegans	JIM112	mixed-stage embryo	hermaphrodite	pal-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	PAL-1::GFP
-pha-4_plus_rep_2	pha-4 (+) rep. 2	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (+) rep. 2 FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
-pha-4_minus_rep_3	pha-4 (-) rep. 3	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (-) rep. 3 FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
-pha-4_plus_rep_3	pha-4 (+) rep. 3	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (+) rep. 3 FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
-pha-4_singlets	pha-4 singlets	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 singlets FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
-pha-4_ungated	pha-4 ungated	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 ungated FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
-pros-1_plus	pros-1 (+)	C. elegans	RW10913	mixed-stage embryo	hermaphrodite	pros-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	PROS-1::GFP
-ttx-3_plus	ttx-3 (+)	C. elegans	JIM096	mixed-stage embryo	hermaphrodite	ttx-3 (+) FACS-sorted cells	Travis Walton	2012-05-09	TTX-3::GFP
-unc-130_plus	unc-130 (+)	C. elegans	JIM107	mixed-stage embryo	hermaphrodite	unc-130 (+) FACS-sorted cells	Travis Walton	2012-05-09	UNC-130::GFP
-ceh-27_minus	ceh-27 (-)	C. elegans	JIM100	mixed-stage embryo	hermaphrodite	ceh-27 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-27p::mCherry
-ceh-6_minus	ceh-6 (-)	C. elegans	JIM097	mixed-stage embryo	hermaphrodite	ceh-6 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP
-ceh-6_minus_hlh-16_minus	ceh-6 (-) hlh-16 (-)	C. elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (-) hlh-16 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
-ceh-6_minus_hlh-16_plus	ceh-6 (-) hlh-16 (+)	C. elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (-) hlh-16 (+) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
-ceh-6_plus_hlh-16_minus	ceh-6 (+) hlh-16 (-)	C. elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (+) hlh-16 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
-ceh-6_plus_hlh-16_plus	ceh-6 (+) hlh-16 (+)	C. elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (+) hlh-16 (+) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
-cnd-1_minus_rep_1	cnd-1 (-) rep. 1	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (-) rep. 1 FACS-sorted cells	Travis Walton	2012-09-28	CND-1::GFP
-cnd-1_minus_rep_2	cnd-1 (-) rep. 2	C. elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (-) rep. 2 FACS-sorted cells	Travis Walton	2012-09-28	CND-1::GFP
-F21D5.9_minus	F21D5.9 (-)	C. elegans	JIM095	mixed-stage embryo	hermaphrodite	F21D5.9 (-) FACS-sorted cells	Travis Walton	2012-09-28	F21D5.9p::Wcherry
-mir-57_minus	mir-57 (-)	C. elegans	JIM049	mixed-stage embryo	hermaphrodite	mir-57 (-) FACS-sorted cells	Travis Walton	2012-09-28	MIR-57p::mCherry
-mls-2_minus	mls-2 (-)	C. elegans	UP1619	mixed-stage embryo	hermaphrodite	mls-2 (-) FACS-sorted cells	Travis Walton	2012-09-28	MLS-2::GFP
-pal-1_minus	pal-1 (-)	C. elegans	JIM112	mixed-stage embryo	hermaphrodite	pal-1 (-) FACS-sorted cells	Travis Walton	2012-09-28	PAL-1::GFP
-pha-4_minus_rep_2	pha-4 (-) rep. 2	C. elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (-) rep. 2 FACS-sorted cells	Travis Walton	2012-09-28	PHA-4::GFP
-pros-1_minus	pros-1 (-)	C. elegans	RW10913	mixed-stage embryo	hermaphrodite	pros-1 (-) FACS-sorted cells	Travis Walton	2012-09-28	PROS-1::GFP
-ttx-3_minus	ttx-3 (-)	C. elegans	JIM096	mixed-stage embryo	hermaphrodite	ttx-3 (-) FACS-sorted cells	Travis Walton	2012-09-28	TTX-3::GFP
-unc-130_minus	unc-130 (-)	C. elegans	JIM107	mixed-stage embryo	hermaphrodite	unc-130 (-) FACS-sorted cells	Travis Walton	2012-09-28	UNC-130::GFP
+pha-4_minus	pha-4 (-)	Caenorhabditis elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (-) FACS-sorted cells	Travis Walton	2011-09-22	PHA-4::GFP
+pha-4_plus	pha-4 (+)	Caenorhabditis elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 (+) FACS-sorted cells	Travis Walton	2011-09-22	PHA-4::GFP
+ceh-27_plus	ceh-27 (+)	Caenorhabditis elegans	JIM100	mixed-stage embryo	hermaphrodite	ceh-27 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-27p::mCherry
+ceh-36_minus	ceh-36 (-)	Caenorhabditis elegans	JIM057	mixed-stage embryo	hermaphrodite	ceh-36 (-) FACS-sorted cells	Travis Walton	2012-05-09	CEH-36p::mCherry
+ceh-36_plus	ceh-36 (+)	Caenorhabditis elegans	JIM057	mixed-stage embryo	hermaphrodite	ceh-36 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-36p::mCherry
+ceh-6_plus	ceh-6 (+)	Caenorhabditis elegans	JIM097	mixed-stage embryo	hermaphrodite	ceh-6 (+) FACS-sorted cells	Travis Walton	2012-05-09	CEH-6::GFP
+cnd-1_plus	cnd-1 (+)	Caenorhabditis elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
+cnd-1_singlets	cnd-1 singlets	Caenorhabditis elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 singlets FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
+cnd-1_ungated	cnd-1 ungated	Caenorhabditis elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 ungated FACS-sorted cells	Travis Walton	2012-05-09	CND-1::GFP
+F21D5.9_plus	F21D5.9 (+)	Caenorhabditis elegans	JIM095	mixed-stage embryo	hermaphrodite	F21D5.9 (+) FACS-sorted cells	Travis Walton	2012-05-09	F21D5.9p::Wcherry
+hlh-16_plus	hlh-16 (+)	Caenorhabditis elegans	JIM106	mixed-stage embryo	hermaphrodite	hlh-16 (+) FACS-sorted cells	Travis Walton	2012-05-09	HLH-16p::mCherry
+irx-1_plus	irx-1 (+)	Caenorhabditis elegans	RW10719	mixed-stage embryo	hermaphrodite	irx-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	IRX-1p::Wcherry
+mir-57_plus	mir-57 (+)	Caenorhabditis elegans	JIM049	mixed-stage embryo	hermaphrodite	mir-57 (+) FACS-sorted cells	Travis Walton	2012-05-09	MIR-57p::mCherry
+mls-2_plus	mls-2 (+)	Caenorhabditis elegans	UP1619	mixed-stage embryo	hermaphrodite	mls-2 (+) FACS-sorted cells	Travis Walton	2012-05-09	MLS-2::GFP
+pal-1_plus	pal-1 (+)	Caenorhabditis elegans	JIM112	mixed-stage embryo	hermaphrodite	pal-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	PAL-1::GFP
+pha-4_singlets	pha-4 singlets	Caenorhabditis elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 singlets FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
+pha-4_ungated	pha-4 ungated	Caenorhabditis elegans	JIM001	mixed-stage embryo	hermaphrodite	pha-4 ungated FACS-sorted cells	Travis Walton	2012-05-09	PHA-4::GFP
+pros-1_plus	pros-1 (+)	Caenorhabditis elegans	RW10913	mixed-stage embryo	hermaphrodite	pros-1 (+) FACS-sorted cells	Travis Walton	2012-05-09	PROS-1::GFP
+ttx-3_plus	ttx-3 (+)	Caenorhabditis elegans	JIM096	mixed-stage embryo	hermaphrodite	ttx-3 (+) FACS-sorted cells	Travis Walton	2012-05-09	TTX-3::GFP
+unc-130_plus	unc-130 (+)	Caenorhabditis elegans	JIM107	mixed-stage embryo	hermaphrodite	unc-130 (+) FACS-sorted cells	Travis Walton	2012-05-09	UNC-130::GFP
+ceh-27_minus	ceh-27 (-)	Caenorhabditis elegans	JIM100	mixed-stage embryo	hermaphrodite	ceh-27 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-27p::mCherry
+ceh-6_minus	ceh-6 (-)	Caenorhabditis elegans	JIM097	mixed-stage embryo	hermaphrodite	ceh-6 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP
+ceh-6_minus_hlh-16_minus	ceh-6 (-) hlh-16 (-)	Caenorhabditis elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (-) hlh-16 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
+ceh-6_minus_hlh-16_plus	ceh-6 (-) hlh-16 (+)	Caenorhabditis elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (-) hlh-16 (+) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
+ceh-6_plus_hlh-16_minus	ceh-6 (+) hlh-16 (-)	Caenorhabditis elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (+) hlh-16 (-) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
+ceh-6_plus_hlh-16_plus	ceh-6 (+) hlh-16 (+)	Caenorhabditis elegans	UP2216	mixed-stage embryo	hermaphrodite	ceh-6 (+) hlh-16 (+) FACS-sorted cells	Travis Walton	2012-09-28	CEH-6::GFP, HLH-16p::mCherry
+cnd-1_minus	cnd-1 (-)	Caenorhabditis elegans	JIM085	mixed-stage embryo	hermaphrodite	cnd-1 (-) FACS-sorted cells	Travis Walton	2012-09-28	CND-1::GFP
+F21D5.9_minus	F21D5.9 (-)	Caenorhabditis elegans	JIM095	mixed-stage embryo	hermaphrodite	F21D5.9 (-) FACS-sorted cells	Travis Walton	2012-09-28	F21D5.9p::Wcherry
+mir-57_minus	mir-57 (-)	Caenorhabditis elegans	JIM049	mixed-stage embryo	hermaphrodite	mir-57 (-) FACS-sorted cells	Travis Walton	2012-09-28	MIR-57p::mCherry
+mls-2_minus	mls-2 (-)	Caenorhabditis elegans	UP1619	mixed-stage embryo	hermaphrodite	mls-2 (-) FACS-sorted cells	Travis Walton	2012-09-28	MLS-2::GFP
+pal-1_minus	pal-1 (-)	Caenorhabditis elegans	JIM112	mixed-stage embryo	hermaphrodite	pal-1 (-) FACS-sorted cells	Travis Walton	2012-09-28	PAL-1::GFP
+pros-1_minus	pros-1 (-)	Caenorhabditis elegans	RW10913	mixed-stage embryo	hermaphrodite	pros-1 (-) FACS-sorted cells	Travis Walton	2012-09-28	PROS-1::GFP
+ttx-3_minus	ttx-3 (-)	Caenorhabditis elegans	JIM096	mixed-stage embryo	hermaphrodite	ttx-3 (-) FACS-sorted cells	Travis Walton	2012-09-28	TTX-3::GFP
+unc-130_minus	unc-130 (-)	Caenorhabditis elegans	JIM107	mixed-stage embryo	hermaphrodite	unc-130 (-) FACS-sorted cells	Travis Walton	2012-09-28	UNC-130::GFP
