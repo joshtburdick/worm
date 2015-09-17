@@ -47,17 +47,47 @@ r = data.frame(bioproject_accession = "PRJNA295677",
   platform = "ABI_SOLID",
   instrument_model = "AB 5500xl Genetic Analyzer",
   design_description = ifelse(i,
-    "Embryonic cells were FACS-sorted by marker expression and amplified using the aRNA protocol",
+    "Embryonic cells were FACS-sorted by marker expression and amplified using an Ambion aRNA kit.",
     "Embryonic cells were FACS-sorted by marker expression"),
   filetype = "BAM",
   # these will be filled in later
   filename = "", filename2 = "", filename3 = "",
   check.names=FALSE, stringsAsFactors=FALSE)
 
-# fill in names of files
+# Get mapping from original filenames to filenames in submission.
+# This assumes that all the experiments for a given run are in a
+# particular subdirectory (which currently is true.)
+p = "/murrlab/seq/tophat2/WS220_20140111/"
 
+# mapping from files to experiments
+file.to.experiment = NULL
 
+# loop through the directories of .bam files
+for(p1 in c("20110922", "Murray050912", "Murray092812")) {
+  files = list.files(paste0(p, p1))
+  files = sort(grep(".bai", files, value=TRUE, invert=TRUE))
+  file.sample = sub("^0[0-9]_", "", sub("\\.bam$", "", files))
+  
+  # scan through the experiments
+  for(i in 1:nrow(e)) {
+    e1 = rownames(e)[i]
+    f1 = files[ file.sample == e1 ]
+    if (length(f1) > 0) {
+      new.filenames = paste0(paste(r[i,"library_ID"], 1:length(f1),
+        sep="_"), ".bam")
+      r[i, c(12:(11+length(f1)))] = new.filenames
 
+      file.to.experiment = rbind(file.to.experiment,
+        data.frame(f = paste0(p, p1, "/", f1),
+          new.f = new.filenames,
+          stringsAsFactors = FALSE))
+    }
+  }
+}
+
+write.tsv(file.to.experiment, "git/unmix/seq/quant/file.to.experiment.tsv")
+
+write.table(r, "git/unmix/seq/quant/SRA_metadata.tsv")
 
 
 
