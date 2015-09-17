@@ -47,8 +47,8 @@ r = data.frame(bioproject_accession = "PRJNA295677",
   platform = "ABI_SOLID",
   instrument_model = "AB 5500xl Genetic Analyzer",
   design_description = ifelse(i,
-    "Embryonic cells were FACS-sorted by marker expression and amplified using an Ambion aRNA kit.",
-    "Embryonic cells were FACS-sorted by marker expression"),
+    "Embryonic cells were FACS-sorted by marker expression. RNA was extracted using a RNeasy kit (Qiagen), and poly-A RNA was amplified using a T7 RNA polymerase aRNA protocol (Ambion MessageAMP II aRNA kit).",
+    "Embryonic cells were FACS-sorted by marker expression; RNA was extracted using a RNeasy kit (Qiagen)."),
   filetype = "BAM",
   # these will be filled in later
   filename = "", filename2 = "", filename3 = "",
@@ -87,7 +87,8 @@ for(p1 in c("20110922", "Murray050912", "Murray092812")) {
 
 write.tsv(file.to.experiment, "git/unmix/seq/quant/file.to.experiment.tsv")
 
-write.table(r, "git/unmix/seq/quant/SRA_metadata.tsv")
+write.table(r, "git/unmix/seq/quant/SRA_metadata.tsv",
+  sep="\t", row.names=FALSE)
 
 
 
