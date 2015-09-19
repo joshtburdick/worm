@@ -23,10 +23,11 @@ write.motif.counts = function(a) {
     gene.names,
     cutoffs,
     get.motifs.from.file(motif.gene.dir),
-    paste0("git/sort_paper/tf/motif/upstreamCount/", a))
+#    paste0("git/sort_paper/tf/motif/upstreamCount/", a))
+    paste0("/media/jburdick/disk2/jburdick/motif_count_check/", a))
 }
 
-# write.motif.counts("Ce_1.02")
+write.motif.counts("Ce_1.02")
 # write.motif.counts("Dm_1.02")
 # write.motif.counts("Mm_1.02")
 # write.motif.counts("Hs_1.02")

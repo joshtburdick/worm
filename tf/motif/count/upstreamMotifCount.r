@@ -76,6 +76,10 @@ count.motifs.at.cutoffs =
           gc()    # this seems faster
         }
 
+      # experimental: storing this as integer rather than real
+      # (which should take about half the space)
+      storage.mode(motif.count) = "integer"
+
       save(motif.count, file=paste0(output.dir, "/", motif, ".Rdata"),
         compress="bzip2")
     }

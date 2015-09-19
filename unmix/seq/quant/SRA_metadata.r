@@ -42,7 +42,7 @@ r = data.frame(bioproject_accession = "PRJNA295677",
   library_strategy = "RNA-Seq",
   library_source = "TRANSCRIPTOMIC",
   library_selection = ifelse(i, "other", "RANDOM"),
-  library_layout = ifelse(i, "Paired-end", "Single"),
+  library_layout = ifelse(i, "Paired", "Single"),
 
   platform = "ABI_SOLID",
   instrument_model = "AB 5500xl Genetic Analyzer",
