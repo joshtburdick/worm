@@ -1,6 +1,11 @@
 # Utilities for incrementally computing things.
 # For now, doesn't automatically detect stale dependencies.
 
+
+
+
+
+
 # Ensures that a given file is present and up-to-date.
 #   If f ends in .r or .R, it's assumed to be an R script;
 # use() will check for a corresponding up-to-date .Rdata file.
@@ -22,8 +27,6 @@ use = function(f) {
   f1 = sub("\\.(bz|bz2|gz|lz|lzma|rz|sz|xz|z|Z)$", "", f)
 
   
-
-
   # guess the script name (for now, only searching for ".r";
   # ".R" may be more standard)
   s = sub("\\.[^\\.]+$", ".r", f1)
