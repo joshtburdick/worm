@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" demote-non-dropping-particle="sort-only" default-locale="en-US">
   <info>
-    <title>BioMed Central</title>
-    <id>http://www.zotero.org/styles/biomed-central</id>
-    <link href="http://www.zotero.org/styles/biomed-central" rel="self"/>
+    <title>Genome Biology (jtb)</title>
+    <id>http://www.zotero.org/styles/genome-biology-1</id>
+    <link href="http://www.zotero.org/styles/genome-biology-1" rel="self"/>
     <link href="http://www.biomedcentral.com/bmcbioinformatics/authors/instructions/researcharticle#formatting-references" rel="documentation"/>
     <!-- This documentation link contains incorrect information about the number of authors for supplemental info; it was confirmed directly by BMC that the correct max number of authors to list is 30, see also https://github.com/citation-style-language/styles/issues/190
          <link href="http://www.biomedcentral.com/authors/instprepdoc#refs" rel="documentation"/>
@@ -27,7 +27,7 @@
     </terms>
   </locale>
   <macro name="author">
-    <names variable="author" suffix=": ">
+    <names variable="author" suffix=". ">
       <name sort-separator=" " initialize-with="" name-as-sort-order="all" delimiter=", " delimiter-precedes-last="always"/>
       <label form="short" prefix=" (" suffix=")" text-case="capitalize-first" strip-periods="true"/>
       <substitute>

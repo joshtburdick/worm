@@ -37,8 +37,13 @@ array.from.dimnames = function(dimnames) {
 # Simple "named capture" function.
 # Args:
 #   s - a character vector
-#   pattern - a regexp
-# Returns: substring matching that pattern.
-regexp.capture = function(s, pattern)
-  regmatches(s, gregexpr(pattern, s))[[1]]
+#   pattern - a regexp (currently doesn't support Perl regexprs)
+# Returns: substring matching that pattern in each string.
+regexp.capture = function(s, pattern) {
+  sapply(regmatches(s, regexec(pattern, s)),
+    function(a) a[2])
+}
+
+
+
 
