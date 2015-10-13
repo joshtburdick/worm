@@ -50,6 +50,6 @@ unmix.all = function(genes) {
   }
 }
 
-# unmix.all(rownames(expr.cell))
+unmix.all(rownames(expr.cell))
 # unmix.all(rev(rownames(expr.cell)))
 

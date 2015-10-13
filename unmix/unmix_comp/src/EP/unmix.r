@@ -28,5 +28,5 @@ unmix.ep = function(m, x.f) {
     reporters = rownames(m), x.f = x.f)
 }
 
-# run.unmix(unmix.ep, "EP/")
+run.unmix(unmix.ep, "EP/")
 

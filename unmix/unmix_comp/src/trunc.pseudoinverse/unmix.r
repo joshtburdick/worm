@@ -24,5 +24,5 @@ unmix.lsei = function(si) {
   }
 }
 
-# run.unmix(unmix.lsei(diag(ncol(expr.cell))), "trunc.pseudoinverse/")
+run.unmix(unmix.lsei(diag(ncol(expr.cell))), "trunc.pseudoinverse/")
 

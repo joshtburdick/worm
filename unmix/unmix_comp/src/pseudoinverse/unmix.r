@@ -17,5 +17,5 @@ unmix.pseudoinverse = function(m, x.fraction) {
   list(x = x)
 }
 
-# run.unmix(unmix.pseudoinverse, "pseudoinverse/")
+run.unmix(unmix.pseudoinverse, "pseudoinverse/")
 
