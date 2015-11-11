@@ -125,11 +125,53 @@ if (TRUE) {
 #    col=coloring(c(5:2)/5, TRUE), cex=0.68)
 }
 
-#    mtext("Further", side=1, adj=0, line=2)
-#    mtext("Closer", side=1, adj=1, line=2)
-#    mtext("Lower", side=2, adj=0, line=2)
-#    mtext("Higher", side=2, adj=1, line=2)
 }
+
+# Same, but somewhat simplified. This doesn't grey out
+# non-significant things.
+plot.colored.by.enrichment.simplified = function() {
+
+  a$log.enrich.1 = pmin(a$log.enrich, 1) 
+  a$lp.corr.1 = pmin(a$lp.corr / 10, 1)
+
+  # test of whether either of these is significant,
+  # for shading the points
+  sig = (a$dist.p.corr <= 0.05) | (a$cons.p.corr <= 0.05)
+
+  # how to color dots (ignoring shading, for now)
+  coloring = function(x, e)
+    hsv(1-x, 1, 0.8, 0.8)
+
+  plot(a$dist.enrich, a$cons.enrich,   # xlim=lim, ylim=lim,
+    xlab="Enrichment of motifs within 1kb of 5' end of transcript",
+    ylab="Enrichment of motifs with conservation > 0.5",
+    xaxt="n", yaxt="n",
+    pch=183, font=5, cex=0.7,
+#    col=coloring(a$log.enrich.1))
+    col=coloring(a$log.enrich.1, sig))
+  abline(h=1, col="#00000080")
+  abline(v=1, col="#00000080")
+  a = c(3:7) / 10
+  axis(1, cex=0.8)   # at=a, labels=abs(a))
+  axis(2, cex=0.8)   # at=a, labels=abs(a))
+
+if (TRUE) {
+  legend("bottomleft",
+    title=expression(log[2] * "(motif enrichment)"),
+    pch=20, legend=c(c(10,8,6,4,2) / 10),
+    col=coloring(c(5:1)/5, TRUE), cex=0.87)
+#  legend("bottomleft",
+#    title="", pch=20, bty="n", legend = rep("", 4),
+#    col=coloring(c(5:2)/5, TRUE), cex=0.68)
+  a = 0.9
+    mtext("Further from 5' end", side=1, adj=0, line=2, cex=a)
+    mtext("Closer to 5' end", side=1, adj=1, line=2, cex=a)
+    mtext("Less conserved", side=2, adj=0, line=2, cex=a)
+    mtext("More conserved", side=2, adj=1, line=2, cex=a)
+}
+
+}
+
 
 
 if (FALSE) {
@@ -137,9 +179,16 @@ if (FALSE) {
     width=7.5, height=7.5)
   plot.2(function(x) hsv(1-x, 1, 0.8, 0.5))
   dev.off()
-}
+
 pdf("git/sort_paper/tf/motif/hyperg/enrichLocation/motifLocAndConservationEnrich.pdf",
   width=7.5, height=7.5)
 plot.colored.by.enrichment()
 dev.off()
+}
+
+pdf("git/sort_paper/tf/motif/hyperg/enrichLocation/motifLocAndConservationEnrichSimplified.pdf",
+  width=7.5, height=7.5)
+plot.colored.by.enrichment.simplified()
+dev.off()
+
 
