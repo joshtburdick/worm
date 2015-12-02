@@ -81,6 +81,6 @@ write.crossval.graphs.png = function() {
   cat("mean = ", mean(correlations), "\n")
 }
 
-# write.crossval.graphs()
-write.crossval.graphs.png()
+write.crossval.graphs()
+# write.crossval.graphs.png()
 

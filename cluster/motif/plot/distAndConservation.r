@@ -145,12 +145,12 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
 #      png(paste(output.dir, "/", m, " ", cl, ".png", sep=""),
 #        width=1050, height=1200)
     pdf(paste(output.dir, "/", m, " ", cl, ".pdf", sep=""),
-      width=7, height=6)    # was "height=12"
+      width=9, height=6)    # was "height=12"
 
 #    mat = matrix(c(1,1,1,2,3,4,5,6,7,8,9,10,11,12,13), nrow=5, byrow=TRUE)
 #    layout(mat, heights=c(0.5,1,1,1))
-    mat = matrix(c(1,1,1,2,3,4,5,6,7), nrow=3, byrow=TRUE)
-    layout(mat, heights=c(0.2,1,1), widths=c(0.15,1,1))
+    mat = matrix(c(1,1,1,1, 2,3,4,5, 6,7,8,9), nrow=3, byrow=TRUE)
+    layout(mat, heights=c(0.2,1,1), widths=c(0.15,1,1,1))
 
     # add labels
     par(mar=c(0,0,0,0) + 0.1)     # XXX
@@ -165,6 +165,8 @@ print(motif.info[m,])
       motif.name.1 = expression(italic("daf-19"))
     if (m == "M2336_1.02")
       motif.name.1 = expression(italic("eor-1"))
+    if (m == "M0892_1.02")
+      motif.name.1 = expression(italic("ceh-2"))
 
 #    if (m == "M1906_1.02")
 #      motif.name.1 = expression(italic("klf-2"))
@@ -204,13 +206,18 @@ if (FALSE) {
     par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
     hist(r1$upstream.dist.normalized, col="#ff0000a0", xlim=c(-1,0),
       main=s, xlab="")
+    mtext(expression(bold("Genes in cluster")),
+      side=2, line=5, cex=1, xpd=NA)
+
+    hist(r1$upstream.dist, col="#ff0000a0", xlim=c(-5000,0),
+      main=s, xlab="")
+
 #    dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
 #      dist.cons.wilcoxon$number=="upstream.dist", "p.fdr" ]
     mtext(expr.format(expression("Wilcoxon p " * p),
       list(p = format.p(signif(a$dist.p.corr,2), include.equals.sign=TRUE))), cex=0.8)
-    mtext(expression(bold("Genes in cluster")),
-      side=2, line=5, cex=1, xpd=NA)
+
     hist(r1$motif.cons, col="#ff0000a0", xlim=c(0, 1),
       main=s, xlab="")
 #    cons.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
@@ -234,9 +241,13 @@ if (FALSE) {
 }
     par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
     hist(r0$upstream.dist.normalized, col="#0000ffa0", xlim=c(-1,0),
-      main=s, xlab=expression(bold("Location relative to transcript 5' end")))
+      main=s, xlab=expression(bold("Normalized location relative to 5' end")))
     mtext(expression(bold("Genes not in cluster")),
       side=2, line=5, cex=1, xpd=NA)
+
+    hist(r0$upstream.dist, col="#0000ffa0", xlim=c(-5000,0),
+      main=s, xlab=expression(bold("Location relative to transcript 5' end")))
+
     hist(r0$motif.cons, col="#0000ffa0", xlim=c(0, 1),
       main=s, xlab=expression(bold("Conservation (PhastCons)")))
 
@@ -282,9 +293,27 @@ plot.some = function() {
 #  }
 }
 
+# Plots cases of motifs which seem to be distant (but conserved).
+plot.conserved.distant = function() {
+  a = dist.cons.wilcoxon
+  distant.motifs = a[ ( (a$p.corr <= 1e-10) &
+    (!a$dist.closer) & (a$dist.p.corr <= 1e-5) &
+    (a$cons.higher) & (a$cons.p.corr <= 1e-2) ) , ]
+# distant.motifs = distant.motifs[ !duplicated(distant.motifs$group) , ]
+
+#  browser()
+  print(dim(distant.motifs))
+  for(i in 1:nrow(distant.motifs)) {
+    cat(i, "\n")
+    print(distant.motifs[i,])
+    plot.one(distant.motifs[i,"motif"], distant.motifs[i,"group"])
+  }
+  distant.motifs
+}
+
 if (TRUE) {
   plot.one("M2331_1.02", "284")
-  plot.one("M2283_1.02", "284")
+  plot.one("M0892_1.02", "284")
 
   # conserved, and further away
   plot.one("M2336_1.02", "284")
@@ -295,4 +324,6 @@ if (TRUE) {
   plot.one("M5775_1.02", "286")
 #  plot.some()
 }
+
+# distant.motifs = plot.conserved.distant()
 

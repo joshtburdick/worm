@@ -1,7 +1,8 @@
 # Does unmixing using sampling.
 
-source("unmix_test.r")
+library("MASS")
 
+source("unmix_test.r")
 source("sampling/cdaCpp.r")
 
 # Does unmixing of one gene.

@@ -203,7 +203,7 @@ gamma.conditional.density = function(p) function(x) {
 # on all of them summing to 1.
 gamma.conditional.numerical.1 = function(p) {
   f = gamma.conditional.density(p)
-rull
+
   # compute the moments
   # XXX assuming successful integration
   x0 = integrate(f, 0, 1)$value

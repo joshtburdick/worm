@@ -23,7 +23,7 @@ b1 = beta.mv2s(gamma.s2mv(g1))
 
 
 
-print(gamma.conditional.numerical.1(g1))
+# print(gamma.conditional.numerical.1(g1))
 
 b1.flip = rbind(a = b1["b",], b = b1["a",])
 

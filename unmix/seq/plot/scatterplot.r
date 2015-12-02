@@ -1,6 +1,7 @@
 # Does some scatterplots of sorted fractions.
 
 source("git/utils.r")
+source("git/plot/utils.r")
 
 output.path = "git/unmix/seq/plot/scatterplot/"
 
@@ -275,9 +276,12 @@ enriched.depleted.scatterplots = function() {
     width=600, height=600)
 #  pdf(file=paste(output.path, "/pha4_enrichment.pdf", sep=""),
 #    width=7.5, height=7.5)
-  par(mar=c(5,5,4,4)+0.1)
+  par(mar=c(5,5,4,4)+0.3)
   draw.scatter.diag.threshold(r[,"pha-4 9/1 (-)"], r[,"pha-4 9/1 (+)"],
-    "pha-4 9/1 (-)", "pha-4 9/1 (+)", 2, c("pha-4", "ceh-22"))
+#    "pha-4 (-)", "pha-4 (+)",
+    expr.format(expression(italic(a)), list(a="pha-4 (-)")),
+    expr.format(expression(italic(a)), list(a="pha-4 (+)")),
+    2, c("pha-4", "ceh-22"))
   dev.off()
 
   png(file=paste(output.path, "/ceh6_hlh16_enrichment.png", sep=""),

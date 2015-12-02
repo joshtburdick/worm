@@ -20,6 +20,7 @@ setwd("../../../..")
 source("git/utils.r")
 source("git/unmix/ml/unmix_sort_fraction_ml_1.r")
 source("git/unmix/ml/sampleData1.r")
+source("git/unmix/ept/practice/invgamma.r")
 
 setwd("git/unmix/unmix_comp/src/")
 # print(getwd())
@@ -122,18 +123,32 @@ adds up to 1:
 A_1 X_1 + A_2 X_2 + ... + A_n X_n = 1
 \]
 
-One wrinkle is that $A$ is not known exactly.
-
-\begin{align*}
-A_i X_i &\sim \mathrm{Beta}(1, n-1) \\
-X_i &\sim {\mathrm{Beta}(1, n-1)}(\frac{1}{A_i})
-\end{align*}
-
-
-Since $A_i$ has a gamma distribution, $\frac{1}{A_i}$ has
+One wrinkle is that $A$ is not known exactly; we assume that
+$A$ has a gamma distribution.
+This means that $\frac{1}{A_i}$ has
 an inverse gamma distribution. If $A$'s shape is at least
-1, then we can find the mean and variance of $\frac{1}{A_i}$.
+2, then we can find the mean and variance of $\frac{1}{A_i}$.
 We then moment-match, using the fact that $E[XY] = E[X]E[Y]$.
+(The inverse-gamma mean and/or variance aren't well-defined if the
+shape is 2 or less.)
+
+(Note that we can't simply {\em divide} the moments of $A$. However,
+if we can find the moments of $1/A$, at least approximately, then
+we can multiply by them.)
+
+This raises the question of how well a gamma distribution
+approximates an inverse gamma distribution. As a quick empirical check
+of this, here are some inverse gamma distributions, together with a
+moment-matched gamma approximation. (The rate of the inverse gamma presumably
+doesn't matter.)
+
+
+<<invGammaCheck,echo=TRUE>>=
+ig.params = rbind(a=c(2.1,2.5,3,5,10,100), b=c(1,1,1,1,1,1))
+ig.params
+ig.s2mv(ig.params)
+gamma.mv2s(ig.s2mv(ig.params))
+@
 
 
 \subsection{Applying EP}
@@ -150,6 +165,43 @@ iteratively improve.
 
 I don't have a strategy for sampling when there's noise
 in the sort matrix.
+
+
+\section{Damping and convergence}
+
+One issue with EP is getting it to converge.
+
+Let $x$ be the (natural) parameters of EP, and $f$ be a function that
+does one round of EP updates. Basic EP repeatedly applies $f$ to update $x$.
+
+\[x_{new} \leftarrow f(x)\]
+
+This EP update rule sometimes converges, and sometimes doesn't.
+It is only provably known to converge on certain types of problems [CITE Minka].
+(In contrast, expectation maximization is guaranteed to converge
+to a local maximum of the likelihood, although not neccessarily a global maximum.)
+
+Various modifications have been introduced to address this.
+One of the simplest modifications, {\em damping}, reduces how much EP ``moves''
+in a particular direction. Let $\alpha$ be the amount of damping, which is
+at least 0 (no
+damping) and less than 1 (no update.) A damped EP update is
+
+\[x_{new} \leftarrow (1-\alpha)f(x) + \alpha x\]
+
+(FIXME is this the usual $\alpha$ definition?)
+
+Using a sufficiently small $\alpha$ can guarantee convergence, at the expense
+of requiring more updates [CITE Minka?]. Often, $\alpha$ is chosen empirically,
+by choosing the smallest amount of damping which still converges.
+
+One approach to choosing $\alpha$ is to define an objective function as follows:
+
+\[g(x) = \sum_i |[f(x) - x]_i|\]
+
+$g(x) = 0$ if and only if $x$ is a fixed point of $f$ (which is what we're looking for).
+We can apply existing methods to minimize $g$. One option might be to do line search
+between $x$ and $f(x)$, minimizing $g$ along this line.
 
 
 \end{document}
