@@ -8,7 +8,7 @@ source("git/sort_paper/tf/motif/hughes/motifInfo.r")
 output.dir = "git/cluster/motif/plot/distAndConservation2/"
 
 # motif.gene.dir = "git/cluster/motif/distAndConservation/5kb/"
-motif.gene.dir = "/media/jburdick/disk2/jburdick/distAndConservation/"
+motif.gene.dir = "/media/jburdick/data1/jburdick/distAndConservation/"
 
 # this will define which genes are in the cluster
 clusters = read.tsv(
@@ -41,6 +41,16 @@ get.motif.filename = function(m) {
 
   cat("\nfailed to find info for motif", m, "\n")
   return(NA)
+}
+
+# get amount of upstream sequence for each gene
+upstream.dist = {
+  upstream.bed = read.table("git/tf/motif/motifCount/regions/upstream_5kb_WS220.bed", as.is=TRUE)
+  colnames(upstream.bed) = c("chr", "a", "b", "gene", "score", "strand")
+  upstream.bed$upstream.dist = upstream.bed$b - upstream.bed$a
+  upstream.dist = upstream.bed$upstream.dist
+  names(upstream.dist) = upstream.bed$gene
+  upstream.dist
 }
 
 # Computes histogram counts "by hand". This avoids the issue
@@ -118,6 +128,13 @@ plot.motif.loc.dist = function(a, motif.score.cutoff=40) {
   # where a gene starts
   r$upstream.dist[ r$upstream.dist > 0 ] = 0
 
+  # tack on normalized upstream location
+  r$upstream.dist.normalized =
+    r$upstream.dist / upstream.dist[ r$gene ]
+  r$upstream.dist.normalized[ r$upstream.dist.normalized < -1 ] = -1
+  r$upstream.dist.normalized[ r$upstream.dist.normalized > 0 ] = 0
+# browser()
+
   r$in.cluster = clusters[r$gene,"cluster"]==cl
   r = r[ !is.na(r$in.cluster) , ]
 
@@ -145,7 +162,7 @@ print(motif.info[m,])
 
     # XXX hacks
     if (motif.info[m,"motif.name"] == "RFX3_1")
-      motif.name.1 = "RFX3"
+      motif.name.1 = expression(italic("daf-19"))
     if (m == "M2336_1.02")
       motif.name.1 = expression(italic("eor-1"))
 
@@ -185,7 +202,7 @@ if (FALSE) {
     axis(2)
 }
     par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
-    hist(r1$upstream.dist, col="#ff0000a0", xlim=c(-5000,0),
+    hist(r1$upstream.dist.normalized, col="#ff0000a0", xlim=c(-1,0),
       main=s, xlab="")
 #    dist.p = dist.cons.wilcoxon[ dist.cons.wilcoxon$motif==m &
 #      dist.cons.wilcoxon$cluster==cl &
@@ -216,7 +233,7 @@ if (FALSE) {
     axis(2)
 }
     par(mar=c(5,4,2,1)+0.1, cex.lab=1.2)
-    hist(r0$upstream.dist, col="#0000ffa0", xlim=c(-5000,0),
+    hist(r0$upstream.dist.normalized, col="#0000ffa0", xlim=c(-1,0),
       main=s, xlab=expression(bold("Location relative to transcript 5' end")))
     mtext(expression(bold("Genes not in cluster")),
       side=2, line=5, cex=1, xpd=NA)
@@ -266,10 +283,13 @@ plot.some = function() {
 }
 
 if (TRUE) {
+  plot.one("M2331_1.02", "284")
+  plot.one("M2283_1.02", "284")
+
   # conserved, and further away
   plot.one("M2336_1.02", "284")
-  plot.one("M4567_1.02", "46")
-  plot.one("M1906_1.02", "245")
+#  plot.one("M4567_1.02", "46")
+#  plot.one("M1906_1.02", "245")
 
   # conserved, and closer
   plot.one("M5775_1.02", "286")
