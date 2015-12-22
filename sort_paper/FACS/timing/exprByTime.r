@@ -203,6 +203,12 @@ on.off.c = "#0000ffb0"
   plot(p$t, p$proportion.on, type="l", lwd=3, col=on.off.c,
     xlim=range(td1$mean), ylim=c(-ymax, ymax), xaxt="n", yaxt="n",
     xlab="", ylab="")
+
+  # extend the "proportion on" graph
+  p1 = p[ nrow(p) , ]
+  lines(c(p1$t, 1000), c(p1$proportion.on, p1$proportion.on),
+    lwd=3, lty=2, col=on.off.c)
+
   axis(4, at = c(0, 0.5, 1) * ymax, col=on.off.c, col.axis=on.off.c)
   mtext(expression("Proportion of cells expressing " * italic("cnd-1")),
     col=on.off.c, side=4, line=2.5)
@@ -224,6 +230,12 @@ on.off.c = "#0000ffb0"
   plot(p$t, p$proportion.on, type="l", lwd=3, col=on.off.c,
     xlim=range(td1$mean), ylim=c(-ymax, ymax), xaxt="n", yaxt="n",
     xlab="", ylab="")
+
+  # extend the "proportion on" graph
+  p1 = p[ nrow(p) , ]
+  lines(c(p1$t, 1000), c(p1$proportion.on, p1$proportion.on),
+    lwd=3, lty=2, col=on.off.c)
+
   axis(4, at = c(0, 0.5, 1) * ymax, col=on.off.c, col.axis=on.off.c)
   mtext(expression("Proportion of cells expressing " * italic("pros-1")),
     col=on.off.c, side=4, line=2.5)

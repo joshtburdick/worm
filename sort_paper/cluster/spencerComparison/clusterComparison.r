@@ -70,7 +70,7 @@ compare.correlation = function(a.cl, a, b, basefile, a.name, b.name, cl.expressi
 # browser()
   mc.clustered = by(a, a.cl, mean.cor)
   mc.other = by(b, a.cl, mean.cor)
-  rlim = c(-0.1, 1)
+  rlim = c(-0.2, 1)
 
   # coloring for clusters
   expr.range = as.numeric(round(quantile(cl.expression, c(0.05, 0.95))))
@@ -79,7 +79,7 @@ compare.correlation = function(a.cl, a, b, basefile, a.name, b.name, cl.expressi
   cl.expression.1[ cl.expression.1 > 1 ] = 1
   cl.expression.1 = cl.expression.1[ names(mc.clustered) ]
 
-  col.f = function(x) hsv(0, 0, 0.8 * x, 0.8)
+  col.f = function(x) hsv(0, 0, 0.8 * (1-x), 0.8)
   cl.col = col.f(1 - cl.expression.1)
   names(cl.col) = names(cl.expression.1)
   cl.col[ cl.to.color ] = hsv(0, 1, 1, 0.8)
