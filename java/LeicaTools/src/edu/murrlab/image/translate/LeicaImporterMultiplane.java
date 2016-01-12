@@ -21,16 +21,19 @@ import loci.formats.out.*;
 import loci.formats.services.OMEXMLService;
 
 import ome.xml.model.primitives.*;
+// FIXME if I rewrite this to use a more recent version of
+// loci_tools.jar, then I'll need to use this
 // import ome.units.quantity.Length;
 
-/** Imports a .lif file (hopefully) into format that
- * AceTree and StarryNite can deal with.
+/** Imports a .lif file (hopefully) into a multiplane TIFF.
+ * Hopefully this will be easier to deal with than a large number
+ * of small files (and AceTree can deal with this.)
  * 
  * Heavily based on the GetPhysicalMetadata example.
  * @author jburdick
  *
  */
-public class LeicaImporter {
+public class LeicaImporterMultiplane {
 
 	/** Directory to store output directories (by default, this is
 	 * the same directory that contains the .lif file.) */
@@ -54,7 +57,7 @@ public class LeicaImporter {
 	int seriesCount;
 
 	/** Directories in which to put the two channels. */
-	String[] channelDir = {"tif", "tifR"};
+	String[] channelName = {"green", "red"};
 	
 	/** The "job ID", set by getImageNames(). */
 	// String jobID = null;   probably not used
@@ -65,12 +68,15 @@ public class LeicaImporter {
     private ServiceFactory factory;
 
     private OMEXMLService service;
+
+    /** File of images we're currently writing out. */
+    private ImageWriter writer;
     
-    /** Buffer for images (which we'll reuse.) */
+    /** Buffer for images (which we avoid allocating more than once.) */
     private byte[] img;
     
     /** Constructor. */
-	public LeicaImporter(String lifFile)
+	public LeicaImporterMultiplane(String lifFile)
 			throws DependencyException, FormatException, IOException, ServiceException {
 		
 		// set some path names
@@ -133,6 +139,55 @@ public class LeicaImporter {
 		}
 	}
 	
+	/** Test of whether a given image name is one that we should
+	 * write out.
+	 * @param imageName  name of the image
+	 * @param xy the "coordinates" of the image */
+	private boolean isSeriesToWrite(String imageName, String xy) {
+		return !imageName.contains("Sequence/Image") &&
+						!imageName.contains("Sequence/AF") &&
+						!imageName.contains("AF Job") &&
+						!imageName.contains("DriftAF") &&
+						xy.equals( getXY(imageName) );
+	}
+	
+	/** Gets the size of one embryo's images (number of slices, and
+	 * timepoints.) This is needed because we need to specify this
+	 * when we open the output image stack.
+	 * XXX this is sort of annoyingly slow.
+	 * 
+	 * @param xy  coordinates of the stack to get
+	 * 
+	 * @return four-element array, containing z and t dimensions
+	 */
+	private int[] getEmbryoStackDimensions(String xy) {
+		// the X, Y, Z, and T dimensions
+		int[] r = {1, 1, 1, 0};
+			
+		// loop through the series
+		System.out.println("seriesCount = " + seriesCount);
+		for(int s = 0; s < seriesCount; s++) {
+			
+			// get name of the image
+			reader.setSeries(s);
+			Hashtable<String, Object> h = reader.getSeriesMetadata();
+			String imageName = (String) h.get("Image name");
+			
+			// if this is part of the appropriate sequence, include it
+			// in the dimensions
+			if (isSeriesToWrite(imageName, xy)) {
+				System.out.println("including " + imageName);
+				r[0] = reader.getSizeX();
+				r[1] = reader.getSizeY();
+				if (reader.getSizeZ() > r[2])
+					r[2] = reader.getSizeZ();
+				r[3]++;		
+			}	
+		}		
+		
+		return r;
+	}
+	
 	/** Writes one embryo's worth of movies (along with the metadata.)
 	 * @param xy  the "XY position string" to include
 	 * @param embryoNumber  which embryo this is
@@ -144,11 +199,20 @@ public class LeicaImporter {
 		String outputPath1 = outputPath + "/" + seriesName + "_L" + embryoNumber;
 		System.out.println("writing " + outputPath1 + "   XY = " + xy);
 		
-		// create directories
-		new File(outputPath1 + "/dats").mkdirs();
-		new File(outputPath1 + "/tif").mkdirs();
-		new File(outputPath1 + "/tifR").mkdirs();
+		// get dimensions
+		int[] sizeXYZT = getEmbryoStackDimensions(xy);
+		System.out.println("size: X=" + sizeXYZT[0] + " Y=" + sizeXYZT[1] +
+				" Z=" + sizeXYZT[2] + " T=" + sizeXYZT[3]);
 		
+		// allocate the image buffer (this assumes one byte per pixel)
+		img = new byte[ sizeXYZT[0] * sizeXYZT[1] ];
+		
+		// create directory, and open merged TIF file
+		new File(outputPath1 + "/dats").mkdirs();
+		
+		String multiplaneTiffName = outputPath1 + "merged.tif";
+		openImageWriterFile(multiplaneTiffName, sizeXYZT[2], sizeXYZT[3]);
+	
 		// we copy the metadata into each embryo directory, even though it
 		// seems to be the same for each series
 		writeMetadata(outputPath1 + "/dats/");
@@ -157,8 +221,8 @@ public class LeicaImporter {
 		PrintWriter imageList = new PrintWriter(outputPath1 + "/dats/imageList.tsv");
 		imageList.println("time\timage");
 		
-		// counter for current time point
-		int t = 1;
+		// counter for current time point (now 0-based)
+		int t = 0;
 		
 		// loop through the series
 		for(int s = 0; s < seriesCount; s++) {
@@ -171,21 +235,16 @@ public class LeicaImporter {
 			// if this is part of the appropriate sequence, write it
 			// ("names of things to skip" is similar to what's in
 			// LeicaTifRename.pl)
-			if (!imageName.contains("Sequence/Image") &&
-					!imageName.contains("Sequence/AF") &&
-					!imageName.contains("AF Job") &&
-					!imageName.contains("DriftAF") &&
-					xy.equals( getXY(imageName) )) {
+			if (isSeriesToWrite(imageName, xy)) {
 				System.out.println("writing image " + imageName + "   XY = " + getXY(imageName));
 				imageList.println(t + "\t" + imageName);
-				
 				writeSeries(outputPath1, embryoNumber, s, t);
-				
 				t++;
 			}	
 		}
 		
 		imageList.close();
+		writer.close();
 	}
 
 	/** Writes one series (which is actually only one timepoint.)
@@ -193,20 +252,25 @@ public class LeicaImporter {
 	 * @param embryoNumber  which embryo this is (so as to add
 	 *   "_L1", "_L2", "_L3", etc. to the name)
 	 * @param series  the index of the series in the file
-	 * @param t  the timepoint number with which to label this. */
+	 * @param t  the (0-based) timepoint number with which to label this. */
 	private void writeSeries(String outputPath, int embryoNumber,
 			int series, int t) throws IOException, FormatException, ServiceException {
 		reader.setSeries(series);
 
-		// in order to reverse the z-numbering, first
-		// find the maximum z of any plane
-		int maxZ = 0;
-		for(int i = 0; i < reader.getImageCount(); i++) {
-			int z = meta.getPlaneTheZ(series, i).getValue();
-			if (z > maxZ)
-				maxZ = z;
-		}
+		int sizeZ = reader.getSizeZ();
+		int maxZ = sizeZ - 1;    // this is used for reversing the z-stacks
 		
+		// total number of planes
+		int planesPerTimeSlice = 2 * sizeZ;
+		
+		System.out.println("planesPerTimeSlice = " + planesPerTimeSlice);
+		
+		// because the order in which to write these may be different,
+		// we store the images temporarily
+		// probably not used: byte[][] imgs = new byte[ 2 * numPlanes ][];
+		// byte[] img = new byte[ reader.getSizeX() * reader.getSizeY() ];
+		
+		// loop through the images in the series
 		for(int i = 0; i < reader.getImageCount(); i++) {
 			
 			// get channel and plane info
@@ -214,34 +278,42 @@ public class LeicaImporter {
 			
 			// note that this reverses the z-stacks
 			int plane = maxZ - meta.getPlaneTheZ(series, i).getValue();
-
-			// all of this is to avoid re-allocating the byte buffer
-			// XXX note that this assumes one byte per pixel
-			int numBytes = reader.getSizeX() * reader.getSizeY();
-			if (img == null || img.length != numBytes)
-				img = new byte[ numBytes ];
-			reader.openBytes(i, img);
 			
-			/*
-			System.out.println("series " + series + " image " + i + ": " +
-					" C = " + meta.getPlaneTheC(series, i) +
-					" T = " + meta.getPlaneTheT(series, i) +
-					" Z = " + meta.getPlaneTheZ(series, i));
-			*/
-			
-			String dir = channelDir[ channel ];
-			String f = outputPath + "/" + dir + "/" +
+			// this may not be used
+			String imageName = channelName[ channel ] + "_" +
 					seriesName + "_L" + embryoNumber +
-					"-t" + String.format("%03d", t) +
-					"-p" + String.format("%02d", plane + 1) + ".tif";
-			writeCompressedTiff(img, f);
+					"-t" + String.format("%03d", (t+1)) +
+					"-p" + String.format("%02d", plane + 1);
+			
+			// 0-based index of the image to write out.
+			int imgIndex = planesPerTimeSlice * t + 2 * plane + channel;
+			
+			// store this image
+//			imgs[imgIndex] = new byte[ numBytesPerImage ];
+//			reader.openBytes(i, imgs[imgIndex]);
+			reader.openBytes(i, img);
+			writer.saveBytes(imgIndex % 100, img);   // XXX testing again
 		}
+		
+		// actually write out the planes
+		/*
+		for(int p=0; p<imgs.length; p++) {
+			int imageIndexInStack = (2*numPlanes) * t + p;
+			writer.saveBytes(imageIndexInStack, imgs[p]);
+			System.out.println("saved plane " + imageIndexInStack);
+		}
+		*/
 	}
 	
-	/** Writes a compressed TIFF file. */
-	private void writeCompressedTiff(byte[] data, String filename)
+	/** Opens a file using the ImageWriter; this should be called before
+	 * starting to write out images.
+	 * @param filename the name of the output file
+	 * @param numZ number of z stacks
+	 * @param numT number of timepoints */
+	private void openImageWriterFile(String filename, int numZ, int numT)
 			throws IOException, FormatException, ServiceException {
-		
+	
+		// this assumes the reader is already open
 		int sizeX = reader.getSizeX();
 		int sizeY = reader.getSizeY();
 		
@@ -249,10 +321,11 @@ public class LeicaImporter {
 		// loci-tools' components/bio-formats/utils/MinimumWriter.java
 		IMetadata meta = service.createOMEXMLMetadata();
 	    MetadataTools.populateMetadata(meta, 0, (String) null, false, "XYZCT",
-	    	      FormatTools.getPixelTypeString(FormatTools.UINT8), sizeX, sizeY, 1, 1, 1, 1);
+	    	      FormatTools.getPixelTypeString(FormatTools.UINT8),
+	    	      sizeX, sizeY, numZ, 2, numT, 1);
 
 	    // FIXME loci_tools v.5.1.x uses a new API here, which I don't
-	    // yet understand
+	    // yet understand (workaround for now is to use v.5.0.x)
 	  	meta.setPixelsPhysicalSizeX(new PositiveFloat(1.0), 0);
 	    meta.setPixelsPhysicalSizeY(new PositiveFloat(1.0), 0);
 	    
@@ -260,12 +333,13 @@ public class LeicaImporter {
 	    // does; although it may not matter)
 	    meta.setPixelsBinDataBigEndian(Boolean.FALSE, 0, 0);
 	    
-   		ImageWriter writer = new ImageWriter();
+   		writer = new ImageWriter();
    		writer.setMetadataRetrieve(meta);
    		writer.setCompression(TiffWriter.COMPRESSION_LZW);
 		writer.setId(filename);
-	    writer.saveBytes(0, data);
-	    writer.close();
+		
+		System.out.println("can do stacks = " + writer.canDoStacks());
+		writer.setWriteSequentially(false);
 	}
 	
 	/** Writes out the metadata for the current series.
@@ -305,37 +379,9 @@ public class LeicaImporter {
 			System.err.println("failed to parse " + imageName);
 		return (m.matches() ? m.group(1) : null);
 	}
-
-	/** Test utility to dump image information. */
-	private void dumpInfo() {
-		for(int series = 0; series < 10; series++) {
-			reader.setSeries(series);
-			System.out.println("series = " + series);
-			
-			// XXX I don't actually know the legit dimensions of
-			// this, so just looping through them all			
-			for(int imageIndex = 0; imageIndex < 10; imageIndex++)
-				for(int planeIndex = 0; planeIndex < 10; planeIndex++) {
-					// ignore out-of-bounds
-					try {
-						System.out.println(imageIndex + "," + planeIndex + ": " +
-							" C=" + meta.getPlaneTheC(imageIndex,planeIndex).getValue() +
-							" T=" + meta.getPlaneTheT(imageIndex,planeIndex).getValue() +
-							" Z=" + meta.getPlaneTheZ(imageIndex,planeIndex).getValue() +
-							"  pos = " + meta.getPlanePositionX(imageIndex, planeIndex) + "," +
-									meta.getPlanePositionY(imageIndex, planeIndex) + "," +
-									meta.getPlanePositionZ(imageIndex, planeIndex));
-					}
-					catch (Exception e) {
-					}
-				}
-		}
-	}
-	
-	
+		
 	public static void main(String[] args) throws Exception {
 		System.out.println("started at " + new Date().toString());
-
 		// XXX print errors to console, or a log file?
 		// org.apache.log4j.BasicConfigurator.configure();
 		// XXX testing
@@ -349,12 +395,11 @@ public class LeicaImporter {
 			String lifFile = args[0];
 		}
 		String lifFile = "/var/tmp/20151027_tlp-1_enh4K.lif";
-		
+
 		System.out.println("converting " + lifFile);
-    	LeicaImporter li = new LeicaImporter(lifFile);
-    	// li.dumpInfo();
+    	LeicaImporterMultiplane li = new LeicaImporterMultiplane(lifFile);
     	li.getImageNames();
       	li.writeAllSeries();
-		System.out.println("finished at " + new Date().toString());
+      	System.out.println("finished at " + new Date().toString());
 	}
 }
