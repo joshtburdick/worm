@@ -253,8 +253,10 @@ public class LeicaImporter {
 
 	    // FIXME loci_tools v.5.1.x uses a new API here, which I don't
 	    // yet understand
+	    /*
 	  	meta.setPixelsPhysicalSizeX(new PositiveFloat(1.0), 0);
 	    meta.setPixelsPhysicalSizeY(new PositiveFloat(1.0), 0);
+	    */
 	    
 	    // storing in little-endian order (as that's what the Perl script
 	    // does; although it may not matter)
