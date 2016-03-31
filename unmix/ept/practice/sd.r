@@ -69,5 +69,35 @@ sd.sampling.test.1 = function(n) {
   print(mv.sampling)
   cat("\n")
 }
-# these are pretty convincingly different
+# these are pretty convincingly different. (Probably a more interesting
+# comparison is the difference between "|sum(x) = 1" and "x/sum(x)".)
+
+
+
+
+# One definition of conditioning on the sum of a subset of the elements.
+# Args:
+#   a - boolean vector, indicating a subset of elements
+#   b - the (exact) sum of those elements (between 0 and 1)
+#   x - natural parameters of gamma distribution.
+# Returns: natural parameters of x, conditional on that proportion.
+sd.cond1 = function(a, b) function(x) {
+  # convert to mean and variance
+  y = sd.s2mv( gamma.n2s( x ) )
+
+  # rescale so that the means agree with the given sum
+  s = sum(y["m",a])
+  y["m",a] = y["m",a] * (b / s)
+  y["v",a] = y["v",a] * ((b / s) ^ 2)
+  y["m",!a] = y["m",!a] * ((1- b) / (1-s))
+  y["v",!a] = y["v",!a] * (((1-b) / (1-s)) ^ 2)
+
+  # convert back to natural parameters
+  gamma.s2n( sd.mv2s( y ) )
+}
+
+x = gamma.s2n(rbind(a=c(1,2,3,4,2,3,4,1), b=c(1,1,2,3,3,3,2,1)))
+
+f1 = sd.cond1(c(T,T,T,T,T,T,F,F), 0.6)
+f2 = sd.cond1(c(T,T,F,F,F,F,F,F), 0.4)
 

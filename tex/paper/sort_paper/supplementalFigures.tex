@@ -24,15 +24,20 @@
 \begin{document}
 %% \pagenumbering{gobble}
 
+\stepcounter{figure}
+
+%% XXX hack
+\iffalse
+
 \begin{figure}
 
 \caption{Expression of fourteen reporters used for FACS sorting,
 measured by lineage tracing.}
 \end{figure}
-
 \clearpage
 \includepdf[pages={1-},scale=1,offset=-2in 0in,pagecommand={\thispagestyle{plain}}]{writing/sort paper/trees/S1 Sort markers.pdf}
 \clearpage
+\fi
 
 \begin{figure}
 \includegraphics[width=\textwidth]
@@ -41,7 +46,6 @@ measured by lineage tracing.}
 Enrichments for two replicates of {\em cnd-1} sorting.}
 \end{figure}
 \clearpage
-
 
 \begin{figure}
 \includegraphics[width=\textwidth]

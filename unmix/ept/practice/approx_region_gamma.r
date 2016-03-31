@@ -6,6 +6,8 @@ source("git/unmix/ept/practice/sd.r")
 source("git/unmix/ept/practice/gamma_conditional_6.r")
 source("git/unmix/ept/practice/gamma_conditional_numerical.r")
 
+source("git/unmix/ept/practice/gamma_conditional_9.r")
+
 # wrapper for this
 gca = function(x, A, b) {
   x1 = array(x, dim=c(dim(x)[1], dim(x)[2], 1))
@@ -56,7 +58,7 @@ gca1 = function(x, a, b) {
 #   x.log - list of posterior approximations
 #   FIXME update stats?
 # XXX not sure how well this is working
-approx.region.gamma = function(A, b, num.iters=50) {
+approx.region.gamma = function(A, b, num.iters=200+0*50) {
   x.log = list()
 
   # approximating terms
@@ -77,8 +79,10 @@ approx.region.gamma = function(A, b, num.iters=50) {
     for(i in 1:nrow(A)) {
       t1 = x - term[,,i]
 #      x1 = gamma.cond.sampling(t1, t(as.vector(A[i,])), b[i])
-      x1 = gamma.cond.sum.numerical(t1, A[i,], b[i])
 #      x1 = gamma.cond.orig(t(A[i,]), b[i])(t1)
+#      x1 = gamma.cond.sum.numerical(t1, A[i,], b[i])
+      x1 = gamma.cond.scale.sum.gc9(A[i,], b[i], t1)
+
       term[,,i] = 1 * term[,,i] + 0.2 * (x1 - x)
 #      term[,,i] = x1 - t1
     }

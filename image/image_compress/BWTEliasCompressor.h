@@ -30,6 +30,9 @@ struct BWTEliasCompressor {
     WaveletTransform<uint8_t> wt(buf);
     wt.transform(8);
 
+    // possibly print out the individual bitstrings
+    showStringAsBinary();    
+
     // count runs of each bit
     rc.countRuns(buf);
 
@@ -93,5 +96,20 @@ cerr << "bits[" << i << "] size = " << b.size() << endl;
     os.write((const char *) &a, sizeof(uint64_t));
   }
 
+  /** For debugging: write the individual bit planes. */
+  void showStringsAsBinary() {
+    // only print this if the buffer is short
+    if (buf.size() > 70)
+      return;
+
+    cerr << "length =" << buf.size() << "   start index = " << pidx << endl;
+    for(int bit = 7; bit >= 0; bit--) {
+      cerr << bit << ": ";
+      char mask = 1 << bit;
+      for(uint i = 0; i < buf.size(); i++)
+        cerr << (((buf[i] & mask) > 0) ? "1" : "0");
+      cerr << endl;
+    }
+  }
 };
 

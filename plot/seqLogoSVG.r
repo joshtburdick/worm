@@ -106,7 +106,7 @@ write.motif.svgz = function(m, output.file,
   close(f)
 }
 
-if (FALSE) {
+test1 = function() {
 m = matrix(c(
   1, 0.25, 0.8, 0,
   0, 0.25, 0.1, 0,
@@ -115,5 +115,6 @@ m = matrix(c(
 rownames(m) = c("A", "C", "G", "T")
 
 m = scale.by.ic(pad.motif(m, 7))
+write.motif.svgz(m, "test_motif.svg")
 }
 
