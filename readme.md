@@ -7,17 +7,17 @@ Most of the code is written in R (see www.r-project.org), and can be run
 by going to an empty directory, and:
 
 - at the UNIX prompt, typing
-
+```
 mkdir worm
 cd worm
 git clone -b dev https://github.com/joshtburdick/worm.git git
 R
-
+```
 - at the R prompt, typing
-
+```
 source("git/plot/seqLogoSVG.r")
 test1()
-
+```
 (Admittedly, "git" shouldn't be in all the pathnames.)
 
 For instance, much of the code used in the paper describing gene
