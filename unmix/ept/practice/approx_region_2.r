@@ -62,6 +62,38 @@ mvnorm.2.diag = function(m, v, A, b, b.var) {
     v = as.vector(diag(V - V %*% t(A) %*% B %*% A %*% V)))
 }
 
+# Distribution of one of these, conditional on the others (hack).
+mvnorm.cond.other = function(m, v, A, b) {
+  n = length(m)
+  r = list(m = rep(NA, n), v = rep(NA, n))
+
+  for(i in 1:n) {
+    m1 = m
+    v1 = v
+    m1[i] = 0
+    v1[i] = 1e10
+    a = mvnorm.2.diag(m1, v1, A, b, 0*b)
+    r$m[i] = a[i,"m"]
+    r$v[i] = a[i,"v"]
+  }
+  r
+}
+
+# Like the above, but also moment-matching to be > 0.
+mvnorm.cond.other.pos = function(x, A, b) {
+  r = mvnorm.cond.other(x["m",], x["v",], A, b)
+
+  t(positive.moment.match(r$m, r$v))
+}
+
+mvnorm.cond.other.pos.gamma = function(A, b)
+  function(x)
+    gamma.mv2n(mvnorm.cond.other.pos(gamma.n2mv(x), A, b))
+
+
+
+
+
 # Adds in a constraint of the form Ax ~ b, and returns the
 # full covariance matrix.
 mvnorm.2 = function(m, v, A, b, b.var) {
@@ -241,6 +273,7 @@ cat(backspace, signif(diff, 2), " ")
 pmm = function(x) t(positive.moment.match.canonical.gamma(t(x)))
 
 # Another take at the same thing.
+# (The variance seems wrong for this, usually).
 approx.region.gamma.2 = function(A, b, b.var,
     converge.tolerance=1e-9, max.iters=100) {
   n = ncol(A)
